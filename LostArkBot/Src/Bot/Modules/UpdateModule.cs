@@ -24,14 +24,14 @@ namespace LostArkBot.Bot.Modules
             {
                 if (oldCharacter.DiscordUserId != discordUserId)
                 {
-                    await command.RespondAsync($"You don't have permissions to update {characterName}");
+                    await command.RespondAsync(text: $"You don't have permissions to update {characterName}", ephemeral: true);
 
                     return;
                 }
             }
             else
             {
-                await command.RespondAsync($"{characterName} is not registered. You can register it with **/register**");
+                await command.RespondAsync(text: $"{characterName} is not registered. You can register it with **/register**", ephemeral: true);
 
                 return;
             }

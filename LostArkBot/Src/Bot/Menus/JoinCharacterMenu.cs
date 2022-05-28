@@ -125,18 +125,10 @@ namespace LostArkBot.Src.Bot.Menus
             });
 
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
-
             ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == messageId);
 
             IThreadChannel threadChannel = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
-            if (string.IsNullOrEmpty(characterName))
-            {
-                await threadChannel.SendMessageAsync($"{userMention} has joined with no character");
-            }
-            else
-            {
-                await threadChannel.SendMessageAsync($"{userMention} has joined with {characterName}");
-            }
+            await threadChannel.AddUserAsync(component.User as IGuildUser);
 
             try
             {

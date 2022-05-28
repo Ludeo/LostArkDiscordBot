@@ -1,7 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Modules
@@ -10,8 +14,10 @@ namespace LostArkBot.Src.Bot.Modules
     {
         public static async Task RollAsync(SocketSlashCommand command)
         {
-            string messageIdRaw = command.Data.Options.First(x => x.Name == "message-id").Value.ToString();
-            ulong messageId = ulong.Parse(messageIdRaw);
+            List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
+            ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.ThreadId == command.Channel.Id);
+            ulong messageId = linkedMessage.MessageId;
+
             ITextChannel channel = Program.Client.GetChannel(Config.Default.LfgChannel) as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(messageId);
             IUserMessage message = messageRaw as IUserMessage;

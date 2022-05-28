@@ -24,8 +24,6 @@ namespace LostArkBot.Src.Bot
                 //test server
                 //SocketGuild guild = Program.Client.GetGuild(340543173422088212);
 
-                applicationCommandProperties.Add(StartMerchantInitialization.StartMerchant().Build());
-
                 applicationCommandProperties.Add(RegisterInitialization.Register().Build());
 
                 applicationCommandProperties.Add(UpdateInitialization.Update().Build());

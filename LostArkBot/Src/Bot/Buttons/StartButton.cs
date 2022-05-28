@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using LostArkBot.Bot.FileObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,98 +12,105 @@ namespace LostArkBot.Src.Bot.Buttons
     {
         public static async Task Start(SocketMessageComponent component)
         {
-            Embed originalEmbed = component.Message.Embeds.First();
-
-            EmbedBuilder newEmbed = new()
+            if (component.User.Id == component.Message.Interaction.User.Id || Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).GuildPermissions.ManageMessages)
             {
-                Title = originalEmbed.Title,
-                Description = "Event has started at " + DateTime.Now,
-                Author = new EmbedAuthorBuilder
+                Embed originalEmbed = component.Message.Embeds.First();
+
+                EmbedBuilder newEmbed = new()
                 {
-                    Name = originalEmbed.Author!.Value.Name,
-                    IconUrl = originalEmbed.Author!.Value.IconUrl,
-                },
-                ThumbnailUrl = originalEmbed.Thumbnail.Value.Url,
-                ImageUrl = originalEmbed.Image.Value.Url,
-                Color = originalEmbed.Color.Value,
-            };
-
-            ActionRowComponent components = component.Message.Components.First();
-            ComponentBuilder componentBuilder = new ComponentBuilder();
-
-            foreach (ButtonComponent button in components.Components)
-            {
-                ButtonBuilder newButton = new();
-                if (button.CustomId == "delete")
-                {
-                    newButton.IsDisabled = false;
-                }
-                else
-                {
-                    newButton.IsDisabled = true;
-                }
-
-                newButton.CustomId = button.CustomId;
-                newButton.Label = button.Label;
-                newButton.Style = button.Style;
-
-                componentBuilder.WithButton(newButton);
-            }
-
-            foreach (EmbedField embedField in originalEmbed.Fields)
-            {
-                EmbedFieldBuilder newEmbedField = new EmbedFieldBuilder
-                {
-                    IsInline = embedField.Inline,
-                    Name = embedField.Name,
-                    Value = embedField.Value,
+                    Title = originalEmbed.Title,
+                    Description = "Event has started at " + DateTime.Now,
+                    Author = new EmbedAuthorBuilder
+                    {
+                        Name = originalEmbed.Author!.Value.Name,
+                        IconUrl = originalEmbed.Author!.Value.IconUrl,
+                    },
+                    ThumbnailUrl = originalEmbed.Thumbnail.Value.Url,
+                    ImageUrl = originalEmbed.Image.Value.Url,
+                    Color = originalEmbed.Color.Value,
                 };
 
-                newEmbed.AddField(newEmbedField);
-            }
+                ActionRowComponent components = component.Message.Components.First();
+                ComponentBuilder componentBuilder = new ComponentBuilder();
 
-            await component.UpdateAsync(x =>
-            {
-                x.Embed = newEmbed.Build();
-                x.Components = componentBuilder.Build();
-            });
-
-            if (originalEmbed.Fields.Length is not 0)
-            {
-                bool skip = false;
-                if (originalEmbed.Fields.Length is 1)
+                foreach (ButtonComponent button in components.Components)
                 {
-                    if (originalEmbed.Fields.First().Name == "Custom Message")
+                    ButtonBuilder newButton = new();
+                    if (button.CustomId == "delete")
                     {
-                        skip = true;
+                        newButton.IsDisabled = false;
                     }
+                    else
+                    {
+                        newButton.IsDisabled = true;
+                    }
+
+                    newButton.CustomId = button.CustomId;
+                    newButton.Label = button.Label;
+                    newButton.Style = button.Style;
+
+                    componentBuilder.WithButton(newButton);
                 }
 
-                if (!skip)
+                foreach (EmbedField embedField in originalEmbed.Fields)
                 {
-                    List<string> userMentions = new();
-
-                    foreach (EmbedField embedField in originalEmbed.Fields)
+                    EmbedFieldBuilder newEmbedField = new EmbedFieldBuilder
                     {
-                        if (embedField.Name == "Custom Message")
+                        IsInline = embedField.Inline,
+                        Name = embedField.Name,
+                        Value = embedField.Value,
+                    };
+
+                    newEmbed.AddField(newEmbedField);
+                }
+
+                await component.UpdateAsync(x =>
+                {
+                    x.Embed = newEmbed.Build();
+                    x.Components = componentBuilder.Build();
+                });
+
+                if (originalEmbed.Fields.Length is not 0)
+                {
+                    bool skip = false;
+                    if (originalEmbed.Fields.Length is 1)
+                    {
+                        if (originalEmbed.Fields.First().Name == "Custom Message")
                         {
-                            continue;
+                            skip = true;
+                        }
+                    }
+
+                    if (!skip)
+                    {
+                        List<string> userMentions = new();
+
+                        foreach (EmbedField embedField in originalEmbed.Fields)
+                        {
+                            if (embedField.Name == "Custom Message")
+                            {
+                                continue;
+                            }
+
+                            string playerMention = embedField.Value.Split("\n")[0];
+                            userMentions.Add(playerMention);
                         }
 
-                        string playerMention = embedField.Value.Split("\n")[0];
-                        userMentions.Add(playerMention);
+                        string pingMessage = "Event has started!\n";
+
+                        foreach (string playerMention in userMentions)
+                        {
+                            pingMessage += playerMention + "\n";
+                        }
+
+                        await component.FollowupAsync(pingMessage);
                     }
-
-                    string pingMessage = "Event has started!\n";
-
-                    foreach (string playerMention in userMentions)
-                    {
-                        pingMessage += playerMention + "\n";
-                    }
-
-                    await component.FollowupAsync(pingMessage);
                 }
+
+                return;
             }
+
+            await component.RespondAsync(ephemeral: true, text: "You don't have permissions to start this event!");
         }
     }
 }

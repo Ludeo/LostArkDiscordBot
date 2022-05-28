@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Timers;
 using Discord;
 using Discord.WebSocket;
@@ -14,30 +13,19 @@ namespace LostArkBot.Bot.Modules
     /// </summary>
     public static class StartMerchantModule
     {
-        public static async Task StartMerchantAsync(SocketSlashCommand command)
+        public static void StartMerchantAsync()
         {
             Config config = Config.Default;
-
-            if (command.User.Id != config.AdminId)
-            {
-                await command.RespondAsync(text: "You don't have permissions to execute this command", ephemeral: true);
-                return;
-            }
-
             Timer timer = Program.Timer;
 
             if (timer.Enabled)
             {
-                await command.RespondAsync(text: "Merchant Timer already started", ephemeral: true);
-
                 return;
             }
 
             timer.Interval = 60000;
             timer.Enabled = true;
             timer.Elapsed += OnTimedEvent;
-
-            await command.RespondAsync(text: "Merchant Timer started", ephemeral: true);
         }
 
         private static void OnTimedEvent(object source, ElapsedEventArgs e)

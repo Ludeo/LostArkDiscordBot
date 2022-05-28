@@ -7,6 +7,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using LostArkBot.Bot;
 using LostArkBot.Bot.FileObjects;
+using LostArkBot.Bot.Modules;
 using LostArkBot.Src.Bot;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = System.Timers.Timer;
@@ -71,6 +72,7 @@ namespace LostArkBot
             await Client.SetGameAsync($"Lost Ark || /help");
 
             Client.Ready += this.ClientReady;
+            StartMerchantModule.StartMerchantAsync();
 
             await Task.Delay(Timeout.Infinite);
         }

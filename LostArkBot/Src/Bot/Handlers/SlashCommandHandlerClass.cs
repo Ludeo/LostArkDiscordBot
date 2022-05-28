@@ -11,11 +11,6 @@ namespace LostArkBot.Src.Bot.Handlers
         {
             switch (command.Data.Name)
             {
-                case "startmerchant":
-                    await StartMerchantModule.StartMerchantAsync(command);
-
-                    break;
-
                 case "register":
                     await RegisterModule.RegisterModuleAsync(command);
 
