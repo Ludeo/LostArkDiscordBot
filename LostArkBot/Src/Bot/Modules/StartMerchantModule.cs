@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Timers;
 using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 
 namespace LostArkBot.Bot.Modules
 {
@@ -31,6 +31,8 @@ namespace LostArkBot.Bot.Modules
         private static void OnTimedEvent(object source, ElapsedEventArgs e)
         {
             DateTime time = DateTime.Now;
+            // server is running 1 hour behind CET
+            time.AddHours(-1);
             DiscordSocketClient client = Program.Client;
             Config config = Config.Default;
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Bot.Modules;
 using LostArkBot.Src.Bot.Handlers;
 using Microsoft.Extensions.DependencyInjection;

@@ -33,9 +33,14 @@ namespace LostArkBot.Src.Bot.Menus
                 Color = originalEmbed.Color.Value,
             };
 
+            if (originalEmbed.Timestamp != null)
+            {
+                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
+            }
+
             foreach (EmbedField field in originalEmbed.Fields)
             {
-                if (field.Value.Split("\n")[1].Substring(5) == characterName)
+                if (field.Value.Split("\n")[1][5..] == characterName)
                 {
                     string title = originalEmbed.Title;
                     string title1 = title.Split("(")[1];
@@ -61,6 +66,7 @@ namespace LostArkBot.Src.Bot.Menus
             }
             catch (HttpException exception)
             {
+                await Program.Log(new LogMessage(LogSeverity.Error, "KickCharacterMenu.cs", exception.Message));
             }
         }
     }

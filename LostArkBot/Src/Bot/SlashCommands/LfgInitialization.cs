@@ -13,6 +13,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
                                                             .WithName("custom-message")
                                                             .WithDescription("Custom Message for the event")
                                                             .WithRequired(false)
+                                                            .WithType(ApplicationCommandOptionType.String))
+                                                 .AddOption(new SlashCommandOptionBuilder()
+                                                            .WithName("time")
+                                                            .WithDescription("Time for the event")
+                                                            .WithRequired(false)
                                                             .WithType(ApplicationCommandOptionType.String));
 
             return lfgCommand;

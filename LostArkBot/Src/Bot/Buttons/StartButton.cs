@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +30,13 @@ namespace LostArkBot.Src.Bot.Buttons
                     Color = originalEmbed.Color.Value,
                 };
 
+                if (originalEmbed.Timestamp != null)
+                {
+                    newEmbed.Timestamp = originalEmbed.Timestamp.Value;
+                }
+
                 ActionRowComponent components = component.Message.Components.First();
-                ComponentBuilder componentBuilder = new ComponentBuilder();
+                ComponentBuilder componentBuilder = new();
 
                 foreach (ButtonComponent button in components.Components)
                 {
@@ -54,7 +59,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
                 foreach (EmbedField embedField in originalEmbed.Fields)
                 {
-                    EmbedFieldBuilder newEmbedField = new EmbedFieldBuilder
+                    EmbedFieldBuilder newEmbedField = new()
                     {
                         IsInline = embedField.Inline,
                         Name = embedField.Name,

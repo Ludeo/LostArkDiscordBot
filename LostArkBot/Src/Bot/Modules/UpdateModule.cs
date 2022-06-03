@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace LostArkBot.Bot.Modules
@@ -144,7 +144,7 @@ namespace LostArkBot.Bot.Modules
             embedBuilder.AddField("\u200b", $"Swift: {newCharacter.Swift}\nEnd: {newCharacter.End}\nExp: {newCharacter.Exp}", true);
             embedBuilder.AddField("Custom Message", newCharacter.CustomProfileMessage == string.Empty ? "\u200b" : newCharacter.CustomProfileMessage);
 
-            await command.RespondAsync(text: $"{characterName} got successfully updated", embed: embedBuilder.Build(), ephemeral: true);
+            await command.RespondAsync(text: $"{characterName} got successfully updated", embed: embedBuilder.Build());
         }
     }
 }

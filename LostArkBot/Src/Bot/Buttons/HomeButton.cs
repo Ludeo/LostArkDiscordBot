@@ -36,6 +36,11 @@ namespace LostArkBot.Src.Bot.Buttons
                 };
             }
 
+            if (component.Message.Embeds.First().Timestamp != null)
+            {
+                embed.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+            }
+
             await component.UpdateAsync(x =>
             {
                 x.Embed = embed.Build();

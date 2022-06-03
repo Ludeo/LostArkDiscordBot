@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LostArkBot.Bot.FileObjects
+namespace LostArkBot.Src.Bot.FileObjects
 {
     /// <summary>
     ///     Class that represents the config file for the Bot.

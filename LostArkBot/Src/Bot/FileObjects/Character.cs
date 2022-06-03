@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LostArkBot.Bot.FileObjects
+namespace LostArkBot.Src.Bot.FileObjects
 {
     public class Character
     {

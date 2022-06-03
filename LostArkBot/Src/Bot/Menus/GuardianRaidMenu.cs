@@ -42,6 +42,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     await component.UpdateAsync(x =>
                     {
                         x.Embed = embedBuilder.Build();
@@ -80,6 +85,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder2.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     await component.UpdateAsync(x =>
                     {
                         x.Embed = embedBuilder2.Build();
@@ -113,6 +123,11 @@ namespace LostArkBot.Src.Bot.Menus
                         {
                             Text = component.Message.Embeds.FirstOrDefault().Footer.Value.Text,
                         };
+                    }
+
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder3.Timestamp = component.Message.Embeds.First().Timestamp.Value;
                     }
 
                     await component.UpdateAsync(x =>

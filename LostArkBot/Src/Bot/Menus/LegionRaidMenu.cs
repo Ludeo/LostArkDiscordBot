@@ -40,6 +40,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     await component.UpdateAsync(x =>
                     {
                         x.Embed = embedBuilder.Build();

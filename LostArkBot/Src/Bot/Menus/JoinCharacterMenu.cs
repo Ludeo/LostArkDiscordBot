@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +35,11 @@ namespace LostArkBot.Src.Bot.Menus
                 ImageUrl = originalEmbed.Image.Value.Url,
                 Color = originalEmbed.Color.Value,
             };
+
+            if (originalEmbed.Timestamp != null)
+            {
+                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
+            }
 
             bool addedCharacter = false;
             ulong userId = component.User.Id;
@@ -136,6 +140,7 @@ namespace LostArkBot.Src.Bot.Menus
             }
             catch (HttpException exception)
             {
+                await Program.Log(new LogMessage(LogSeverity.Error, "JoinCharacterMenu.cs", exception.Message));
             }
         }
     }

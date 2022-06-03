@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace LostArkBot.Bot.Modules

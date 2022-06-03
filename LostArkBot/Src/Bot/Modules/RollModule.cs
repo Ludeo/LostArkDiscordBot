@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -23,7 +22,7 @@ namespace LostArkBot.Src.Bot.Modules
             IUserMessage message = messageRaw as IUserMessage;
 
             Embed originalEmbed = message.Embeds.First() as Embed;
-            EmbedBuilder embed = new EmbedBuilder()
+            EmbedBuilder embed = new()
             {
                 Title = "Loot Roll",
                 Description = "Rolls are starting:\n\n",
@@ -41,7 +40,7 @@ namespace LostArkBot.Src.Bot.Modules
                     continue;
                 }
 
-                int randomNumber = Program.random.Next(101);
+                int randomNumber = Program.Random.Next(101);
                 string userName = field.Value.Split("\n")[0];
                 embed.Description += $"{userName} has rolled {randomNumber}\n";
 
@@ -72,7 +71,7 @@ namespace LostArkBot.Src.Bot.Modules
 
                 foreach (string user in usersWon)
                 {
-                    int randomNumber = Program.random.Next(101);
+                    int randomNumber = Program.Random.Next(101);
                     embed.Description += $"{user} has rolled {randomNumber}\n";
 
                     if (randomNumber == highestNumber)

@@ -1,11 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
-using System;
+using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -26,7 +23,7 @@ namespace LostArkBot.Src.Bot.Modules
                 return;
             }
 
-            EmbedBuilder embed = new EmbedBuilder()
+            EmbedBuilder embed = new()
             {
                 Title = "Your characters",
                 Color = Color.DarkPurple,

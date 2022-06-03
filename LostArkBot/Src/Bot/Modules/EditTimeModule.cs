@@ -2,6 +2,7 @@
 using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,17 +11,18 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Modules
 {
-    internal class EditMessageModule
+    internal class EditTimeModule
     {
-        public static async Task EditMessageAsync(SocketSlashCommand command)
+        public static async Task EditTimeAsync(SocketSlashCommand command)
         {
-            if(command.Channel.GetChannelType() != ChannelType.PublicThread) {
+            if (command.Channel.GetChannelType() != ChannelType.PublicThread)
+            {
                 await command.RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
 
-            string customMessage = command.Data.Options.First(x => x.Name == "custom-message").Value.ToString();
+            string time = command.Data.Options.First(x => x.Name == "time").Value.ToString();
 
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
             ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.ThreadId == command.Channel.Id);
@@ -33,7 +35,7 @@ namespace LostArkBot.Src.Bot.Modules
 
             if (command.User.Id != authorId)
             {
-                await command.RespondAsync(text: "Only the Author of the Event can change the custom message", ephemeral: true);
+                await command.RespondAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
 
                 return;
             }
@@ -54,32 +56,27 @@ namespace LostArkBot.Src.Bot.Modules
                 Color = originalEmbed.Color.Value,
             };
 
-            if (originalEmbed.Timestamp != null)
-            {
-                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
-            }
-
-            newEmbed.AddField("Custom Message", customMessage, false);
-
             foreach (EmbedField field in originalEmbed.Fields)
             {
-                if (field.Name == "Custom Message")
-                {
-                    continue;
-                }
-
                 newEmbed.AddField(field.Name, field.Value, field.Inline);
             }
+
+            int month = int.Parse(time.Substring(0, 2));
+            int day = int.Parse(time.Substring(3, 2));
+            int hour = int.Parse(time.Substring(6, 2));
+            int minute = int.Parse(time.Substring(9, 2));
+            DateTimeOffset now = DateTimeOffset.Now;
+            newEmbed.Timestamp = new DateTimeOffset(now.Year, month, day, hour, minute, 0, now.Offset);
 
             await message.ModifyAsync(x => x.Embed = newEmbed.Build());
 
             try
             {
-                await command.RespondAsync(text: "Custom Message updated", ephemeral: true);
+                await command.RespondAsync(text: "Time updated", ephemeral: true);
             }
             catch (HttpException exception)
             {
-                await Program.Log(new LogMessage(LogSeverity.Error, "EditMessageModule.cs", exception.Message));
+                await Program.Log(new LogMessage(LogSeverity.Error, "EditTimeModule.cs", exception.Message));
             }
         }
     }

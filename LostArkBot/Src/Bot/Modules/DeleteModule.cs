@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

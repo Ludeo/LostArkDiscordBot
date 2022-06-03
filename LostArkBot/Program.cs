@@ -6,7 +6,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using LostArkBot.Bot;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Bot.Modules;
 using LostArkBot.Src.Bot;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +29,9 @@ namespace LostArkBot
         /// </summary>
         public static DiscordSocketClient Client { get; private set; }
 
-        public static Random random { get; } = new Random();
+        public static Random Random { get; } = new Random();
 
-        private static Task Log(LogMessage log)
+        public static Task Log(LogMessage log)
         {
             Console.WriteLine(log);
             File.AppendAllText("log.txt", log + "\n");
@@ -43,7 +43,7 @@ namespace LostArkBot
 
         private async Task MainAsync()
         {
-            ServiceProvider services = this.ConfigureServices();
+            ServiceProvider services = ConfigureServices();
 
             Client = services!.GetRequiredService<DiscordSocketClient>();
 

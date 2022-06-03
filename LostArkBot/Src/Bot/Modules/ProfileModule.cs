@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 
 namespace LostArkBot.Bot.Modules
 {

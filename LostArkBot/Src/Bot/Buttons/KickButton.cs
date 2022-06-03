@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,7 +28,7 @@ namespace LostArkBot.Src.Bot.Buttons
                         continue;
                     }
 
-                    menu.AddOption(field.Value.Split("\n")[1].Substring(5), $"{component.Message.Id},{field.Value.Split("\n")[1].Substring(5)}");
+                    menu.AddOption(field.Value.Split("\n")[1][5..], $"{component.Message.Id},{field.Value.Split("\n")[1][5..]}");
                 }
 
                 await component.RespondAsync(components: new ComponentBuilder().WithSelectMenu(menu).Build(), ephemeral: true);

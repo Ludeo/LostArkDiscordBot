@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +17,14 @@ namespace LostArkBot.Src.Bot.Buttons
             if (component.User.Id == component.Message.Interaction.User.Id || Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).GuildPermissions.ManageMessages)
             {
                 List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
-                ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == component.Message.Id);
+                ThreadLinkedMessage linkedMessage = threadLinkedMessageList.FirstOrDefault(x => x.MessageId == component.Message.Id);
+
+                if(linkedMessage == null)
+                {
+                    await component.Message.DeleteAsync();
+
+                    return;
+                }
                 
                 threadLinkedMessageList.Remove(linkedMessage);
                 File.WriteAllText("ThreadMessageLink.json", JsonSerializer.Serialize(threadLinkedMessageList));
@@ -31,6 +37,7 @@ namespace LostArkBot.Src.Bot.Buttons
                     await thread.DeleteAsync();
                 } catch(HttpException exception)
                 {
+                    await Program.Log(new LogMessage(LogSeverity.Error, "DeleteButton.cs", exception.Message));
                 }
                 
                 return;

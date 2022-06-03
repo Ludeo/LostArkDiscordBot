@@ -26,6 +26,11 @@ namespace LostArkBot.Src.Bot.Buttons
                 Color = originalEmbed.Color.Value,
             };
 
+            if (originalEmbed.Timestamp != null)
+            {
+                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
+            }
+
             bool userLeft = false;
 
             foreach (EmbedField embedField in originalEmbed.Fields)

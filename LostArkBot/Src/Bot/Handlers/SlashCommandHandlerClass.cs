@@ -60,6 +60,22 @@ namespace LostArkBot.Src.Bot.Handlers
                     await RollModule.RollAsync(command);
 
                     break;
+                case "updatemeta":
+                    await UpdateMetaModule.UpdateMetaAsync(command);
+
+                    break;
+                case "registermeta":
+                    await RegisterMetaModule.RegisterMetaAsync(command);
+
+                    break;
+                case "edittime":
+                    await EditTimeModule.EditTimeAsync(command);
+
+                    break;
+                case "when":
+                    await WhenModule.WhenAsync(command);
+
+                    break;
             }
         }
     }

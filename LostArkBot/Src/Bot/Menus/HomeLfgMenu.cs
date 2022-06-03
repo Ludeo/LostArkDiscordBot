@@ -32,6 +32,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     SelectMenuBuilder menu = new SelectMenuBuilder()
                                              .WithPlaceholder("Tier of Guardian")
                                              .WithCustomId("guardianraid")
@@ -63,6 +68,11 @@ namespace LostArkBot.Src.Bot.Menus
                         {
                             Text = component.Message.Embeds.FirstOrDefault().Footer.Value.Text,
                         };
+                    }
+
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder2.Timestamp = component.Message.Embeds.First().Timestamp.Value;
                     }
 
                     SelectMenuBuilder menu2 = new SelectMenuBuilder()
@@ -100,6 +110,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder3.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     SelectMenuBuilder menu3 = new SelectMenuBuilder()
                         .WithPlaceholder("Select Abyss Raid")
                         .WithCustomId("abyssraid")
@@ -129,6 +144,11 @@ namespace LostArkBot.Src.Bot.Menus
                         {
                             Text = component.Message.Embeds.FirstOrDefault().Footer.Value.Text,
                         };
+                    }
+
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder4.Timestamp = component.Message.Embeds.First().Timestamp.Value;
                     }
 
                     SelectMenuBuilder menu4 = new SelectMenuBuilder()
@@ -164,6 +184,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder5.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     SelectMenuBuilder menu5 = new SelectMenuBuilder()
                         .WithPlaceholder("Select Tier")
                         .WithCustomId("bossrush")
@@ -195,6 +220,11 @@ namespace LostArkBot.Src.Bot.Menus
                         };
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder6.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     SelectMenuBuilder menu6 = new SelectMenuBuilder()
                         .WithPlaceholder("Select Platinum Field")
                         .WithCustomId("platinumfields")
@@ -224,6 +254,11 @@ namespace LostArkBot.Src.Bot.Menus
                         {
                             Text = component.Message.Embeds.FirstOrDefault().Footer.Value.Text,
                         };
+                    }
+
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embedBuilder7.Timestamp = component.Message.Embeds.First().Timestamp.Value;
                     }
 
                     SelectMenuBuilder menu7 = new SelectMenuBuilder()
@@ -264,6 +299,11 @@ namespace LostArkBot.Src.Bot.Menus
                             Name = "Custom Message",
                             Value = customMessage8,
                         });
+                    }
+
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embed8.Timestamp = component.Message.Embeds.First().Timestamp.Value;
                     }
 
                     embed8.AddField(new EmbedFieldBuilder().WithName($"{component.User.Username} has joined").WithValue($"{component.User.Mention}").WithIsInline(true));
@@ -320,6 +360,11 @@ namespace LostArkBot.Src.Bot.Menus
                         });
                     }
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embed9.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                    }
+
                     embed9.AddField(new EmbedFieldBuilder().WithName($"{component.User.Username} has joined").WithValue($"{component.User.Mention}").WithIsInline(true));
 
                     await component.UpdateAsync(x =>
@@ -365,6 +410,11 @@ namespace LostArkBot.Src.Bot.Menus
                         {
                             Text = component.Message.Embeds.FirstOrDefault().Footer.Value.Text,
                         };
+                    }
+
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embed10.Timestamp = component.Message.Embeds.First().Timestamp.Value;
                     }
 
                     SelectMenuBuilder menu8 = new SelectMenuBuilder()

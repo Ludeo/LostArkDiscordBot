@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.SlashCommands;
 using System;
 using System.Collections.Generic;
@@ -19,10 +19,10 @@ namespace LostArkBot.Src.Bot
 
             try
             {
-                SocketGuild guild = Program.Client.GetGuild(Config.Default.Server);
-
-                //test server
+                // Test server
                 //SocketGuild guild = Program.Client.GetGuild(340543173422088212);
+
+                SocketGuild guild = Program.Client.GetGuild(Config.Default.Server);
 
                 applicationCommandProperties.Add(RegisterInitialization.Register().Build());
 
@@ -43,6 +43,14 @@ namespace LostArkBot.Src.Bot
                 applicationCommandProperties.Add(HelpInitialization.Help().Build());
 
                 applicationCommandProperties.Add(RollInitialization.Roll().Build());
+
+                applicationCommandProperties.Add(UpdateMetaInitialization.UpdateMeta().Build());
+
+                applicationCommandProperties.Add(RegisterMetaInitialization.RegisterMeta().Build());
+
+                applicationCommandProperties.Add(EditTimeInitialization.EditTime().Build());
+
+                applicationCommandProperties.Add(WhenInitialization.When().Build());
 
                 await guild.BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
             }

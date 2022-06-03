@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,6 +34,11 @@ namespace LostArkBot.Src.Bot.Menus
                 ImageUrl = eventImages[abyssDungeonName],
                 Color = Color.Teal,
             };
+
+            if (component.Message.Embeds.First().Timestamp != null)
+            {
+                embed.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+            }
 
             if (!string.IsNullOrEmpty(customMessage))
             {
