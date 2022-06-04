@@ -33,7 +33,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 joinMenu.AddOption(character.CharacterName, $"{component.Message.Id},{character.CharacterName}", $"{character.ClassName}, {character.ItemLevel}");
             }
 
-            await component.RespondAsync(text: "Select your character from the menu", components: new ComponentBuilder().WithSelectMenu(joinMenu).Build(), ephemeral: true);
+            await component.RespondAsync(text: "Select your character from the menu", components: new ComponentBuilder().WithSelectMenu(joinMenu).Build(), ephemeral: true);    
         }
     }
 }

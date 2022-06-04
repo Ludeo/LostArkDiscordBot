@@ -282,7 +282,7 @@ namespace LostArkBot.Src.Bot.Menus
 
                     EmbedBuilder embed8 = new EmbedBuilder()
                     {
-                        Title = "Event Guardian Raid (1/4)",
+                        Title = "Event Guardian Raid (0/4)",
                         Description = "Waiting for members to join",
                         Author = new EmbedAuthorBuilder()
                                      .WithName($"Party Leader: {component.User.Username}")
@@ -292,6 +292,15 @@ namespace LostArkBot.Src.Bot.Menus
                         Color = Color.Red,
                     };
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embed8.AddField(new EmbedFieldBuilder()
+                        {
+                            Name = "Time",
+                            Value = $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:F>"
+                        });
+                    }
+
                     if (!string.IsNullOrEmpty(customMessage8))
                     {
                         embed8.AddField(new EmbedFieldBuilder()
@@ -300,13 +309,6 @@ namespace LostArkBot.Src.Bot.Menus
                             Value = customMessage8,
                         });
                     }
-
-                    if (component.Message.Embeds.First().Timestamp != null)
-                    {
-                        embed8.Timestamp = component.Message.Embeds.First().Timestamp.Value;
-                    }
-
-                    embed8.AddField(new EmbedFieldBuilder().WithName($"{component.User.Username} has joined").WithValue($"{component.User.Mention}").WithIsInline(true));
 
                     await component.UpdateAsync(x =>
                     {
@@ -341,7 +343,7 @@ namespace LostArkBot.Src.Bot.Menus
 
                     EmbedBuilder embed9 = new EmbedBuilder()
                     {
-                        Title = "Coop Battle (1/6)",
+                        Title = "Coop Battle (0/6)",
                         Description = "Waiting for members to join",
                         Author = new EmbedAuthorBuilder()
                                      .WithName($"Party Leader: {component.User.Username}")
@@ -351,6 +353,15 @@ namespace LostArkBot.Src.Bot.Menus
                         Color = Color.Red,
                     };
 
+                    if (component.Message.Embeds.First().Timestamp != null)
+                    {
+                        embed9.AddField(new EmbedFieldBuilder()
+                        {
+                            Name = "Time",
+                            Value = $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:F>"
+                        });
+                    }
+
                     if (!string.IsNullOrEmpty(customMessage9))
                     {
                         embed9.AddField(new EmbedFieldBuilder()
@@ -359,13 +370,6 @@ namespace LostArkBot.Src.Bot.Menus
                             Value = customMessage9,
                         });
                     }
-
-                    if (component.Message.Embeds.First().Timestamp != null)
-                    {
-                        embed9.Timestamp = component.Message.Embeds.First().Timestamp.Value;
-                    }
-
-                    embed9.AddField(new EmbedFieldBuilder().WithName($"{component.User.Username} has joined").WithValue($"{component.User.Mention}").WithIsInline(true));
 
                     await component.UpdateAsync(x =>
                     {

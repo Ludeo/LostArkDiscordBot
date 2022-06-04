@@ -33,13 +33,14 @@ namespace LostArkBot.Src.Bot.Menus
                 Color = originalEmbed.Color.Value,
             };
 
-            if (originalEmbed.Timestamp != null)
-            {
-                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
-            }
-
             foreach (EmbedField field in originalEmbed.Fields)
             {
+                if(field.Name == "Custom Message" || field.Name == "Time")
+                {
+                    newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
+                    continue;
+                }
+
                 if (field.Value.Split("\n")[1][5..] == characterName)
                 {
                     string title = originalEmbed.Title;

@@ -31,7 +31,7 @@ namespace LostArkBot.Src.Bot.Modules
             IUserMessage message = messageRaw as IUserMessage;
             ulong authorId = message.Interaction.User.Id;
 
-            if (command.User.Id != authorId)
+            if (command.User.Id != authorId && !Program.Client.GetGuild(Config.Default.Server).GetUser(command.User.Id).GuildPermissions.ManageMessages)
             {
                 await command.RespondAsync(text: "Only the Author of the Event can change the custom message", ephemeral: true);
 

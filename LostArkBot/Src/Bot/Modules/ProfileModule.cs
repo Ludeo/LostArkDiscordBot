@@ -37,7 +37,7 @@ namespace LostArkBot.Bot.Modules
             embedBuilder.AddField("Class", character.ClassName, true);
 
             string[] engravings = character.Engravings.Split(",");
-            string engraving = string.Empty;
+            string engraving = "\u200b";
 
             foreach (string x in engravings)
             {

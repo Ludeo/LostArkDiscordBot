@@ -16,10 +16,13 @@ namespace LostArkBot.Src.Bot.Buttons
                                                     .AddOption("Guardian Raid", "guardianraid")
                                                     .AddOption("Abyssal Dungeon", "abyssdungeon")
                                                     .AddOption("Abyssal Raid", "abyssraid")
-                                                    .AddOption("Cube Dungeon", "cube")
+                                                    .AddOption("Legion Raid", "legionraid")
+                                                    .AddOption("Cube", "cube")
                                                     .AddOption("Boss Rush", "bossrush")
-                                                    .AddOption("Platinum Fields", "platinum")
-                                                    .AddOption("Chaos Maps", "maps");
+                                                    .AddOption("Platinum Fields", "platinumfields")
+                                                    .AddOption("Chaos Maps", "chaosmaps")
+                                                    .AddOption("Event Guardian Raid", "eventguardianraid")
+                                                    .AddOption("Coop Battle", "coopbattle");
 
             EmbedBuilder embed = new()
             {

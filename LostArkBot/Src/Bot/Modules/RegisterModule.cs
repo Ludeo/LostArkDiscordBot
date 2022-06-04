@@ -27,17 +27,65 @@ namespace LostArkBot.Bot.Modules
 
             string className = command.Data.Options.First(x => x.Name == "class-name").Value.ToString();
             int itemLevel = int.Parse(command.Data.Options.First(x => x.Name == "item-level").Value.ToString()!);
-            string engravings = command.Data.Options.First(x => x.Name == "engravings").Value.ToString();
-            string crit = command.Data.Options.First(x => x.Name == "crit").Value.ToString();
-            string spec = command.Data.Options.First(x => x.Name == "spec").Value.ToString();
-            string dom = command.Data.Options.First(x => x.Name == "dom").Value.ToString();
-            string swift = command.Data.Options.First(x => x.Name == "swift").Value.ToString();
-            string end = command.Data.Options.First(x => x.Name == "end").Value.ToString();
-            string exp = command.Data.Options.First(x => x.Name == "exp").Value.ToString();
 
-            SocketSlashCommandDataOption profilePictureObject =
-                command.Data.Options.FirstOrDefault(x => x.Name == "profile-picture");
+            #region checking for null values
+            SocketSlashCommandDataOption engravingsObject = command.Data.Options.FirstOrDefault(x => x.Name == "engravings");
+            string engravings = "";
 
+            if(engravingsObject is not null)
+            {
+                engravings = engravingsObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption critObject = command.Data.Options.FirstOrDefault(x => x.Name == "crit");
+            string crit = "";
+
+            if (critObject is not null)
+            {
+                crit = critObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption specObject = command.Data.Options.FirstOrDefault(x => x.Name == "spec");
+            string spec = "";
+
+            if (specObject is not null)
+            {
+                spec = specObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption domObject = command.Data.Options.FirstOrDefault(x => x.Name == "dom");
+            string dom = "";
+
+            if (domObject is not null)
+            {
+                dom = domObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption swiftObject = command.Data.Options.FirstOrDefault(x => x.Name == "swift");
+            string swift = "";
+
+            if (swiftObject is not null)
+            {
+                swift = swiftObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption endObject = command.Data.Options.FirstOrDefault(x => x.Name == "end");
+            string end = "";
+
+            if (endObject is not null)
+            {
+                end = endObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption expObject = command.Data.Options.FirstOrDefault(x => x.Name == "exp");
+            string exp = "";
+
+            if (expObject is not null)
+            {
+                exp = expObject.Value.ToString();
+            }
+
+            SocketSlashCommandDataOption profilePictureObject = command.Data.Options.FirstOrDefault(x => x.Name == "profile-picture");
             string profilePicture = "";
 
             if (profilePictureObject is not null)
@@ -45,15 +93,14 @@ namespace LostArkBot.Bot.Modules
                 profilePicture = profilePictureObject.Value.ToString();
             }
 
-            SocketSlashCommandDataOption profileMessageObject =
-                command.Data.Options.FirstOrDefault(x => x.Name == "custom-profile-message");
-
+            SocketSlashCommandDataOption profileMessageObject = command.Data.Options.FirstOrDefault(x => x.Name == "custom-profile-message");
             string customMessage = "";
 
             if (profileMessageObject is not null)
             {
                 customMessage = profileMessageObject.Value.ToString();
             }
+            #endregion
 
             Character newCharacter = new()
             {
@@ -88,7 +135,7 @@ namespace LostArkBot.Bot.Modules
             embedBuilder.AddField("Class", className, true);
 
             string[] engravings2 = engravings.Split(",");
-            string engraving = string.Empty;
+            string engraving = "\u200b";
 
             foreach (string x in engravings2)
             {

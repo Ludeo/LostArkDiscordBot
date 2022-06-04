@@ -76,6 +76,10 @@ namespace LostArkBot.Src.Bot.Handlers
                     await WhenModule.WhenAsync(command);
 
                     break;
+                case "profilemeta":
+                    await ProfileMetaModule.ProfileMetaModuleAsync(command);
+
+                    break;
             }
         }
     }

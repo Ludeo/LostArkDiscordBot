@@ -33,7 +33,7 @@ namespace LostArkBot.Src.Bot.Modules
             IUserMessage message = messageRaw as IUserMessage;
             ulong authorId = message.Interaction.User.Id;
 
-            if (command.User.Id != authorId)
+            if (command.User.Id != authorId && !Program.Client.GetGuild(Config.Default.Server).GetUser(command.User.Id).GuildPermissions.ManageMessages)
             {
                 await command.RespondAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
 
@@ -58,21 +58,37 @@ namespace LostArkBot.Src.Bot.Modules
 
             foreach (EmbedField field in originalEmbed.Fields)
             {
-                newEmbed.AddField(field.Name, field.Value, field.Inline);
-            }
+                string value = field.Value;
 
-            int month = int.Parse(time.Substring(0, 2));
-            int day = int.Parse(time.Substring(3, 2));
-            int hour = int.Parse(time.Substring(6, 2));
-            int minute = int.Parse(time.Substring(9, 2));
-            DateTimeOffset now = DateTimeOffset.Now;
-            newEmbed.Timestamp = new DateTimeOffset(now.Year, month, day, hour, minute, 0, now.Offset);
+                if(field.Name == "Time")
+                {
+                    DateTimeOffset now = DateTimeOffset.Now;
+                    int day = int.Parse(time[..2]);
+                    int month = int.Parse(time.Substring(3, 2));
+                    int hour = int.Parse(time.Substring(6, 2));
+                    int minute = int.Parse(time.Substring(9, 2));
+                    int year = now.Year;
+
+                    if(month < now.Month)
+                    {
+                        year += 1;
+                    }
+
+                    DateTimeOffset newDateTime = new(year, month, day, hour, minute, 0, now.Offset);
+
+                    value = $"<t:{newDateTime.ToUnixTimeSeconds()}:F>";
+                }
+
+                newEmbed.AddField(field.Name, value, field.Inline);
+            }
 
             await message.ModifyAsync(x => x.Embed = newEmbed.Build());
 
+            await command.Channel.SendMessageAsync(text: "Time updated @everyone");
+
             try
             {
-                await command.RespondAsync(text: "Time updated", ephemeral: true);
+                await command.RespondAsync("\u200b");
             }
             catch (HttpException exception)
             {

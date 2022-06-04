@@ -14,7 +14,9 @@ namespace LostArkBot.Src.Bot.Buttons
             {
                 Embed originalEmbed = component.Message.Embeds.First();
 
-                if (originalEmbed.Fields.Length == 0 || (originalEmbed.Fields.Length == 1 && originalEmbed.Fields.First().Name == "Custom Message"))
+                if (originalEmbed.Fields.Length == 0
+                    || (originalEmbed.Fields.Length == 1 && (originalEmbed.Fields.First().Name == "Custom Message" || originalEmbed.Fields.First().Name == "Time"))
+                    || (originalEmbed.Fields.Length == 2 && originalEmbed.Fields.Any(x => x.Name == "Custom Message") && originalEmbed.Fields.Any(x => x.Name == "Time")))
                 {
                     await component.RespondAsync(text: "There is nobody to kick", ephemeral: true);
                 }
@@ -23,7 +25,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
                 foreach (EmbedField field in originalEmbed.Fields)
                 {
-                    if (field.Name == "Custom Message")
+                    if (field.Name == "Custom Message" || field.Name == "Time")
                     {
                         continue;
                     }

@@ -52,6 +52,8 @@ namespace LostArkBot.Src.Bot
 
                 applicationCommandProperties.Add(WhenInitialization.When().Build());
 
+                applicationCommandProperties.Add(ProfileMetaInitialization.ProfileMeta().Build());
+
                 await guild.BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
             }
             catch (HttpException exception)

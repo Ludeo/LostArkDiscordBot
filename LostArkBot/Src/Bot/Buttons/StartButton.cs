@@ -80,7 +80,13 @@ namespace LostArkBot.Src.Bot.Buttons
                     bool skip = false;
                     if (originalEmbed.Fields.Length is 1)
                     {
-                        if (originalEmbed.Fields.First().Name == "Custom Message")
+                        if (originalEmbed.Fields.First().Name == "Custom Message" || originalEmbed.Fields.First().Name == "Time")
+                        {
+                            skip = true;
+                        }
+                    } else if(originalEmbed.Fields.Length is 2)
+                    {
+                        if(originalEmbed.Fields.Any(x => x.Name == "Custom Message") && originalEmbed.Fields.Any(x => x.Name == "Time"))
                         {
                             skip = true;
                         }
@@ -92,7 +98,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
                         foreach (EmbedField embedField in originalEmbed.Fields)
                         {
-                            if (embedField.Name == "Custom Message")
+                            if (embedField.Name == "Custom Message" || embedField.Name == "Time")
                             {
                                 continue;
                             }

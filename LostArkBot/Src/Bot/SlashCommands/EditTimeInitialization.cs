@@ -11,7 +11,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                                                  .WithDescription("Edits the time of an LFG event")
                                                  .AddOption(new SlashCommandOptionBuilder()
                                                             .WithName("time")
-                                                            .WithDescription("Time of the event in the format MM/DD hh:mm")
+                                                            .WithDescription("Time of the event in the format DD/MM hh:mm")
                                                             .WithRequired(true)
                                                             .WithType(ApplicationCommandOptionType.String));
 

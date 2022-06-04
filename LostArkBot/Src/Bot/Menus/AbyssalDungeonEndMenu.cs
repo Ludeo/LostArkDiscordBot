@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,11 +15,11 @@ namespace LostArkBot.Src.Bot.Menus
         {
             string abyssDungeonName = component.Data.Values.First();
             string customMessage = component.Message.Embeds.First().Footer == null ? null : component.Message.Embeds.First().Footer.Value.Text;
-            string playerNumbers = "(1/4)";
+            string playerNumbers = "(0/4)";
 
             if (component.Data.CustomId == "feitondungeon")
             {
-                playerNumbers = "(1/8)";
+                playerNumbers = "(0/8)";
             }
 
             EmbedBuilder embed = new EmbedBuilder()
@@ -37,7 +36,11 @@ namespace LostArkBot.Src.Bot.Menus
 
             if (component.Message.Embeds.First().Timestamp != null)
             {
-                embed.Timestamp = component.Message.Embeds.First().Timestamp.Value;
+                embed.AddField(new EmbedFieldBuilder()
+                {
+                    Name = "Time",
+                    Value = $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:F>"
+                });
             }
 
             if (!string.IsNullOrEmpty(customMessage))
@@ -48,8 +51,6 @@ namespace LostArkBot.Src.Bot.Menus
                     Value = customMessage,
                 });
             }
-
-            embed.AddField(new EmbedFieldBuilder().WithName($"{component.User.Username} has joined").WithValue($"{component.User.Mention}").WithIsInline(true));
 
             await component.UpdateAsync(x =>
             {

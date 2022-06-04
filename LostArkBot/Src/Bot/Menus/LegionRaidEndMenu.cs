@@ -18,7 +18,7 @@ namespace LostArkBot.Src.Bot.Menus
 
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Title = $"[Legion Raid] {legionRaidName} (1/8)",
+                Title = $"[Legion Raid] {legionRaidName} (0/8)",
                 Description = "Waiting for members to join",
                 Author = new EmbedAuthorBuilder()
                              .WithName($"Party Leader: {component.User.Username}")
@@ -28,6 +28,15 @@ namespace LostArkBot.Src.Bot.Menus
                 Color = Color.Teal,
             };
 
+            if (component.Message.Embeds.First().Timestamp != null)
+            {
+                embed.AddField(new EmbedFieldBuilder()
+                {
+                    Name = "Time",
+                    Value = $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:F>"
+                });
+            }
+
             if (!string.IsNullOrEmpty(customMessage))
             {
                 embed.AddField(new EmbedFieldBuilder()
@@ -36,13 +45,6 @@ namespace LostArkBot.Src.Bot.Menus
                     Value = customMessage,
                 });
             }
-
-            if (component.Message.Embeds.First().Timestamp != null)
-            {
-                embed.Timestamp = component.Message.Embeds.First().Timestamp.Value;
-            }
-
-            embed.AddField(new EmbedFieldBuilder().WithName($"{component.User.Username} has joined").WithValue($"{component.User.Mention}").WithIsInline(true));
 
             await component.UpdateAsync(x =>
             {

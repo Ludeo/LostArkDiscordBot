@@ -49,8 +49,8 @@ namespace LostArkBot.Bot.Modules
 
             if(time is not null)
             {
-                int month = int.Parse(time.Substring(0, 2));
-                int day = int.Parse(time.Substring(3, 2));
+                int day = int.Parse(time.Substring(0, 2));
+                int month = int.Parse(time.Substring(3, 2));
                 int hour = int.Parse(time.Substring(6, 2));
                 int minute = int.Parse(time.Substring(9, 2));
                 DateTimeOffset now = DateTimeOffset.Now;

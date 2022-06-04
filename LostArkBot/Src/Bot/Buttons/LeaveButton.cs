@@ -26,11 +26,6 @@ namespace LostArkBot.Src.Bot.Buttons
                 Color = originalEmbed.Color.Value,
             };
 
-            if (originalEmbed.Timestamp != null)
-            {
-                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
-            }
-
             bool userLeft = false;
 
             foreach (EmbedField embedField in originalEmbed.Fields)
@@ -42,7 +37,7 @@ namespace LostArkBot.Src.Bot.Buttons
                     userLeft = true;
                     continue;
                 }
-                if (embedField.Name.Contains("Custom Message"))
+                if (embedField.Name.Contains("Custom Message") || embedField.Name.Contains("Time"))
                 {
                     newEmbed.AddField(embedField.Name, embedField.Value, false);
                 }

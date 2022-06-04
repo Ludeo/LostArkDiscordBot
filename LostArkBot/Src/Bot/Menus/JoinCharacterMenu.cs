@@ -36,11 +36,6 @@ namespace LostArkBot.Src.Bot.Menus
                 Color = originalEmbed.Color.Value,
             };
 
-            if (originalEmbed.Timestamp != null)
-            {
-                newEmbed.Timestamp = originalEmbed.Timestamp.Value;
-            }
-
             bool addedCharacter = false;
             ulong userId = component.User.Id;
             string userMention = component.User.Mention;
@@ -78,7 +73,7 @@ namespace LostArkBot.Src.Bot.Menus
                 }
                 else
                 {
-                    if (originalEmbedField.Name.Contains("Custom Message"))
+                    if (originalEmbedField.Name.Contains("Custom Message") || originalEmbedField.Name.Contains("Time"))
                     {
                         newEmbed.AddField(originalEmbedField.Name, originalEmbedField.Value, false);
                     }

@@ -30,20 +30,36 @@ namespace LostArkBot.Src.Bot.Modules
             IUserMessage message = messageRaw as IUserMessage;
 
             Embed embed = message.Embeds.First() as Embed;
+            EmbedField timeField = new();
 
-            if(embed.Timestamp == null)
+            foreach(EmbedField field in embed.Fields)
+            {
+                if(field.Name == "Time")
+                {
+                    timeField = field;
+                }
+            }
+
+            if(string.IsNullOrEmpty(timeField.Name))
             {
                 await command.RespondAsync(text: "This event doesn't have a time set", ephemeral: true);
 
                 return;
             }
 
-            DateTimeOffset time = embed.Timestamp.Value;
+            long unixSeconds = long.Parse(timeField.Value.Replace("<t:", "").Replace(":F>", ""));
+
+            DateTimeOffset time = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
             DateTimeOffset now = DateTimeOffset.Now;
             TimeSpan difference = time - now;
 
-            await command.RespondAsync("The event starts at " + time.ToString("MM/dd hh:mm tt") + "\n\nThat's in " + difference.Hours + " hours and " + difference.Minutes + " minutes",
-                ephemeral: true);
+            if(time.ToUnixTimeSeconds() < now.ToUnixTimeSeconds())
+            {
+                await command.RespondAsync("This event has already started");
+            } else
+            {
+                await command.RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's in {difference.Days} days, {difference.Hours} hours and {difference.Minutes} minutes");
+            }
         }
     }
 }
