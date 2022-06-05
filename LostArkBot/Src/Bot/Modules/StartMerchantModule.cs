@@ -15,6 +15,8 @@ namespace LostArkBot.Bot.Modules
     {
         public static void StartMerchantAsync()
         {
+            Console.WriteLine("Merchant got initialized");
+
             Config config = Config.Default;
             Timer timer = Program.Timer;
 
