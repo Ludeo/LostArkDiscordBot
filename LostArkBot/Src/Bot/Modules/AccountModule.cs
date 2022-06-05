@@ -28,12 +28,22 @@ namespace LostArkBot.Src.Bot.Modules
             {
                 Title = "Your characters",
                 Color = Color.DarkPurple,
-                Description = "\n",
+                Description = "\u200b",
+                ThumbnailUrl = command.User.GetAvatarUrl(),
             };
+
+            List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
 
             foreach (Character character in characters)
             {
-                embed.Description += character.CharacterName + "\n";
+                GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+
+                embed.AddField(new EmbedFieldBuilder()
+                {
+                    Name = character.CharacterName,
+                    Value = $"<:{emote.Name}:{emote.Id}> {character.ClassName}\n{character.ItemLevel}",
+                    IsInline = true,
+                });
             }
 
             await command.RespondAsync(embed: embed.Build(), ephemeral: true);
@@ -54,14 +64,24 @@ namespace LostArkBot.Src.Bot.Modules
 
             EmbedBuilder embed = new()
             {
-                Title = "Characters of " + command.Data.Member.Username,
+                Title = "Characters assigned to " + Program.Client.GetGuild(Config.Default.Server).GetUser(command.Data.Member.Id).DisplayName,
                 Color = Color.DarkPurple,
-                Description = "\n",
+                Description = "\u200b",
+                ThumbnailUrl = command.Data.Member.GetAvatarUrl(),
             };
+
+            List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
 
             foreach (Character character in characters)
             {
-                embed.Description += character.CharacterName + "\n";
+                GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+
+                embed.AddField(new EmbedFieldBuilder()
+                {
+                    Name = character.CharacterName,
+                    Value = $"<:{emote.Name}:{emote.Id}> {character.ClassName}\n{character.ItemLevel}",
+                    IsInline = true,
+                });
             }
 
             await command.RespondAsync(embed: embed.Build(), ephemeral: true);

@@ -23,6 +23,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                                                                  .AddChoice("Berserker", "Berserker")
                                                                  .AddChoice("Deadeye", "Deadeye")
                                                                  .AddChoice("Deathblade", "Deathblade")
+                                                                 .AddChoice("Destroyer", "Destroyer")
                                                                  .AddChoice("Glaivier", "Glaivier")
                                                                  .AddChoice("Gunlancer", "Gunlancer")
                                                                  .AddChoice("Gunslinger", "Gunslinger")
