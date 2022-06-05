@@ -1,21 +1,21 @@
 ﻿using Discord;
 
-namespace LostArkBot.Src.Bot.SlashCommands
+namespace LostArkBot.Src.Bot.SlashCommandsOld
 {
-    internal class ProfileInitialization
+    internal class DeleteInitialization
     {
-        public static SlashCommandBuilder Profile()
+        public static SlashCommandBuilder Delete()
         {
-            SlashCommandBuilder profileCommand = new SlashCommandBuilder()
-                                                     .WithName("profile")
-                                                     .WithDescription("Shows the profile of the character")
+            SlashCommandBuilder deleteCommand = new SlashCommandBuilder()
+                                                     .WithName("delete")
+                                                     .WithDescription("Deletes the character")
                                                      .AddOption(new SlashCommandOptionBuilder()
                                                                 .WithName("character-name")
                                                                 .WithDescription("Name of the character")
                                                                 .WithRequired(true)
                                                                 .WithType(ApplicationCommandOptionType.String));
 
-            return profileCommand;
+            return deleteCommand;
         }
     }
 }

@@ -7,31 +7,25 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.MenusOld
 {
-    internal class AbyssalDungeonEndMenu
+    internal class CubeEndMenu
     {
-        public static async Task AbyssalDungeonEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
+        public static async Task CubeEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
         {
-            string abyssDungeonName = component.Data.Values.First();
+            string cubeName = component.Data.Values.First();
             string customMessage = component.Message.Embeds.First().Footer == null ? null : component.Message.Embeds.First().Footer.Value.Text;
-            string playerNumbers = "(0/4)";
-
-            if (component.Data.CustomId == "feitondungeon")
-            {
-                playerNumbers = "(0/8)";
-            }
 
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Title = $"[Abyssal Dungeon] {abyssDungeonName} {playerNumbers}",
+                Title = $"[Cube] {cubeName} (0/4)",
                 Description = "Waiting for members to join",
                 Author = new EmbedAuthorBuilder()
                              .WithName($"Party Leader: {component.User.Username}")
                              .WithIconUrl(Program.Client.GetUser(component.User.Id).GetAvatarUrl()),
-                ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
-                ImageUrl = eventImages[abyssDungeonName],
-                Color = Color.Teal,
+                ThumbnailUrl = StaticObjects.cubeIconUrl,
+                ImageUrl = eventImages[cubeName],
+                Color = Color.Red,
             };
 
             if (component.Message.Embeds.First().Timestamp != null)
@@ -66,7 +60,7 @@ namespace LostArkBot.Src.Bot.Menus
             });
 
             ITextChannel textChannel = (ITextChannel)component.Message.Channel;
-            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: abyssDungeonName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
+            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: cubeName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
 
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
 

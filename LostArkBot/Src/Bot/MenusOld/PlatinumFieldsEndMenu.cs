@@ -7,25 +7,25 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.MenusOld
 {
-    internal class ChaosMapsEndMenu
+    internal class PlatinumFieldsEndMenu
     {
-        public static async Task ChaosMapsEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
+        public static async Task PlatinumFieldsEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
         {
-            string chaosMapTier = component.Data.Values.First();
+            string platinumFieldName = component.Data.Values.First();
             string customMessage = component.Message.Embeds.First().Footer == null ? null : component.Message.Embeds.First().Footer.Value.Text;
 
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Title = $"[Chaos Maps] {chaosMapTier} (0/4)",
+                Title = $"[Platinum Fields] {platinumFieldName} (0/4)",
                 Description = "Waiting for members to join",
                 Author = new EmbedAuthorBuilder()
                              .WithName($"Party Leader: {component.User.Username}")
                              .WithIconUrl(Program.Client.GetUser(component.User.Id).GetAvatarUrl()),
-                ThumbnailUrl = StaticObjects.chaosMapsIconUrl,
-                ImageUrl = eventImages["chaosMaps"],
-                Color = Color.Gold,
+                ThumbnailUrl = StaticObjects.platinumFieldsIconUrl,
+                ImageUrl = eventImages[platinumFieldName],
+                Color = Color.Green,
             };
 
             if (component.Message.Embeds.First().Timestamp != null)
@@ -60,7 +60,7 @@ namespace LostArkBot.Src.Bot.Menus
             });
 
             ITextChannel textChannel = (ITextChannel)component.Message.Channel;
-            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: "Chaos Maps " + chaosMapTier, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
+            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: platinumFieldName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
 
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
 

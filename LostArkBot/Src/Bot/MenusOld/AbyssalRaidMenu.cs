@@ -5,30 +5,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.MenusOld
 {
-    internal class LegionRaidMenu
+    internal class AbyssalRaidMenu
     {
-        public static async Task LegionRaid(SocketMessageComponent component, Dictionary<string, string> eventImages)
+        public static async Task AbyssalRaid(SocketMessageComponent component, Dictionary<string, string> eventImages)
         {
             switch (component.Data.Values.First())
             {
-                case "valtan":
+                case "argos":
                     SelectMenuBuilder menu = new SelectMenuBuilder()
-                                             .WithPlaceholder("Select Valtan Gate and Difficulty")
-                                             .WithCustomId("valtan")
-                                             .AddOption("Valtan Full [Normal]", "Valtan Full [Normal]", "Item Level: 1415")
-                                             .AddOption("Valtan Gate 1 [Normal]", "Valtan Gate 1 [Normal]", "Item Level: 1415")
-                                             .AddOption("Valtan Gate 2 [Normal]", "Valtan Gate 2 [Normal]", "Item Level: 1415")
-                                             .AddOption("Valtan Full [Hard]", "Valtan Full [Hard]", "Item Level: 1445")
-                                             .AddOption("Valtan Gate 1 [Hard]", "Valtan Gate 1 [Hard]", "Item Level: 1445")
-                                             .AddOption("Valtan Gate 2 [Hard]", "Valtan Gate 2 [Hard]", "Item Level: 1415");
+                                             .WithPlaceholder("Select Argos Phase")
+                                             .WithCustomId("argos")
+                                             .AddOption("Argos Phase 1", "Argos Phase 1", "Item Level: 1370")
+                                             .AddOption("Argos Phase 2", "Argos Phase 2", "Item Level: 1385")
+                                             .AddOption("Argos Phase 3", "Argos Phase 3", "Item Level: 1400");
 
                     EmbedBuilder embedBuilder = new EmbedBuilder()
                     {
-                        Title = "Valtan",
-                        Description = "Select the Valtan Gate and Difficulty you want to do",
-                        ThumbnailUrl = StaticObjects.legionRaidIconUrl,
+                        Title = "Argos",
+                        Description = "Select the Argos Phase you want to do",
+                        ThumbnailUrl = StaticObjects.abyssRaidIconUrl,
                         Color = Color.Teal,
                     };
 

@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace LostArkBot.Src.Bot.SlashCommands
+namespace LostArkBot.Src.Bot.SlashCommandsOld
 {
     internal class EditTimeInitialization
     {

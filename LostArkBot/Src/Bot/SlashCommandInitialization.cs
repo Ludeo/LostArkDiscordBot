@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Net;
-using LostArkBot.Src.Bot.SlashCommands;
+using LostArkBot.Src.Bot.SlashCommandsOld;
 using System;
 using System.Collections.Generic;
 using System.IO;

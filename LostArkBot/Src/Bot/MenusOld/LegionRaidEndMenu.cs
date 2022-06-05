@@ -7,25 +7,25 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.MenusOld
 {
-    internal class GuardianRaidEndMenu
+    internal class LegionRaidEndMenu
     {
-        public static async Task GuardianRaidEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
+        public static async Task LegionRaidEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
         {
-            string guardianName = component.Data.Values.First();
+            string legionRaidName = component.Data.Values.First();
             string customMessage = component.Message.Embeds.First().Footer == null ? null : component.Message.Embeds.First().Footer.Value.Text;
 
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Title = $"[Guardian Raid] {guardianName} (0/4)",
+                Title = $"[Legion Raid] {legionRaidName} (0/8)",
                 Description = "Waiting for members to join",
                 Author = new EmbedAuthorBuilder()
                              .WithName($"Party Leader: {component.User.Username}")
                              .WithIconUrl(Program.Client.GetUser(component.User.Id).GetAvatarUrl()),
-                ThumbnailUrl = StaticObjects.guardianIconUrl,
-                ImageUrl = eventImages[guardianName],
-                Color = Color.Red,
+                ThumbnailUrl = StaticObjects.legionRaidIconUrl,
+                ImageUrl = eventImages[legionRaidName],
+                Color = Color.Teal,
             };
 
             if (component.Message.Embeds.First().Timestamp != null)
@@ -60,7 +60,7 @@ namespace LostArkBot.Src.Bot.Menus
             });
 
             ITextChannel textChannel = (ITextChannel)component.Message.Channel;
-            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: guardianName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
+            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: legionRaidName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
 
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
 

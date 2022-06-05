@@ -1,56 +1,93 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Bot.Modules;
-using LostArkBot.Src.Bot.Handlers;
-using Microsoft.Extensions.DependencyInjection;
-using IResult = Discord.Commands.IResult;
+using Discord.Interactions;
 
 namespace LostArkBot.Bot
 {
-    /// <summary>
-    ///     Service that handles the commands for discord.
-    /// </summary>
     public class CommandHandlingService
     {
-        private static DiscordSocketClient client;
-        private static CommandService commands;
-        private static IServiceProvider services;
+        private readonly DiscordSocketClient client;
+        private readonly InteractionService commands;
+        private readonly IServiceProvider services;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="CommandHandlingService"/> class.
-        /// </summary>
-        /// <param name="services"> The service provider of the services. </param>
-        public CommandHandlingService(IServiceProvider services)
+        public CommandHandlingService(InteractionService commands, DiscordSocketClient client, IServiceProvider services)
         {
-            CommandHandlingService.services = services;
-
-            client = services!.GetRequiredService<DiscordSocketClient>();
-            commands = services.GetRequiredService<CommandService>();
-
-            commands.CommandExecuted += CommandExecutedAsync;
-            client.MessageReceived += this.MessagedReceivedAsync;
-            client.SlashCommandExecuted += SlashCommandHandlerClass.SlashCommandHandler;
-            client.ButtonExecuted += ButtonHandlerClass.ButtonHandler;
-            client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
-            client.UserCommandExecuted += UserCommandHandlerClass.UserCommandHandler;
+            this.services = services;
+            this.client = client;
+            this.commands = commands;
         }
 
-        /// <summary>
-        ///     Initializes the CommandHandlingService.
-        /// </summary>
-        /// <returns> An empty task. </returns>
-        public async Task InitializeAsync() => await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+        public async Task Initialize() 
+        {
+            try
+            {
+                await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
+                client.InteractionCreated += InteractionCreated;
+                client.ButtonExecuted += ButtonExecuted;
+                client.Ready += Ready;
+                client.MessageReceived += MessagedReceivedAsync;
+                commands.SlashCommandExecuted += SlashCommandExecuted;
+                commands.AutocompleteHandlerExecuted += AutoCompleteHandlerExecuted;
+            } catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private Task AutoCompleteHandlerExecuted(IAutocompleteHandler arg1, IInteractionContext arg2, IResult arg3)
+        {
+            return Task.CompletedTask;
+        }
+
+        private async Task Ready()
+        {
+            await RegisterCommands();
+            client.Ready -= Ready;
+        }
+
+        private async Task RegisterCommands()
+        {
+            try
+            {
+                Console.WriteLine("registering commands");
+                await commands.RegisterCommandsToGuildAsync(Config.Default.Server);
+            } catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private async Task ButtonExecuted(SocketMessageComponent arg)
+        {
+            var ctx = new SocketInteractionContext<SocketMessageComponent>(client, arg);
+            await commands.ExecuteCommandAsync(ctx, services);
+        }
+
+        private async Task InteractionCreated(SocketInteraction arg)
+        {
+            try
+            {
+                var ctx = new SocketInteractionContext(client, arg);
+                var result = await commands.ExecuteCommandAsync(ctx, services);
+            } catch(Exception)
+            {
+                throw;
+            }
+        }
+
+        private Task SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        {
+            Console.WriteLine("command got executed");
+            return Task.CompletedTask;
+        }
 
         private async Task MessagedReceivedAsync(SocketMessage rawMessage)
         {
-            int argPos = 0;
-
             SocketGuildChannel channel = rawMessage.Channel as SocketGuildChannel;
 
             if (rawMessage.Channel.Id == Config.Default.MerchantChannel && channel.Guild.Id == Config.Default.Server)
@@ -58,16 +95,9 @@ namespace LostArkBot.Bot
                 PingMerchantRolesModule rolesModule = new();
                 await rolesModule.StartPingMerchantRolesAsync(rawMessage);
             }
-
-            if (rawMessage is SocketUserMessage { Source: MessageSource.User } message && message.HasStringPrefix(Config.Default.Prefix, ref argPos))
-            {
-                SocketCommandContext context = new(client, message);
-
-                await commands.ExecuteAsync(context, argPos, services);
-            }
         }
 
-        private static async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        /*private static async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
             string message = context.Message.ToString();
 
@@ -91,6 +121,6 @@ namespace LostArkBot.Bot
                 Console.WriteLine(errorLog + " || " + result);
                 await File.AppendAllTextAsync("log.txt", errorLog + " || " + result + "\n");
             }
-        }
+        }*/
     }
 }

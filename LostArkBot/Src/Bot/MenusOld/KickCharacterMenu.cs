@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.MenusOld
 {
     internal class KickCharacterMenu
     {
@@ -35,7 +35,7 @@ namespace LostArkBot.Src.Bot.Menus
 
             foreach (EmbedField field in originalEmbed.Fields)
             {
-                if(field.Name == "Custom Message" || field.Name == "Time")
+                if (field.Name == "Custom Message" || field.Name == "Time")
                 {
                     newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
                     continue;

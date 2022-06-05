@@ -7,24 +7,24 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.MenusOld
 {
-    internal class LegionRaidEndMenu
+    internal class AbyssalRaidEndMenu
     {
-        public static async Task LegionRaidEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
+        public static async Task AbyssalRaidEnd(SocketMessageComponent component, Dictionary<string, string> eventImages)
         {
-            string legionRaidName = component.Data.Values.First();
+            string abyssRaidName = component.Data.Values.First();
             string customMessage = component.Message.Embeds.First().Footer == null ? null : component.Message.Embeds.First().Footer.Value.Text;
 
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Title = $"[Legion Raid] {legionRaidName} (0/8)",
+                Title = $"[Abyssal Raid] {abyssRaidName} (0/8)",
                 Description = "Waiting for members to join",
                 Author = new EmbedAuthorBuilder()
                              .WithName($"Party Leader: {component.User.Username}")
                              .WithIconUrl(Program.Client.GetUser(component.User.Id).GetAvatarUrl()),
-                ThumbnailUrl = StaticObjects.legionRaidIconUrl,
-                ImageUrl = eventImages[legionRaidName],
+                ThumbnailUrl = StaticObjects.abyssRaidIconUrl,
+                ImageUrl = eventImages[abyssRaidName],
                 Color = Color.Teal,
             };
 
@@ -60,7 +60,7 @@ namespace LostArkBot.Src.Bot.Menus
             });
 
             ITextChannel textChannel = (ITextChannel)component.Message.Channel;
-            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: legionRaidName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
+            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: abyssRaidName, message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
 
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
 

@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using LostArkBot.Bot;
 using LostArkBot.Src.Bot.FileObjects;
@@ -12,22 +11,14 @@ using LostArkBot.Src.Bot;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = System.Timers.Timer;
 using System.Collections.Generic;
+using Discord.Interactions;
 
 namespace LostArkBot
 {
-    /// <summary>
-    ///     Class that gets executed when the program starts, it also starts up the bot.
-    /// </summary>
     public class Program
     {
-        /// <summary>
-        ///     Gets the timer that is needed for the score tracking.
-        /// </summary>
         public static Timer Timer { get; } = new();
 
-        /// <summary>
-        ///     Gets the discord client.
-        /// </summary>
         public static DiscordSocketClient Client { get; private set; }
 
         public static Random Random { get; } = new Random();
@@ -40,16 +31,20 @@ namespace LostArkBot
             return Task.CompletedTask;
         }
 
-        private static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
+        private static void Main() => MainAsync().GetAwaiter().GetResult();
 
-        private async Task MainAsync()
+        private static async Task MainAsync()
         {
             ServiceProvider services = ConfigureServices();
 
-            Client = services!.GetRequiredService<DiscordSocketClient>();
+            Client = services.GetRequiredService<DiscordSocketClient>();
+            InteractionService commands = services.GetRequiredService<InteractionService>();
+            CommandHandlingService commandHandlingService = services.GetRequiredService<CommandHandlingService>();
+
+            await commandHandlingService.Initialize();
 
             Client.Log += Log;
-            services!.GetRequiredService<CommandService>().Log += Log;
+            commands.Log += Log;
 
             Config config = Config.Default;
 
@@ -65,22 +60,16 @@ namespace LostArkBot
 
             await Client.LoginAsync(TokenType.Bot, token);
             await Client.StartAsync();
-
-            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-
-            string prefix = config.Prefix;
-
             await Client.SetGameAsync($"Lost Ark || /help");
 
-            Client.Ready += this.ClientReady;
             StartMerchantModule.StartMerchantAsync();
 
             await Task.Delay(Timeout.Infinite);
         }
 
-        private ServiceProvider ConfigureServices() => new ServiceCollection()
+        private static ServiceProvider ConfigureServices() => new ServiceCollection()
                                                        .AddSingleton<DiscordSocketClient>()
-                                                       .AddSingleton<CommandService>()
+                                                       .AddSingleton<InteractionService>()
                                                        .AddSingleton<CommandHandlingService>()
                                                        .BuildServiceProvider();
 

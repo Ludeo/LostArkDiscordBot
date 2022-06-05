@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.Menus;
+using LostArkBot.Src.Bot.MenusOld;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
