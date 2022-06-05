@@ -73,7 +73,6 @@ namespace LostArkBot
             await Client.SetGameAsync($"Lost Ark || /help");
 
             Client.Ready += this.ClientReady;
-            StartMerchantModule.StartMerchantAsync();
 
             await Task.Delay(Timeout.Infinite);
         }
