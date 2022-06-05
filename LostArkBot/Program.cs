@@ -11,6 +11,7 @@ using LostArkBot.Bot.Modules;
 using LostArkBot.Src.Bot;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = System.Timers.Timer;
+using System.Collections.Generic;
 
 namespace LostArkBot
 {
@@ -85,7 +86,11 @@ namespace LostArkBot
 
         private async Task ClientReady()
         {
-            await SlashCommandInitialization.CreateSlashCommands();
+            List<ApplicationCommandProperties> applicationCommandProperties = new();
+            applicationCommandProperties.AddRange(await SlashCommandInitialization.CreateSlashCommands());
+            applicationCommandProperties.AddRange(await GuildUserCommandInitialization.CreateGuildUserCommands());
+
+            await Client.GetGuild(Config.Default.Server).BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
         }
     }
 }

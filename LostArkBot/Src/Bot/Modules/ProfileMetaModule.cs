@@ -217,7 +217,7 @@ namespace LostArkBot.Src.Bot.Modules
             engravings.RemoveAll(x => x.Value < 5);
             List<Engraving> sortedEngravings = engravings.OrderByDescending(x => x.Value).ToList();
 
-            await command.RespondAsync("Processing..", ephemeral: true);
+            await command.RespondAsync("Processing..");
 
             await ProfileScreenShot.MakeProfileScreenshot(sortedEngravings, armorPieces, accessories, metaGameCharacter, metaGameCharacterJson, characterName);
 

@@ -1,7 +1,5 @@
 ﻿using Discord;
 using Discord.Net;
-using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.SlashCommands;
 using System;
 using System.Collections.Generic;
@@ -13,17 +11,12 @@ namespace LostArkBot.Src.Bot
 {
     internal class SlashCommandInitialization
     {
-        public static async Task CreateSlashCommands()
+        public static async Task<List<ApplicationCommandProperties>> CreateSlashCommands()
         {
             List<ApplicationCommandProperties> applicationCommandProperties = new();
 
             try
             {
-                // Test server
-                //SocketGuild guild = Program.Client.GetGuild(340543173422088212);
-
-                SocketGuild guild = Program.Client.GetGuild(Config.Default.Server);
-
                 applicationCommandProperties.Add(RegisterInitialization.Register().Build());
 
                 applicationCommandProperties.Add(UpdateInitialization.Update().Build());
@@ -54,13 +47,15 @@ namespace LostArkBot.Src.Bot
 
                 applicationCommandProperties.Add(ProfileMetaInitialization.ProfileMeta().Build());
 
-                await guild.BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
+                return applicationCommandProperties;
             }
             catch (HttpException exception)
             {
                 string log = JsonSerializer.Serialize(exception.Errors);
                 Console.WriteLine(log);
                 await File.AppendAllTextAsync("log.txt", log);
+
+                return null;
             }
         }
     }

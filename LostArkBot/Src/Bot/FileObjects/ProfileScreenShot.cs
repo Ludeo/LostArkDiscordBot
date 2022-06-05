@@ -27,12 +27,34 @@ namespace LostArkBot.Src.Bot.FileObjects
             string end = metaGameCharacterJson.Stats.First(x => x.Description == "Endurance").Value;
             string exp = metaGameCharacterJson.Stats.First(x => x.Description == "Expertise").Value;
 
+            string engravingString = string.Empty;
+
+            foreach (Engraving engraving in sortedEngravings)
+            {
+                engravingString += $@"<div class=""engraving"" style=""display: flex; padding: 3px 3px;"" style=""display: flex;"">
+                        <div class=""eng-img"" style=""height: 30px; width: 30px; margin-right: 10px;"">
+                            <img src=""{engraving.Icon}"" style=""height: 30px; width: 30px;"">
+                        </div>
+                        <div class=""eng-text""
+                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
+                            <div>{engraving.Name}</div>
+                            <div style=""color: {(engraving.Penalty ? "red" : "#65aaec")};"">+{engraving.Value}</div>
+                        </div>
+                    </div>";
+            }
+
+            int height = 765;
+            if (sortedEngravings.Count > 5)
+            {
+                height += (sortedEngravings.Count - 5) * 38;
+            }
+
             #region htmlString
             string htmlString = $@"<html>
 
 <body style=""margin: 0px"">
     <div class=""wrapper""
-        style=""display: flex; width: 1000px; height: 800px; background-color: #1E1E1D; box-sizing: border-box; font-family: sans-serif;"">
+        style=""display: flex; width: 1000px; height: {height}px; background-color: #1E1E1D; box-sizing: border-box; font-family: sans-serif;"">
         <div class=""left-side"" style=""width: 40%; height: 100%;"">
             <div class=""char-image""
                 style=""position: relative; width: 100%; height: 500px; background-image: url('{smokeImage}'); background-size: cover; background-repeat: no-repeat; background-position: center; display: flex; justify-content: center; align-items: center;"">
@@ -56,7 +78,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                 <img src=""{classPreview}"" style=""height: 430px; width: 380px;"">
             </div>
             <div class=""class-icon""
-                style=""position: relative; background-image: url('{classIcon}'); background-size: contain; background-repeat: no-repeat; background-position: center; height: 300px; display: flex; align-items: center; justify-content: center; flex-direction: column;"">
+                style=""position: relative; background-image: url('{classIcon}'); background-size: contain; background-repeat: no-repeat; background-position: center; height: calc(100% - 500px); display: flex; align-items: center; justify-content: center; flex-direction: column;"">
                 <div class=""guild"" style=""font-size: 24px; color: wheat;"">
                     &lt{guildName}&gt
                 </div>
@@ -207,66 +229,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                     <div class=""title""
                         style=""width: 100%;padding: 10px 0px;display: flex;justify-content: center;align-items: center;font-size: 16px;font-weight: bold;color: #C0A669;"">
                         Engravings from Gear</div>
-                    <div class=""engraving"" style=""display: flex; padding: 3px 3px;"" style=""display: flex;"">
-                        <div class=""eng-img"" style=""height: 30px; width: 30px; border: 1px solid; margin-right: 10px;"">
-                            <img src=""{(sortedEngravings.Count > 0 ? sortedEngravings[0].Icon : string.Empty)}"" style=""height: 30px; width: 30px;"">
-                        </div>
-                        <div class=""eng-text""
-                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
-                            <div>{(sortedEngravings.Count > 0 ? sortedEngravings[0].Name : string.Empty)}</div>
-                            <div style=""color: {(sortedEngravings.Count > 0 ? (sortedEngravings[0].Penalty ? "red" : "#65aaec") : string.Empty)};"">{(sortedEngravings.Count > 0 ? "+" + sortedEngravings[0].Value : string.Empty)}</div>
-                        </div>
-                    </div>
-                    <div class=""engraving"" style=""display: flex; padding: 3px 3px;"">
-                        <div class=""eng-img"" style=""height: 30px; width: 30px; border: 1px solid; margin-right: 10px;"">
-                            <img src=""{(sortedEngravings.Count > 1 ? sortedEngravings[1].Icon : string.Empty)}"" style=""height: 30px; width: 30px;"">
-                        </div>
-                        <div class=""eng-text""
-                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
-                            <div>{(sortedEngravings.Count > 1 ? sortedEngravings[1].Name : string.Empty)}</div>
-                            <div style=""color: {(sortedEngravings.Count > 1 ? (sortedEngravings[1].Penalty ? "red" : "#65aaec") : string.Empty)};"">{(sortedEngravings.Count > 1 ? "+" + sortedEngravings[1].Value : string.Empty)}</div>
-                        </div>
-                    </div>
-                    <div class=""engraving"" style=""display: flex; padding: 3px 3px;"">
-                        <div class=""eng-img"" style=""height: 30px; width: 30px; border: 1px solid; margin-right: 10px;"">
-                            <img src=""{(sortedEngravings.Count > 2 ? sortedEngravings[2].Icon : string.Empty)}"" style=""height: 30px; width: 30px;"">
-                        </div>
-                        <div class=""eng-text""
-                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
-                            <div>{(sortedEngravings.Count > 2 ? sortedEngravings[2].Name : string.Empty)}</div>
-                            <div style=""color: {(sortedEngravings.Count > 2 ? (sortedEngravings[2].Penalty ? "red" : "#65aaec") : string.Empty)};"">{(sortedEngravings.Count > 2 ? "+" + sortedEngravings[2].Value : string.Empty)}</div>
-                        </div>
-                    </div>
-                    <div class=""engraving"" style=""display: flex; padding: 3px 3px;"">
-                        <div class=""eng-img"" style=""height: 30px; width: 30px; border: 1px solid; margin-right: 10px;"">
-                            <img src=""{(sortedEngravings.Count > 3 ? sortedEngravings[3].Icon : string.Empty)}"" style=""height: 30px; width: 30px;"">
-                        </div>
-                        <div class=""eng-text""
-                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
-                            <div>{(sortedEngravings.Count > 3 ? sortedEngravings[3].Name : string.Empty)}</div>
-                            <div style=""color: {(sortedEngravings.Count > 3 ? (sortedEngravings[3].Penalty ? "red" : "#65aaec") : string.Empty)};"">{(sortedEngravings.Count > 3 ? "+" + sortedEngravings[3].Value : string.Empty)}</div>
-                        </div>
-                    </div>
-                    <div class=""engraving"" style=""display: flex; padding: 3px 3px;"">
-                        <div class=""eng-img"" style=""height: 30px; width: 30px; border: 1px solid; margin-right: 10px;"">
-                            <img src=""{(sortedEngravings.Count > 4 ? sortedEngravings[4].Icon : string.Empty)}"" style=""height: 30px; width: 30px;"">
-                        </div>
-                        <div class=""eng-text""
-                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
-                            <div>{(sortedEngravings.Count > 4 ? sortedEngravings[4].Name : string.Empty)}</div>
-                            <div style=""color: {(sortedEngravings.Count > 4 ? (sortedEngravings[4].Penalty ? "red" : "#65aaec") : string.Empty)};"">{(sortedEngravings.Count > 4 ? "+" + sortedEngravings[4].Value : string.Empty)}</div>
-                        </div>
-                    </div>
-                    <div class=""engraving"" style=""display: flex; padding: 3px 3px;"">
-                        <div class=""eng-img"" style=""height: 30px; width: 30px; border: 1px solid; margin-right: 10px;"">
-                            <img src=""{(sortedEngravings.Count > 5 ? sortedEngravings[5].Icon : string.Empty)}"" style=""height: 30px; width: 30px;"">
-                        </div>
-                        <div class=""eng-text""
-                            style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
-                            <div>{(sortedEngravings.Count > 5 ? sortedEngravings[5].Name : string.Empty)}</div>
-                            <div style=""color: {(sortedEngravings.Count > 5 ? (sortedEngravings[5].Penalty ? "red" : "#65aaec") : string.Empty)};"">{(sortedEngravings.Count > 5 ? "+" + sortedEngravings[5].Value : string.Empty)}</div>
-                        </div>
-                    </div>
+                    {engravingString}
                 </div>
                 <div class=""combat-stats"" style=""width: 50%; padding: 10px;"">
                     <div class=""title""
@@ -315,16 +278,17 @@ namespace LostArkBot.Src.Bot.FileObjects
             using var browserFetcher = new BrowserFetcher();
             await browserFetcher.DownloadAsync();
             await using var browser = await Puppeteer.LaunchAsync(
-                new LaunchOptions { 
+                new LaunchOptions {
                     Headless = true,
-                    Args = new string[]{ "--no-sandbox" },
-                    ExecutablePath = "/usr/bin/chromium-browser"});
+                    Args = new string[] { "--no-sandbox" },
+                    //ExecutablePath = "/usr/bin/chromium-browser"
+                });
             await using var page = await browser.NewPageAsync();
             await page.SetContentAsync(htmlString);
             await page.SetViewportAsync(new ViewPortOptions
             {
                 Width = 1000,
-                Height = 800
+                Height = height,
             });
             await page.ScreenshotAsync("image.png");
 

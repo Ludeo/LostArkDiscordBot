@@ -38,6 +38,8 @@ namespace LostArkBot.Bot
             client.SlashCommandExecuted += SlashCommandHandlerClass.SlashCommandHandler;
             client.ButtonExecuted += ButtonHandlerClass.ButtonHandler;
             client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
+            client.MessageCommandExecuted += MessageCommandHandlerClass.MessageCommandHandler;
+            client.UserCommandExecuted += UserCommandHandlerClass.UserCommandHandler;
         }
 
         /// <summary>
