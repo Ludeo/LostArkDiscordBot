@@ -41,7 +41,7 @@ namespace LostArkBot.Src.Bot.Menus
                     continue;
                 }
 
-                if (field.Value.Split("\n")[1][5..] == characterName)
+                if (field.Value.Split("\n")[1] == characterName)
                 {
                     string title = originalEmbed.Title;
                     string title1 = title.Split("(")[1];

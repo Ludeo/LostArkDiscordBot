@@ -1,6 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using LostArkBot.Src.Bot.FileObjects;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
@@ -49,15 +53,25 @@ namespace LostArkBot.Src.Bot.Buttons
 
             if (userLeft)
             {
+
                 string title = originalEmbed.Title;
                 string title1 = title.Split("(")[1];
                 string title2 = title1.Split(")")[0];
                 string playerNumberJoined = title2.Split("/")[0];
                 string playerNumberMax = title2.Split("/")[1];
                 newEmbed.Title = $"{title.Split("(")[0]}({int.Parse(playerNumberJoined) - 1}/{playerNumberMax})";
-            }
 
-            await component.UpdateAsync(x => x.Embed = newEmbed.Build());
+                await component.UpdateAsync(x => x.Embed = newEmbed.Build());
+
+                List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
+                ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == component.Message.Id);
+
+                IThreadChannel threadChannel = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+                await threadChannel.RemoveUserAsync(component.User as IGuildUser);
+            } else
+            {
+                await component.RespondAsync(text: "You are not part of this event", ephemeral: true);
+            }
         }
     }
 }

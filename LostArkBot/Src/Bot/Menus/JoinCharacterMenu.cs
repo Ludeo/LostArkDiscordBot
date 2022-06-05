@@ -53,7 +53,7 @@ namespace LostArkBot.Src.Bot.Menus
                 {
                     if (messageIdRaw.Split(",")[1] == "Default")
                     {
-                        newEmbed.AddField($"{component.User.Username} has joined", $"{component.User.Mention}\nIGN: \niLvl: \nClass: ", true);
+                        newEmbed.AddField($"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined", $"{component.User.Mention}", true);
 
                         addedCharacter = true;
                     }
@@ -62,10 +62,13 @@ namespace LostArkBot.Src.Bot.Menus
                         Character character = characters.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
                         characterName = character.CharacterName;
 
+                        List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
+                        GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+
                         newEmbed.AddField(
-                                            $"{component.User.Username} has joined",
-                                            $"{component.User.Mention}\nIGN: {character.CharacterName}\niLvl: {character.ItemLevel}\n"
-                                        + $"Class: {character.ClassName}",
+                                            $"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined",
+                                            $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
+                                            + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
                                             true);
 
                         addedCharacter = true;
@@ -101,17 +104,20 @@ namespace LostArkBot.Src.Bot.Menus
 
                 if (messageIdRaw.Split(",")[1] == "Default")
                 {
-                    newEmbed.AddField($"{component.User.Username} has joined", $"{component.User.Mention}\nIGN: \niLvl: \nClass: ", true);
+                    newEmbed.AddField($"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined", $"{component.User.Mention}", true);
                 }
                 else
                 {
                     Character character = characters.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
                     characterName = character.CharacterName;
 
+                    List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
+                    GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+
                     newEmbed.AddField(
-                                        $"{component.User.Username} has joined",
-                                        $"{component.User.Mention}\nIGN: {character.CharacterName}\niLvl: {character.ItemLevel}\n"
-                                    + $"Class: {character.ClassName}",
+                                        $"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined",
+                                        $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
+                                            + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
                                         true);
                 }
 
