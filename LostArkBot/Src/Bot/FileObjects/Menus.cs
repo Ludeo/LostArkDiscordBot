@@ -1,10 +1,10 @@
 ﻿using Discord;
 
-namespace LostArkBot.Src.Bot.Menus
+namespace LostArkBot.Src.Bot.FileObjects
 {
-    public class HomeLfgMenu
+    public static class Menus
     {
-        public static SelectMenuBuilder GetMenu()
+        public static SelectMenuBuilder GetHomeLfg()
         {
             SelectMenuBuilder menuBuilder = new SelectMenuBuilder()
                                             .WithPlaceholder("Select event")
@@ -19,6 +19,18 @@ namespace LostArkBot.Src.Bot.Menus
                                             .AddOption("Chaos Maps", "chaosmaps")
                                             .AddOption("Event Guardian Raid", "eventguardianraid")
                                             .AddOption("Coop Battle", "coopbattle");
+
+            return menuBuilder;
+        }
+
+        public static SelectMenuBuilder GetGuardianRaidTier()
+        {
+            SelectMenuBuilder menuBuilder = new SelectMenuBuilder()
+                                            .WithPlaceholder("Tier of Guardian")
+                                            .WithCustomId("guardianraidtier")
+                                            .AddOption("Tier 1", "t1guardianraid")
+                                            .AddOption("Tier 2", "t2guardianraid")
+                                            .AddOption("Tier 3", "t3guardianraid");
 
             return menuBuilder;
         }

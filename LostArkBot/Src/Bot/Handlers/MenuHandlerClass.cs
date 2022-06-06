@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.MenusOld;
+using LostArkBot.Src.Bot.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -99,7 +100,12 @@ namespace LostArkBot.Src.Bot.Handlers
             switch (component.Data.CustomId)
             {
                 case "home-lfg":
-                    await HomeLfgMenu.HomeLfg(component, eventImages);
+                    List<HomeLfgModel> modelList = new();
+                    HomeLfgModel model = new HomeLfgModel();
+                    model.EventId = "guardianraid";
+                    model.Title = "Guardian Raid";
+                    modelList.Add(model);
+                    await HomeLfgMenu.HomeLfg(component, eventImages, modelList);
 
                     break;
 

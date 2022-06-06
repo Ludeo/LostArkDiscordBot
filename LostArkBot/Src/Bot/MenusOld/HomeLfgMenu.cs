@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,14 +12,25 @@ namespace LostArkBot.Src.Bot.MenusOld
 {
     internal class HomeLfgMenu
     {
-        public static async Task HomeLfg(SocketMessageComponent component, Dictionary<string, string> eventImages)
+        public static async Task HomeLfg(SocketMessageComponent component, Dictionary<string, string> eventImages, List<HomeLfgModel> modelList)
         {
+            HomeLfgModel model = modelList.Find(x => x.EventId == component.Data.Values.First());
+
+            EmbedBuilder embedBuilder = new()
+            {
+                Title = model.Title,
+                Description = "Select the Tier of the Guardian",
+                ThumbnailUrl = StaticObjects.guardianIconUrl,
+                Color = Color.Red,
+            };
+
             switch (component.Data.Values.First())
             {
                 case "guardianraid":
+
                     EmbedBuilder embedBuilder = new()
                     {
-                        Title = "Guardian Raid",
+                        Title = model.Title,
                         Description = "Select the Tier of the Guardian",
                         ThumbnailUrl = StaticObjects.guardianIconUrl,
                         Color = Color.Red,

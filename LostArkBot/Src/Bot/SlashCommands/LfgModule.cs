@@ -1,12 +1,9 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.Net;
-using Discord.Rest;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Menus;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +16,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("custom-message", "Custom Message that will be displayed in the LFG")] string customMessage = "",
             [Summary("time", "Time of the LFG, must have format: DD/MM hh:mm")] string time = "")
         {
-            ComponentBuilder component = new ComponentBuilder().WithSelectMenu(HomeLfgMenu.GetMenu()).WithButton(StaticObjects.deleteButton);
+            ComponentBuilder component = new ComponentBuilder().WithSelectMenu(Menus.GetHomeLfg()).WithButton(StaticObjects.deleteButton);
 
             EmbedBuilder embed = new()
             {
@@ -63,14 +60,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     embed.ThumbnailUrl = StaticObjects.guardianIconUrl;
                     embed.Color = Color.Red;
 
-                    menu.WithPlaceholder("Tier of Guardian")
-                        .WithCustomId("guardianraid")
-                        .AddOption("Tier 1", "t1guardianraid")
-                        .AddOption("Tier 2", "t2guardianraid")
-                        .AddOption("Tier 3", "t3guardianraid");
+                    menu = Menus.GetGuardianRaidTier();
+
+                    //embed = Embeds.GetGuardianRaid();
+                    //menu = Menus.GetGuardianRaid();
 
                     break;
                 case "abyssdungeon":
+                    embed.Title = "Abyssal Dungeon";
+                    embed.Description = "Select the Continent of the Dungeon";
+                    embed.ThumbnailUrl = StaticObjects.abyssDungeonIconUrl;
+                    embed.Color = Color.Teal;
+
+                    menu.WithPlaceholder("Select Continent")
+                        .WithCustomId("abyssdungeon")
+                        .AddOption("Shushire", "shushire", "iLvl: 340")
+                        .AddOption("Rohendel", "rohendel", "iLvl: 460")
+                        .AddOption("Yorn", "yorn", "iLvl: 840")
+                        .AddOption("Feiton", "feiton", "iLvl: 960")
+                        .AddOption("Punika", "punika", "iLvl: 1325-1370");
+
                     break;
                 case "abyssraid":
                     break;
