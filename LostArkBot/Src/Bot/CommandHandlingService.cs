@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Bot.Modules;
 using Discord.Interactions;
+using LostArkBot.Src.Bot.Handlers;
 
 namespace LostArkBot.Bot
 {
@@ -29,6 +30,7 @@ namespace LostArkBot.Bot
                 await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
                 client.InteractionCreated += InteractionCreated;
                 client.ButtonExecuted += ButtonExecuted;
+                client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
                 client.Ready += Ready;
                 client.MessageReceived += MessagedReceivedAsync;
                 commands.SlashCommandExecuted += SlashCommandExecuted;
@@ -47,6 +49,13 @@ namespace LostArkBot.Bot
         private async Task Ready()
         {
             await RegisterCommands();
+
+            foreach(SocketGuild guild in client.Guilds)
+            {
+                LogMessage connectedGuild = new(LogSeverity.Info, "Ready", "Connected to " + guild.Name);
+                await Program.Log(connectedGuild);
+            }
+
             client.Ready -= Ready;
         }
 
@@ -54,9 +63,13 @@ namespace LostArkBot.Bot
         {
             try
             {
-                Console.WriteLine("registering commands");
+#if DEBUG
                 await commands.RegisterCommandsToGuildAsync(Config.Default.Server);
-            } catch (Exception)
+#else
+                await commands.RegisterCommandsGloballyAsync();
+#endif
+            }
+            catch (Exception)
             {
                 throw;
             }
@@ -82,7 +95,6 @@ namespace LostArkBot.Bot
 
         private Task SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
         {
-            Console.WriteLine("command got executed");
             return Task.CompletedTask;
         }
 
@@ -96,31 +108,5 @@ namespace LostArkBot.Bot
                 await rolesModule.StartPingMerchantRolesAsync(rawMessage);
             }
         }
-
-        /*private static async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
-        {
-            string message = context.Message.ToString();
-
-            if (!command.IsSpecified)
-            {
-                LogMessage notSpecifiedLog = new(LogSeverity.Error, "Command", message);
-                Console.WriteLine(notSpecifiedLog + " || Command doesn't exist");
-                await File.AppendAllTextAsync("log.txt", notSpecifiedLog + " || Command doesn't exist\n");
-            }
-            else if (result.IsSuccess)
-            {
-                LogMessage successLog = new(LogSeverity.Info, "Command", message);
-                Console.WriteLine(successLog);
-                await File.AppendAllTextAsync("log.txt", successLog + "\n");
-            }
-            else
-            {
-                await context.Channel.SendMessageAsync($"error: {result}");
-
-                LogMessage errorLog = new(LogSeverity.Error, "Command", message);
-                Console.WriteLine(errorLog + " || " + result);
-                await File.AppendAllTextAsync("log.txt", errorLog + " || " + result + "\n");
-            }
-        }*/
     }
 }

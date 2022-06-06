@@ -6,11 +6,8 @@ using Discord;
 using Discord.WebSocket;
 using LostArkBot.Bot;
 using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Bot.Modules;
-using LostArkBot.Src.Bot;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = System.Timers.Timer;
-using System.Collections.Generic;
 using Discord.Interactions;
 
 namespace LostArkBot
@@ -50,9 +47,8 @@ namespace LostArkBot
 
             if (string.IsNullOrEmpty(config.Token))
             {
-                string log = "The bot token is not available in the config.json file. Add it and restart the bot.";
-                Console.WriteLine(log);
-                await File.AppendAllTextAsync("log.txt", log);
+                LogMessage logMessage = new(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
+                await Log(logMessage);
                 Environment.Exit(0);
             }
 
@@ -70,14 +66,5 @@ namespace LostArkBot
                                                        .AddSingleton<InteractionService>()
                                                        .AddSingleton<CommandHandlingService>()
                                                        .BuildServiceProvider();
-
-        private async Task ClientReady()
-        {
-            List<ApplicationCommandProperties> applicationCommandProperties = new();
-            applicationCommandProperties.AddRange(await SlashCommandInitialization.CreateSlashCommands());
-            applicationCommandProperties.AddRange(await GuildUserCommandInitialization.CreateGuildUserCommands());
-
-            await Client.GetGuild(Config.Default.Server).BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
-        }
     }
 }

@@ -1,25 +1,25 @@
 ﻿using Discord;
-using Discord.WebSocket;
+using Discord.Interactions;
 using LostArkBot.Src.Bot.FileObjects;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Modules
+namespace LostArkBot.Src.Bot.SlashCommands
 {
-    internal class AccountModule
+    public class AccountModule : InteractionModuleBase<SocketInteractionContext>
     {
-        public static async Task AccountModuleAsync(SocketSlashCommand command)
+        [SlashCommand("account", "Shows all of your registered characters")]
+        public async Task Account()
         {
-            ulong userId = command.User.Id;
+            ulong userId = Context.User.Id;
             List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)
             {
-                await command.RespondAsync(text: "You don't have any characters registered. You can register a character with **/register**", ephemeral: true);
+                await RespondAsync(text: "You don't have any characters registered. You can register a character with **/register**", ephemeral: true);
 
                 return;
             }
@@ -29,7 +29,7 @@ namespace LostArkBot.Src.Bot.Modules
                 Title = "Your characters",
                 Color = Color.DarkPurple,
                 Description = "\u200b",
-                ThumbnailUrl = command.User.GetAvatarUrl(),
+                ThumbnailUrl = Context.User.GetAvatarUrl(),
             };
 
             List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
@@ -46,28 +46,29 @@ namespace LostArkBot.Src.Bot.Modules
                 });
             }
 
-            await command.RespondAsync(embed: embed.Build(), ephemeral: true);
+            await RespondAsync(embed: embed.Build(), ephemeral: true);
         }
 
-        public static async Task AccountModuleAsync(SocketUserCommand command)
+        [UserCommand("characters")]
+        public async Task AccountUserCommand(IUser user)
         {
-            ulong userId = command.Data.Member.Id;
+            ulong userId = user.Id;
             List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)
             {
-                await command.RespondAsync(text: "This user doesn't have any characters registered", ephemeral: true);
+                await RespondAsync(text: "This user doesn't have any characters registered", ephemeral: true);
 
                 return;
             }
 
             EmbedBuilder embed = new()
             {
-                Title = "Characters assigned to " + Program.Client.GetGuild(Config.Default.Server).GetUser(command.Data.Member.Id).DisplayName,
+                Title = "Characters assigned to " + Program.Client.GetGuild(Config.Default.Server).GetUser(user.Id).DisplayName,
                 Color = Color.DarkPurple,
                 Description = "\u200b",
-                ThumbnailUrl = command.Data.Member.GetAvatarUrl(),
+                ThumbnailUrl = user.GetAvatarUrl(),
             };
 
             List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
@@ -84,7 +85,7 @@ namespace LostArkBot.Src.Bot.Modules
                 });
             }
 
-            await command.RespondAsync(embed: embed.Build(), ephemeral: true);
+            await RespondAsync(embed: embed.Build(), ephemeral: true);
         }
     }
 }

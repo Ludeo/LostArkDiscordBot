@@ -17,20 +17,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                                             .AddOption("Boss Rush", "bossrush")
                                             .AddOption("Platinum Fields", "platinumfields")
                                             .AddOption("Chaos Maps", "chaosmaps")
-                                            .AddOption("Event Guardian Raid", "eventguardianraid")
                                             .AddOption("Coop Battle", "coopbattle");
-
-            return menuBuilder;
-        }
-
-        public static SelectMenuBuilder GetGuardianRaidTier()
-        {
-            SelectMenuBuilder menuBuilder = new SelectMenuBuilder()
-                                            .WithPlaceholder("Tier of Guardian")
-                                            .WithCustomId("guardianraidtier")
-                                            .AddOption("Tier 1", "t1guardianraid")
-                                            .AddOption("Tier 2", "t2guardianraid")
-                                            .AddOption("Tier 3", "t3guardianraid");
 
             return menuBuilder;
         }
