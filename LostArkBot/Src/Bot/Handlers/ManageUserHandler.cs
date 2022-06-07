@@ -1,0 +1,154 @@
+﻿using Discord;
+using Discord.Net;
+using Discord.WebSocket;
+using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.Models;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace LostArkBot.Src.Bot.Handlers
+{
+    public class ManageUserHandler
+    {
+        public static async Task ManageUserHandlerAsync(SocketMessageComponent component, ManageUserModel model)
+        {
+            string messageIdRaw = component.Data.Values.First();
+            string messageIdString = messageIdRaw.Split(",")[0];
+            ulong messageId = ulong.Parse(messageIdString);
+            ITextChannel channel = Program.Client.GetChannel(component.Message.Channel.Id) as ITextChannel;
+            IMessage messageRaw = await channel.GetMessageAsync(messageId);
+            IUserMessage message = messageRaw as IUserMessage;
+            Embed originalEmbed = messageRaw.Embeds.First() as Embed;
+
+            EmbedBuilder newEmbed = new()
+            {
+                Title = originalEmbed.Title,
+                Description = originalEmbed.Description,
+                Author = new EmbedAuthorBuilder
+                {
+                    Name = originalEmbed.Author!.Value.Name,
+                    IconUrl = originalEmbed.Author!.Value.IconUrl,
+                },
+                ThumbnailUrl = originalEmbed.Thumbnail.Value.Url,
+                ImageUrl = originalEmbed.Image.Value.Url,
+                Color = originalEmbed.Color.Value,
+            };
+
+            bool characterAdded = false;
+
+            string title = originalEmbed.Title;
+            string title1 = title.Split("(")[1];
+            string title2 = title1.Split(")")[0];
+            int playerNumberJoined = int.Parse(title2.Split("/")[0]);
+            string playerNumberMax = title2.Split("/")[1];
+
+            List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
+            ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == messageId);
+            IThreadChannel threadChannel = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+
+            List<Character> characterList =
+                JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+
+            foreach (EmbedField field in originalEmbed.Fields)
+            {
+                if (field.Name == "Custom Message" || field.Name == "Time")
+                {
+                    newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
+                    continue;
+                }
+
+                if(model.Action == ManageAction.Join)
+                {
+                    if (field.Value.Contains(component.User.Mention))
+                    {
+                        if (messageIdRaw.Split(",")[1] == "Default")
+                        {
+                            newEmbed.AddField($"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined", $"{component.User.Mention}", true);
+
+                            characterAdded = true;
+                        }
+                        else
+                        {
+                            Character character = characterList.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
+
+                            List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
+                            GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+
+                            newEmbed.AddField(
+                                                $"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined",
+                                                $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
+                                                + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
+                                                true);
+
+                            characterAdded = true;
+                        }
+                    }
+                } else if(model.Action == ManageAction.Kick)
+                {
+                    string characterName = messageIdRaw.Split(",")[1];
+
+                    if (field.Value.Split("\n")[1] == characterName)
+                    {
+                        string mention = field.Value.Split("\n")[0];
+                        ulong discordId = ulong.Parse(mention.Replace("<", "").Replace(">", "").Replace("!", "").Replace("@", ""));
+                        await threadChannel.RemoveUserAsync(Program.Client.GetGuild(Config.Default.Server).GetUser(discordId));
+                        playerNumberJoined--;
+                    } else
+                    {
+                        newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
+                    }
+                }
+            }
+
+            if (characterAdded == false && model.Action == ManageAction.Join)
+            {
+                if (playerNumberJoined == int.Parse(playerNumberMax))
+                {
+                    await component.RespondAsync(text: "This lobby is already full", ephemeral: true);
+
+                    return;
+                }
+
+                if (messageIdRaw.Split(",")[1] == "Default")
+                {
+                    newEmbed.AddField($"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined", $"{component.User.Mention}", true);
+                }
+                else
+                {
+                    Character character = characterList.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
+
+                    List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
+                    GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+
+                    newEmbed.AddField(
+                                        $"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined",
+                                        $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
+                                            + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
+                                        true);
+                }
+
+                playerNumberJoined++;
+                await threadChannel.AddUserAsync(Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id));
+            }
+
+            newEmbed.Title = $"{title.Split("(")[0]}({playerNumberJoined}/{playerNumberMax})";
+
+            await message.ModifyAsync(x =>
+            {
+                x.Embed = newEmbed.Build();
+            });
+
+            try
+            {
+                await component.RespondAsync();
+            }
+            catch (HttpException exception)
+            {
+                await Program.Log(new LogMessage(LogSeverity.Error, "JoinCharacterMenu.cs", exception.Message));
+            }
+        }
+    }
+}

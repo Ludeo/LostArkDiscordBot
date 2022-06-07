@@ -98,7 +98,8 @@ namespace LostArkBot.Src.Bot.Handlers
                 { "coopbattle", "https://i.imgur.com/tvvlWbS.jpg" }
             };
 
-            List<LfgModel> modelList = new();
+            List<LfgModel> lfgModels = new();
+            List<ManageUserModel> manageUserModels = new();
 
             #region Guardian Raids
             LfgModel model = new()
@@ -117,7 +118,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.guardianIconUrl,
                 Color = Color.Red
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -140,7 +141,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.guardianIconUrl,
                 Color = Color.Red
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -163,7 +164,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.guardianIconUrl,
                 Color = Color.Red
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -183,7 +184,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.guardianIconUrl,
                 Color = Color.Red
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -194,7 +195,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Red,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Abyssal Dungeon
@@ -216,7 +217,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
                 Color = Color.Teal
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -233,7 +234,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -250,7 +251,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -267,7 +268,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -285,7 +286,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -304,7 +305,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssDungeonIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -315,7 +316,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Teal,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -326,7 +327,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Teal,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Abyssal Raid
@@ -344,7 +345,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.abyssRaidIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -363,7 +364,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Teal,
 
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -374,7 +375,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Teal,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Cube
@@ -394,7 +395,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.cubeIconUrl,
                 Color = Color.Red,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -405,7 +406,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Red,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Boss Rush
@@ -424,7 +425,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.bossRushIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -435,7 +436,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Teal,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Platinum Fields
@@ -454,7 +455,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.platinumFieldsIconUrl,
                 Color = Color.Green,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -465,7 +466,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Green,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Chaos Maps
@@ -485,7 +486,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.chaosMapsIconUrl,
                 Color = Color.Gold,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -496,7 +497,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Gold,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Legion Raid
@@ -514,7 +515,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.legionRaidIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -535,7 +536,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 ThumbnailUrl = StaticObjects.legionRaidIconUrl,
                 Color = Color.Teal,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
 
             model = new()
             {
@@ -546,7 +547,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Teal,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
             #region Coop Battle
@@ -559,21 +560,36 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = Color.Red,
                 IsEnd = true,
             };
-            modelList.Add(model);
+            lfgModels.Add(model);
             #endregion
 
-            if (modelList.Any(x => x.MenuId.Contains(component.Data.CustomId)))
+            #region Manage Users
+            ManageUserModel manageUserModel = new()
             {
-                LfgModel resultModel = modelList.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.MenuItemId == component.Data.Values.First());
+                MenuId = "join",
+                Action = ManageAction.Join,
+            };
+            manageUserModels.Add(manageUserModel);
+
+            manageUserModel = new()
+            {
+                MenuId = "kick",
+                Action = ManageAction.Kick,
+            };
+            manageUserModels.Add(manageUserModel);
+            #endregion
+
+            if (lfgModels.Any(x => x.MenuId.Contains(component.Data.CustomId)))
+            {
+                LfgModel resultModel = lfgModels.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.MenuItemId == component.Data.Values.First());
 
                 await LfgHandler.LfgHandlerAsync(component, resultModel, eventImages);
-            } else if(component.Data.CustomId == "join")
+            } else if(manageUserModels.Any(x => x.MenuId == component.Data.CustomId))
             {
-                throw new NotImplementedException();
-            } else if(component.Data.CustomId == "kick")
-            {
-                throw new NotImplementedException();
-            }
+                ManageUserModel resultModel = manageUserModels.Find(x => x.MenuId == component.Data.CustomId);
+
+                await ManageUserHandler.ManageUserHandlerAsync(component, resultModel);
+            } 
         }
     }
 }

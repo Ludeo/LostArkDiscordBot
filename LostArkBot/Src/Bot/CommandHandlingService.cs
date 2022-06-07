@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Bot.Modules;
 using Discord.Interactions;
 using LostArkBot.Src.Bot.Handlers;
 
@@ -32,7 +31,6 @@ namespace LostArkBot.Bot
                 client.ButtonExecuted += ButtonExecuted;
                 client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
                 client.Ready += Ready;
-                client.MessageReceived += MessagedReceivedAsync;
                 commands.SlashCommandExecuted += SlashCommandExecuted;
                 commands.AutocompleteHandlerExecuted += AutoCompleteHandlerExecuted;
             } catch (Exception)
@@ -77,8 +75,14 @@ namespace LostArkBot.Bot
 
         private async Task ButtonExecuted(SocketMessageComponent arg)
         {
-            var ctx = new SocketInteractionContext<SocketMessageComponent>(client, arg);
-            await commands.ExecuteCommandAsync(ctx, services);
+            try
+            {
+                var ctx = new SocketInteractionContext<SocketMessageComponent>(client, arg);
+                await commands.ExecuteCommandAsync(ctx, services);
+            } catch(Exception)
+            {
+                throw;
+            }
         }
 
         private async Task InteractionCreated(SocketInteraction arg)
@@ -96,17 +100,6 @@ namespace LostArkBot.Bot
         private Task SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
         {
             return Task.CompletedTask;
-        }
-
-        private async Task MessagedReceivedAsync(SocketMessage rawMessage)
-        {
-            SocketGuildChannel channel = rawMessage.Channel as SocketGuildChannel;
-
-            if (rawMessage.Channel.Id == Config.Default.MerchantChannel && channel.Guild.Id == Config.Default.Server)
-            {
-                PingMerchantRolesModule rolesModule = new();
-                await rolesModule.StartPingMerchantRolesAsync(rawMessage);
-            }
         }
     }
 }
