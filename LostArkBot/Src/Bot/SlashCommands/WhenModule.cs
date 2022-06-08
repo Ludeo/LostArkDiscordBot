@@ -1,12 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -23,12 +19,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
-            ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.ThreadId == Context.Channel.Id);
-            ulong messageId = linkedMessage.MessageId;
-
-            ITextChannel channel = Context.Guild.GetChannel(linkedMessage.ChannelId) as ITextChannel;
-            IMessage messageRaw = await channel.GetMessageAsync(messageId);
+            SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
+            ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
+            IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
             IUserMessage message = messageRaw as IUserMessage;
 
             Embed embed = message.Embeds.First() as Embed;

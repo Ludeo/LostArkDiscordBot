@@ -28,5 +28,7 @@ namespace LostArkBot.Src.Bot.Models
         public string ImageUrl { get; set; }
 
         public bool IsEnd { get; set; } = false;
+
+        public int Players { get; set; }
     }
 }

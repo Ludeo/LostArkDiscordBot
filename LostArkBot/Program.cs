@@ -21,6 +21,8 @@ namespace LostArkBot
 
         public static List<GuildEmote> GuildEmotes { get; private set; }
 
+        public static StaticObjects StaticObjects { get; } = new StaticObjects();
+
         public static Task Log(LogMessage log)
         {
             string text = $"[General/{log.Severity}] {log}";

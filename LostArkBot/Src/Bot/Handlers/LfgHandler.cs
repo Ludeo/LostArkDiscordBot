@@ -1,21 +1,20 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
-using System.Collections.Generic;
-using System.IO;
+using System;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Handlers
 {
     public class LfgHandler
     {
-        public static async Task LfgHandlerAsync(SocketMessageComponent component, LfgModel model, Dictionary<string, string> eventImages)
+        public static async Task LfgHandlerAsync(SocketMessageComponent component, LfgModel model)
         {
             string customMessage = component.Message.Embeds.First().Footer?.Text;
             ComponentBuilder componentBuilder = new();
+
+            Console.WriteLine(model.IsEnd);
 
             EmbedBuilder embed = new()
             {
@@ -29,11 +28,12 @@ namespace LostArkBot.Src.Bot.Handlers
             {
                 SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
 
+                embed.Title = $"{model.Title} {component.Data.Values.First()} (0/{model.Players})";
                 embed.Author = new EmbedAuthorBuilder()
                              .WithName($"Party Leader: {user.DisplayName}")
                              .WithIconUrl(user.GetAvatarUrl());
                 embed.Description = "Waiting for players to join...";
-                embed.ImageUrl = eventImages[model.MenuItemId];
+                embed.ImageUrl = Program.StaticObjects.EventImages[component.Data.Values.First()];
 
                 if (component.Message.Embeds.First().Timestamp != null)
                 {
@@ -53,26 +53,14 @@ namespace LostArkBot.Src.Bot.Handlers
                     });
                 }
 
-                componentBuilder.WithButton(StaticObjects.joinButton)
-                .WithButton(StaticObjects.leaveButton)
-                .WithButton(StaticObjects.kickButton)
-                .WithButton(StaticObjects.deleteButton)
-                .WithButton(StaticObjects.startButton);
+                componentBuilder.WithButton(Program.StaticObjects.JoinButton)
+                .WithButton(Program.StaticObjects.LeaveButton)
+                .WithButton(Program.StaticObjects.KickButton)
+                .WithButton(Program.StaticObjects.DeleteButton)
+                .WithButton(Program.StaticObjects.StartButton);
 
                 ITextChannel textChannel = (ITextChannel)component.Message.Channel;
-                IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
-
-                List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
-
-                ThreadLinkedMessage threadLinkedMessage = new()
-                {
-                    ThreadId = threadChannel.Id,
-                    MessageId = component.Message.Id,
-                    ChannelId = component.Channel.Id,
-                };
-
-                threadLinkedMessageList.Add(threadLinkedMessage);
-                File.WriteAllText("ThreadMessageLink.json", JsonSerializer.Serialize(threadLinkedMessageList));
+                await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
 
             } else
             {
@@ -95,7 +83,7 @@ namespace LostArkBot.Src.Bot.Handlers
                     menuBuilder.AddOption(new SelectMenuOptionBuilder().WithLabel(option.Label).WithValue(option.Value).WithDescription(option.Description));
                 }
 
-                componentBuilder.WithSelectMenu(menuBuilder).WithButton(StaticObjects.homeButton).WithButton(StaticObjects.deleteButton);
+                componentBuilder.WithSelectMenu(menuBuilder).WithButton(Program.StaticObjects.HomeButton).WithButton(Program.StaticObjects.DeleteButton);
             }
 
             await component.UpdateAsync(x =>

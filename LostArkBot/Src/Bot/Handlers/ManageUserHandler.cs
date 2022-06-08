@@ -15,9 +15,8 @@ namespace LostArkBot.Src.Bot.Handlers
     {
         public static async Task ManageUserHandlerAsync(SocketMessageComponent component, ManageUserModel model)
         {
-            string messageIdRaw = component.Data.Values.First();
-            string messageIdString = messageIdRaw.Split(",")[0];
-            ulong messageId = ulong.Parse(messageIdString);
+            string characterName = component.Data.Values.First();
+            ulong messageId = (ulong)component.Message.Reference.MessageId;
             ITextChannel channel = component.Channel as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(messageId);
             IUserMessage message = messageRaw as IUserMessage;
@@ -46,12 +45,8 @@ namespace LostArkBot.Src.Bot.Handlers
             string playerNumberMax = title2.Split("/")[1];
 
             SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
-
-            List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
-            ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == messageId);
-            IThreadChannel threadChannel = user.Guild.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+            IThreadChannel threadChannel = user.Guild.GetChannel(messageId) as IThreadChannel;
             
-
             List<Character> characterList =
                 JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
 
@@ -67,7 +62,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 {
                     if (field.Value.Contains(component.User.Mention))
                     {
-                        if (messageIdRaw.Split(",")[1] == "Default")
+                        if (component.Data.Values.First() == "Default")
                         {
                             newEmbed.AddField(field.Name, $"{component.User.Mention}", true);
 
@@ -75,7 +70,7 @@ namespace LostArkBot.Src.Bot.Handlers
                         }
                         else
                         {
-                            Character character = characterList.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
+                            Character character = characterList.Find(x => x.CharacterName == characterName);
 
                             List<GuildEmote> emotes = Program.GuildEmotes;
                             GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
@@ -91,8 +86,6 @@ namespace LostArkBot.Src.Bot.Handlers
                     }
                 } else if(model.Action == ManageAction.Kick)
                 {
-                    string characterName = messageIdRaw.Split(",")[1];
-
                     if (field.Value.Split("\n")[1] == characterName)
                     {
                         string mention = field.Value.Split("\n")[0];
@@ -115,13 +108,13 @@ namespace LostArkBot.Src.Bot.Handlers
                     return;
                 }
 
-                if (messageIdRaw.Split(",")[1] == "Default")
+                if (characterName == "Default")
                 {
                     newEmbed.AddField($"{user.DisplayName} has joined", $"{component.User.Mention}", true);
                 }
                 else
                 {
-                    Character character = characterList.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
+                    Character character = characterList.Find(x => x.CharacterName == characterName);
 
                     List<GuildEmote> emotes = Program.GuildEmotes;
                     GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());

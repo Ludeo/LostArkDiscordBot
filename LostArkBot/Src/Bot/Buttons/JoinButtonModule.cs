@@ -28,7 +28,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 return;
             }
 
-            joinMenu.AddOption("Default", $"{Context.Interaction.Message.Id},Default", "Uses only your discord name, no additional informations");
+            joinMenu.AddOption("Default", "Default", "Uses only your discord name, no additional informations");
 
             List<GuildEmote> emotes = Program.GuildEmotes;
 
@@ -36,7 +36,7 @@ namespace LostArkBot.Src.Bot.Buttons
             {
                 GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
 
-                joinMenu.AddOption(character.CharacterName, $"{Context.Interaction.Message.Id},{character.CharacterName}", $"{character.ClassName}, {character.ItemLevel}", emote);
+                joinMenu.AddOption(character.CharacterName, character.CharacterName, $"{character.ClassName}, {character.ItemLevel}", emote);
             }
 
             await RespondAsync(text: "Select your character from the menu", components: new ComponentBuilder().WithSelectMenu(joinMenu).Build(), ephemeral: true);    

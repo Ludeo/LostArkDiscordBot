@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using System;
 using System.Threading.Tasks;
 
@@ -14,7 +13,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("custom-message", "Custom Message that will be displayed in the LFG")] string customMessage = "",
             [Summary("time", "Time of the LFG, must have format: DD/MM hh:mm")] string time = "")
         {
-            ComponentBuilder component = new ComponentBuilder().WithSelectMenu(Menus.GetHomeLfg()).WithButton(StaticObjects.deleteButton);
+            ComponentBuilder component = new ComponentBuilder().WithSelectMenu(Program.StaticObjects.HomeLfg).WithButton(Program.StaticObjects.DeleteButton);
 
             EmbedBuilder embed = new()
             {

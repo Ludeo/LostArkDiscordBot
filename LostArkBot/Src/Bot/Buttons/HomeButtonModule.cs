@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,7 +34,7 @@ namespace LostArkBot.Src.Bot.Buttons
             await Context.Interaction.UpdateAsync(x =>
             {
                 x.Embed = embed.Build();
-                x.Components = new ComponentBuilder().WithSelectMenu(Menus.GetHomeLfg()).WithButton(StaticObjects.deleteButton).Build();
+                x.Components = new ComponentBuilder().WithSelectMenu(Program.StaticObjects.HomeLfg).WithButton(Program.StaticObjects.DeleteButton).Build();
             });
         }
     }

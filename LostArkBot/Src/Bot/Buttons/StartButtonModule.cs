@@ -2,11 +2,8 @@
 using Discord.Interactions;
 using Discord.Net;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
@@ -59,10 +56,7 @@ namespace LostArkBot.Src.Bot.Buttons
                             pingMessage += playerMention + "\n";
                         }
 
-                        List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
-                        ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == Context.Interaction.Message.Id);
-
-                        IThreadChannel threadChannel = Context.Guild.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+                        IThreadChannel threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as IThreadChannel;
                         await threadChannel.SendMessageAsync(pingMessage);
 
                         try

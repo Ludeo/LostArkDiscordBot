@@ -232,7 +232,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await ProfileScreenShot.MakeProfileScreenshot(sortedEngravings, armorPieces, accessories, metaGameCharacter, metaGameCharacterJson, characterName);
 
-            string path = Environment.CurrentDirectory + "\\image.png";
+            string path = Environment.CurrentDirectory + "/image.png";
             
             EmbedBuilder embed = new()
             {

@@ -31,7 +31,7 @@ namespace LostArkBot.Src.Bot.Buttons
                         continue;
                     }
 
-                    menu.AddOption(field.Value.Split("\n")[1], $"{Context.Interaction.Message.Id},{field.Value.Split("\n")[1]}");
+                    menu.AddOption(field.Value.Split("\n")[1], field.Value.Split("\n")[1]);
                 }
 
                 await RespondAsync(components: new ComponentBuilder().WithSelectMenu(menu).Build(), ephemeral: true);
