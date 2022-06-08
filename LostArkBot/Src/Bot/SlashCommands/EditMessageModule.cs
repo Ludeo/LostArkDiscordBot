@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class EditMessageModule : InteractionModuleBase<SocketInteractionContext>
+    public class EditMessageModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("editmessage", "Edits the message of the LFG")]
         public async Task EditMessage([Summary("custom-message", "New custom message for the event")] string customMessage)
@@ -25,12 +26,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
             ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.ThreadId == Context.Channel.Id);
             ulong messageId = linkedMessage.MessageId;
 
-            ITextChannel channel = Program.Client.GetChannel(linkedMessage.ChannelId) as ITextChannel;
+            ITextChannel channel = Context.Client.GetChannel(linkedMessage.ChannelId) as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(messageId);
             IUserMessage message = messageRaw as IUserMessage;
             ulong authorId = message.Interaction.User.Id;
 
-            if (Context.User.Id != authorId && !Program.Client.GetGuild(Config.Default.Server).GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 await RespondAsync(text: "Only the Author of the Event can change the custom message", ephemeral: true);
 

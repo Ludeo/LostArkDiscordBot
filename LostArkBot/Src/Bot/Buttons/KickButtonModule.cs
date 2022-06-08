@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,11 +8,10 @@ namespace LostArkBot.Src.Bot.Buttons
 {
     public class KickButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
-        [ComponentInteraction("kick")]
+        [ComponentInteraction("kickbutton")]
         public async Task Kick()
         {
-            if (Context.User.Id == Context.Interaction.Message.Interaction.User.Id
-                || Program.Client.GetGuild(Config.Default.Server).GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            if (Context.User.Id == Context.Interaction.Message.Interaction.User.Id || Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 Embed originalEmbed = Context.Interaction.Message.Embeds.First();
 

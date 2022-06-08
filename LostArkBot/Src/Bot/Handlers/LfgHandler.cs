@@ -27,9 +27,11 @@ namespace LostArkBot.Src.Bot.Handlers
 
             if(model.IsEnd)
             {
+                SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+
                 embed.Author = new EmbedAuthorBuilder()
-                             .WithName($"Party Leader: {component.User.Username}")
-                             .WithIconUrl(Program.Client.GetUser(component.User.Id).GetAvatarUrl());
+                             .WithName($"Party Leader: {user.DisplayName}")
+                             .WithIconUrl(user.GetAvatarUrl());
                 embed.Description = "Waiting for players to join...";
                 embed.ImageUrl = eventImages[model.MenuItemId];
 

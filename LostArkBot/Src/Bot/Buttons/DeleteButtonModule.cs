@@ -13,10 +13,10 @@ namespace LostArkBot.Src.Bot.Buttons
 {
     public class DeleteButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
-        [ComponentInteraction("delete")]
+        [ComponentInteraction("deletebutton")]
         public async Task Delete()
         {
-            if (Context.User.Id == Context.Interaction.User.Id || Program.Client.GetGuild(Config.Default.Server).GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            if (Context.User.Id == Context.Interaction.User.Id || Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
                 ThreadLinkedMessage linkedMessage = threadLinkedMessageList.FirstOrDefault(x => x.MessageId == Context.Interaction.Message.Id);
@@ -35,7 +35,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
                 try
                 {
-                    IThreadChannel thread = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+                    IThreadChannel thread = Context.Guild.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
                     await thread.DeleteAsync();
                 } catch(HttpException exception)
                 {

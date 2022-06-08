@@ -13,11 +13,10 @@ namespace LostArkBot.Src.Bot.Buttons
 {
     public class StartButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
-        [ComponentInteraction("start")]
+        [ComponentInteraction("startbutton")]
         public async Task Start()
         {
-            if (Context.User.Id == Context.Interaction.Message.Interaction.User.Id
-                || Program.Client.GetGuild(Config.Default.Server).GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            if (Context.User.Id == Context.Interaction.Message.Interaction.User.Id || Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 Embed originalEmbed = Context.Interaction.Message.Embeds.First();
 
@@ -63,7 +62,7 @@ namespace LostArkBot.Src.Bot.Buttons
                         List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
                         ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == Context.Interaction.Message.Id);
 
-                        IThreadChannel threadChannel = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+                        IThreadChannel threadChannel = Context.Guild.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
                         await threadChannel.SendMessageAsync(pingMessage);
 
                         try

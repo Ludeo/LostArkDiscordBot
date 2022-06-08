@@ -12,7 +12,7 @@ namespace LostArkBot.Src.Bot.Buttons
 {
     public class LeaveButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
-        [ComponentInteraction("leave")]
+        [ComponentInteraction("leavebutton")]
         public async Task Leave()
         {
             Embed originalEmbed = Context.Interaction.Message.Embeds.First();
@@ -68,7 +68,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
                 ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == Context.Interaction.Message.Id);
 
-                IThreadChannel threadChannel = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+                IThreadChannel threadChannel = Context.Guild.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
                 await threadChannel.RemoveUserAsync(Context.User as IGuildUser);
             } else
             {

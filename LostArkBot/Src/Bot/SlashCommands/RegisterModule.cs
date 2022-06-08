@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class RegisterModule : InteractionModuleBase<SocketInteractionContext>
+    public class RegisterModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("register", "Registers the given character")]
         public async Task Register(
@@ -58,7 +59,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {characterName}",
-                ThumbnailUrl = profilePicture == string.Empty ? Program.Client.GetUser(newCharacter.DiscordUserId).GetAvatarUrl() : profilePicture,
+                ThumbnailUrl = profilePicture == string.Empty ? Context.Guild.GetUser(newCharacter.DiscordUserId).GetAvatarUrl() : profilePicture,
                 Color = new Color(222, 73, 227),
             };
 

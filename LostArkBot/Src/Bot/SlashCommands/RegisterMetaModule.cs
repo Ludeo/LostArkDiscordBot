@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class RegisterMetaModule : InteractionModuleBase<SocketInteractionContext>
+    public class RegisterMetaModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("registermeta", "Registers the currently logged in character")]
         public async Task RegisterMeta([Summary("twitch-name", "Your twitch name")] string twitchName)
@@ -132,7 +133,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {character.CharacterName}",
-                ThumbnailUrl = Program.Client.GetUser(character.DiscordUserId).GetAvatarUrl(),
+                ThumbnailUrl = Context.Guild.GetUser(character.DiscordUserId).GetAvatarUrl(),
                 Color = new Color(222, 73, 227),
             };
 

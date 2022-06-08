@@ -4,12 +4,12 @@ namespace LostArkBot.Src.Bot.FileObjects
 {
     public static class StaticObjects
     {
-        public static readonly ButtonBuilder deleteButton = new ButtonBuilder().WithCustomId("delete").WithLabel("Delete").WithStyle(ButtonStyle.Danger);
-        public static readonly ButtonBuilder homeButton = new ButtonBuilder().WithCustomId("home").WithLabel("Home").WithStyle(ButtonStyle.Primary);
-        public static readonly ButtonBuilder joinButton = new ButtonBuilder().WithCustomId("join").WithLabel("Join").WithStyle(ButtonStyle.Primary);
-        public static readonly ButtonBuilder leaveButton = new ButtonBuilder().WithCustomId("leave").WithLabel("Leave").WithStyle(ButtonStyle.Danger);
-        public static readonly ButtonBuilder startButton = new ButtonBuilder().WithCustomId("start").WithLabel("Start").WithStyle(ButtonStyle.Secondary);
-        public static readonly ButtonBuilder kickButton = new ButtonBuilder().WithCustomId("kick").WithLabel("Kick").WithStyle(ButtonStyle.Danger);
+        public static readonly ButtonBuilder deleteButton = new ButtonBuilder().WithCustomId("deletebutton").WithLabel("Delete").WithStyle(ButtonStyle.Danger);
+        public static readonly ButtonBuilder homeButton = new ButtonBuilder().WithCustomId("homebutton").WithLabel("Home").WithStyle(ButtonStyle.Primary);
+        public static readonly ButtonBuilder joinButton = new ButtonBuilder().WithCustomId("joinbutton").WithLabel("Join").WithStyle(ButtonStyle.Primary);
+        public static readonly ButtonBuilder leaveButton = new ButtonBuilder().WithCustomId("leavebutton").WithLabel("Leave").WithStyle(ButtonStyle.Danger);
+        public static readonly ButtonBuilder startButton = new ButtonBuilder().WithCustomId("startbutton").WithLabel("Start").WithStyle(ButtonStyle.Secondary);
+        public static readonly ButtonBuilder kickButton = new ButtonBuilder().WithCustomId("kickbutton").WithLabel("Kick").WithStyle(ButtonStyle.Danger);
 
         public static readonly string guardianIconUrl = "https://i.imgur.com/ZN7spLT.png";
         public static readonly string abyssDungeonIconUrl = "https://i.imgur.com/cjYoBNw.png";

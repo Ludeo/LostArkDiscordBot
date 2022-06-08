@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 {
     internal class DeleteModule
     {
-        public class AccountModule : InteractionModuleBase<SocketInteractionContext>
+        public class AccountModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
         {
             [SlashCommand("delete", "Deletes the given character from your character list")]
             public async Task Delete([Summary("character-name", "Name of the character you want to delete")] string characterName)

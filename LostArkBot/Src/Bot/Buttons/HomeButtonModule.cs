@@ -9,7 +9,7 @@ namespace LostArkBot.Src.Bot.Buttons
 {
     public class HomeButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
-        [ComponentInteraction("home")]
+        [ComponentInteraction("homebutton")]
         public async Task Home()
         {
             EmbedBuilder embed = new()

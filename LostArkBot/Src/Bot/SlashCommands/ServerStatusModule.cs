@@ -1,14 +1,15 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Newtonsoft.Json;
+using Discord.WebSocket;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class ServerStatusModule : InteractionModuleBase<SocketInteractionContext>
+    public class ServerStatusModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("serverstatus", "Shows the current status of the Wei server")]
         public async Task ServerStatus()
@@ -21,9 +22,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             response.Close();
             readStream.Close();
 
-            dynamic json = JsonConvert.DeserializeObject(responseJson);
-
-            string status = json.data.Wei;
+            string status = JsonDocument.Parse(responseJson).RootElement.GetProperty("data").GetProperty("Wei").ToString();
 
             EmbedBuilder embed = new()
             {

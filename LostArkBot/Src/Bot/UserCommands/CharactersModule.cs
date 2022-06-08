@@ -7,30 +7,30 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.SlashCommands
+namespace LostArkBot.Src.Bot.UserCommands
 {
-    public class AccountModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
+    public class CharactersModule : InteractionModuleBase<SocketInteractionContext<SocketUserCommand>>
     {
-        [SlashCommand("account", "Shows all of your registered characters")]
-        public async Task Account()
+        [UserCommand("characters")]
+        public async Task AccountUserCommand(IUser user)
         {
-            ulong userId = Context.User.Id;
+            ulong userId = user.Id;
             List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)
             {
-                await RespondAsync(text: "You don't have any characters registered. You can register a character with **/register**", ephemeral: true);
+                await RespondAsync(text: "This user doesn't have any characters registered", ephemeral: true);
 
                 return;
             }
 
             EmbedBuilder embed = new()
             {
-                Title = "Your characters",
+                Title = "Characters assigned to " + Context.Guild.GetUser(user.Id).DisplayName,
                 Color = Color.DarkPurple,
                 Description = "\u200b",
-                ThumbnailUrl = Context.User.GetAvatarUrl(),
+                ThumbnailUrl = user.GetAvatarUrl(),
             };
 
             List<GuildEmote> emotes = Program.GuildEmotes;

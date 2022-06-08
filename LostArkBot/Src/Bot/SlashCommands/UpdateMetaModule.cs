@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class UpdateMetaModule : InteractionModuleBase<SocketInteractionContext>
+    public class UpdateMetaModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("updatemeta", "Updates the profile of the currently logged in character")]
         public async Task UpdateMeta([Summary("twitch-name", "Your twitch name")] string twitchName)
@@ -137,7 +138,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 Title = $"Profile of {newCharacter.CharacterName}",
                 ThumbnailUrl = newCharacter.ProfilePicture == string.Empty
-                    ? Program.Client.GetUser(newCharacter.DiscordUserId).GetAvatarUrl()
+                    ? Context.Guild.GetUser(newCharacter.DiscordUserId).GetAvatarUrl()
                     : newCharacter.ProfilePicture,
                 Color = new Color(222, 73, 227),
             };

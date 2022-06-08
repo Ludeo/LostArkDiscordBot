@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class ProfileModule : InteractionModuleBase<SocketInteractionContext>
+    public class ProfileModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("profile", "Shows the profile of the given character")]
         public async Task Account([Summary("character-name", "Name of the character")] string characterName)
@@ -27,7 +28,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 Title = $"Profile of {characterName}",
                 ThumbnailUrl = character.ProfilePicture == string.Empty
-                    ? Program.Client.GetUser(character.DiscordUserId).GetAvatarUrl()
+                    ? Context.Guild.GetUser(character.DiscordUserId).GetAvatarUrl()
                     : character.ProfilePicture,
                 Color = new Color(222, 73, 227),
             };

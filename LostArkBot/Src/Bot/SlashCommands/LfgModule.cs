@@ -1,12 +1,13 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class LfgModule : InteractionModuleBase<SocketInteractionContext>
+    public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("lfg", "Creates an LFG event")]
         public async Task Lfg(
@@ -42,7 +43,5 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await RespondAsync(embed: embed.Build(), components: component.Build());
         }
-
-        //[ComponentInteraction("home-lfg")]
     }
 }

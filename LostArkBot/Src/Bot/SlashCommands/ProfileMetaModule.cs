@@ -1,5 +1,8 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class ProfileMetaModule : InteractionModuleBase<SocketInteractionContext>
+    public class ProfileMetaModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("profilemeta", "Shows a picture of the metagame profile of the given character")]
         public async Task ProfileMeta([Summary("character-name", "Name of the character you want to see the profile from")] string characterName)
@@ -229,7 +232,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await ProfileScreenShot.MakeProfileScreenshot(sortedEngravings, armorPieces, accessories, metaGameCharacter, metaGameCharacterJson, characterName);
 
-            await Context.Channel.SendFileAsync("image.png");
+            string path = Environment.CurrentDirectory + "\\image.png";
+            
+            EmbedBuilder embed = new()
+            {
+                Title = "Meta Game profile of " + characterName,
+                Description = "Profile Link: https://lostark.meta-game.gg/armory?character=" + characterName,
+                ImageUrl = $"attachment://{Path.GetFileName(path)}",
+                Color = Color.Blue
+            };
+
+            List<FileAttachment> files = new()
+            {
+                new FileAttachment(path)
+            };
+
+            await ModifyOriginalResponseAsync(x => {
+                x.Embed = embed.Build();
+                x.Attachments = files;
+                x.Content = null;
+            });
         }
     }
 }

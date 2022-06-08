@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class RollModule : InteractionModuleBase<SocketInteractionContext>
+    public class RollModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("roll", "Rolls a number for every player of the LFG")]
         public async Task Roll()
@@ -25,7 +26,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.ThreadId == Context.Channel.Id);
             ulong messageId = linkedMessage.MessageId;
 
-            ITextChannel channel = Program.Client.GetChannel(linkedMessage.ChannelId) as ITextChannel;
+            ITextChannel channel = Context.Guild.GetChannel(linkedMessage.ChannelId) as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(messageId);
             IUserMessage message = messageRaw as IUserMessage;
 

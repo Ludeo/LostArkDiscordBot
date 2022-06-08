@@ -17,7 +17,8 @@ namespace LostArkBot.Src.Bot.FileObjects
                                             .AddOption("Boss Rush", "bossrush")
                                             .AddOption("Platinum Fields", "platinumfields")
                                             .AddOption("Chaos Maps", "chaosmaps")
-                                            .AddOption("Coop Battle", "coopbattle");
+                                            .AddOption("Coop Battle", "coopbattle")
+                                            .AddOption("Challenge Guardian", "challengeguardian");
 
             return menuBuilder;
         }

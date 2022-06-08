@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    public class UpdateModule : InteractionModuleBase<SocketInteractionContext>
+    public class UpdateModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("update", "Updates the given character")]
         public async Task Update(
@@ -109,7 +110,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {characterName}",
-                ThumbnailUrl = profilePicture == string.Empty ? Program.Client.GetUser(newCharacter.DiscordUserId).GetAvatarUrl() : profilePicture,
+                ThumbnailUrl = profilePicture == string.Empty ? Context.Guild.GetUser(newCharacter.DiscordUserId).GetAvatarUrl() : profilePicture,
                 Color = new Color(222, 73, 227),
             };
 

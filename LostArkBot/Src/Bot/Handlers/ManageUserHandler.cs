@@ -18,7 +18,7 @@ namespace LostArkBot.Src.Bot.Handlers
             string messageIdRaw = component.Data.Values.First();
             string messageIdString = messageIdRaw.Split(",")[0];
             ulong messageId = ulong.Parse(messageIdString);
-            ITextChannel channel = Program.Client.GetChannel(component.Message.Channel.Id) as ITextChannel;
+            ITextChannel channel = component.Channel as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(messageId);
             IUserMessage message = messageRaw as IUserMessage;
             Embed originalEmbed = messageRaw.Embeds.First() as Embed;
@@ -45,9 +45,12 @@ namespace LostArkBot.Src.Bot.Handlers
             int playerNumberJoined = int.Parse(title2.Split("/")[0]);
             string playerNumberMax = title2.Split("/")[1];
 
+            SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+
             List<ThreadLinkedMessage> threadLinkedMessageList = JsonSerializer.Deserialize<List<ThreadLinkedMessage>>(File.ReadAllText("ThreadMessageLink.json"));
             ThreadLinkedMessage linkedMessage = threadLinkedMessageList.First(x => x.MessageId == messageId);
-            IThreadChannel threadChannel = Program.Client.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+            IThreadChannel threadChannel = user.Guild.GetChannel(linkedMessage.ThreadId) as IThreadChannel;
+            
 
             List<Character> characterList =
                 JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
@@ -66,7 +69,7 @@ namespace LostArkBot.Src.Bot.Handlers
                     {
                         if (messageIdRaw.Split(",")[1] == "Default")
                         {
-                            newEmbed.AddField($"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined", $"{component.User.Mention}", true);
+                            newEmbed.AddField(field.Name, $"{component.User.Mention}", true);
 
                             characterAdded = true;
                         }
@@ -74,11 +77,11 @@ namespace LostArkBot.Src.Bot.Handlers
                         {
                             Character character = characterList.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
 
-                            List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
+                            List<GuildEmote> emotes = Program.GuildEmotes;
                             GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
 
                             newEmbed.AddField(
-                                                $"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined",
+                                                field.Name,
                                                 $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
                                                 + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
                                                 true);
@@ -94,7 +97,7 @@ namespace LostArkBot.Src.Bot.Handlers
                     {
                         string mention = field.Value.Split("\n")[0];
                         ulong discordId = ulong.Parse(mention.Replace("<", "").Replace(">", "").Replace("!", "").Replace("@", ""));
-                        await threadChannel.RemoveUserAsync(Program.Client.GetGuild(Config.Default.Server).GetUser(discordId));
+                        await threadChannel.RemoveUserAsync(user);
                         playerNumberJoined--;
                     } else
                     {
@@ -114,24 +117,24 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 if (messageIdRaw.Split(",")[1] == "Default")
                 {
-                    newEmbed.AddField($"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined", $"{component.User.Mention}", true);
+                    newEmbed.AddField($"{user.DisplayName} has joined", $"{component.User.Mention}", true);
                 }
                 else
                 {
                     Character character = characterList.Find(x => x.CharacterName == messageIdRaw.Split(",")[1]);
 
-                    List<GuildEmote> emotes = new(await Program.Client.GetGuild(Config.Default.Server).GetEmotesAsync());
+                    List<GuildEmote> emotes = Program.GuildEmotes;
                     GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
 
                     newEmbed.AddField(
-                                        $"{Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id).DisplayName} has joined",
+                                        $"{user.DisplayName} has joined",
                                         $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
                                             + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
                                         true);
                 }
 
                 playerNumberJoined++;
-                await threadChannel.AddUserAsync(Program.Client.GetGuild(Config.Default.Server).GetUser(component.User.Id));
+                await threadChannel.AddUserAsync(user);
             }
 
             newEmbed.Title = $"{title.Split("(")[0]}({playerNumberJoined}/{playerNumberMax})";

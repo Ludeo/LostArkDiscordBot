@@ -28,20 +28,12 @@ namespace LostArkBot.Bot
             {
                 await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
                 client.InteractionCreated += InteractionCreated;
-                client.ButtonExecuted += ButtonExecuted;
                 client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
                 client.Ready += Ready;
-                commands.SlashCommandExecuted += SlashCommandExecuted;
-                commands.AutocompleteHandlerExecuted += AutoCompleteHandlerExecuted;
             } catch (Exception)
             {
                 throw;
             }
-        }
-
-        private Task AutoCompleteHandlerExecuted(IAutocompleteHandler arg1, IInteractionContext arg2, IResult arg3)
-        {
-            return Task.CompletedTask;
         }
 
         private async Task Ready()
@@ -73,33 +65,19 @@ namespace LostArkBot.Bot
             }
         }
 
-        private async Task ButtonExecuted(SocketMessageComponent arg)
-        {
-            try
-            {
-                var ctx = new SocketInteractionContext<SocketMessageComponent>(client, arg);
-                await commands.ExecuteCommandAsync(ctx, services);
-            } catch(Exception)
-            {
-                throw;
-            }
-        }
-
         private async Task InteractionCreated(SocketInteraction arg)
         {
-            try
-            {
-                var ctx = new SocketInteractionContext(client, arg);
-                var result = await commands.ExecuteCommandAsync(ctx, services);
-            } catch(Exception)
-            {
-                throw;
-            }
+            var ctx = CreateGeneric(client, arg);
+            await commands.ExecuteCommandAsync(ctx, services);
         }
 
-        private Task SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        private static IInteractionContext CreateGeneric(DiscordSocketClient client, SocketInteraction interaction) => interaction switch
         {
-            return Task.CompletedTask;
-        }
+            SocketUserCommand user => new SocketInteractionContext<SocketUserCommand>(client, user),
+            SocketSlashCommand slash => new SocketInteractionContext<SocketSlashCommand>(client, slash),
+            SocketMessageCommand command => new SocketInteractionContext<SocketMessageCommand>(client, command),
+            SocketMessageComponent component => new SocketInteractionContext<SocketMessageComponent>(client, component),
+            _ => throw new InvalidOperationException("This interaction type is not supported!")
+        };
     }
 }

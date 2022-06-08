@@ -4,7 +4,9 @@ using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Handlers
@@ -13,6 +15,7 @@ namespace LostArkBot.Src.Bot.Handlers
     {
         public static async Task MenuHandler(SocketMessageComponent component)
         {
+            #region Event Images
             Dictionary<string, string> eventImages = new()
             {
                 //Tier 1 Guardian Raids
@@ -97,6 +100,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 //Coop Battle
                 { "coopbattle", "https://i.imgur.com/tvvlWbS.jpg" }
             };
+            #endregion
 
             List<LfgModel> lfgModels = new();
             List<ManageUserModel> manageUserModels = new();
@@ -557,6 +561,39 @@ namespace LostArkBot.Src.Bot.Handlers
                 MenuItemId = "coopbattle",
                 Title = $"[Coop Battle] Coop Battle (0/6)",
                 ThumbnailUrl = StaticObjects.coopBattleIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+            };
+            lfgModels.Add(model);
+            #endregion
+
+            #region Challenge Guardian
+            List<ChallengeGuardian> challengeGuardians = JsonSerializer.Deserialize<List<ChallengeGuardian>>(File.ReadAllText("challengeguardians.json"));
+
+            model = new()
+            {
+                MenuId = new[] { "home-lfg" },
+                MenuItemId = "challengeguardian",
+                MenuPlaceholder = "Select Challenge Guardian",
+                MenuBuilderOptions = new List<MenuBuilderOption>()
+                {
+                    new MenuBuilderOption(challengeGuardians[0].GuardianName, challengeGuardians[0].GuardianName),
+                    new MenuBuilderOption(challengeGuardians[1].GuardianName, challengeGuardians[1].GuardianName),
+                    new MenuBuilderOption(challengeGuardians[2].GuardianName, challengeGuardians[2].GuardianName),
+                },
+                Title = "Challenge Guardian",
+                Description = "Select the Challenge Guardian Raid you want to do",
+                ThumbnailUrl = StaticObjects.guardianIconUrl,
+                Color = Color.Red,
+            };
+            lfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "challengeguardian" },
+                MenuItemId = component.Data.Values.First(),
+                Title = $"[Challenge Guardian] {component.Data.Values.First()} (0/4)",
+                ThumbnailUrl = StaticObjects.guardianIconUrl,
                 Color = Color.Red,
                 IsEnd = true,
             };
