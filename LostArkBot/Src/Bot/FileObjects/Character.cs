@@ -20,22 +20,22 @@ namespace LostArkBot.Src.Bot.FileObjects
         public string Engravings { get; set; }
 
         [JsonPropertyName("crit")]
-        public string Crit { get; set; }
+        public int Crit { get; set; }
 
         [JsonPropertyName("spec")]
-        public string Spec { get; set; }
+        public int Spec { get; set; }
 
         [JsonPropertyName("dom")]
-        public string Dom { get; set; }
+        public int Dom { get; set; }
 
         [JsonPropertyName("swift")]
-        public string Swift { get; set; }
+        public int Swift { get; set; }
 
         [JsonPropertyName("end")]
-        public string End { get; set; }
+        public int End { get; set; }
 
         [JsonPropertyName("exp")]
-        public string Exp { get; set; }
+        public int Exp { get; set; }
 
         [JsonPropertyName("profile-picture")]
         public string ProfilePicture { get; set; }

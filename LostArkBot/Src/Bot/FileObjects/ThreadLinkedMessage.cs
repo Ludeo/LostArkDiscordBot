@@ -9,5 +9,8 @@ namespace LostArkBot.Src.Bot.FileObjects
 
         [JsonPropertyName("threadid")]
         public ulong ThreadId { get; set; }
+
+        [JsonPropertyName("channelid")]
+        public ulong ChannelId { get; set; }
     }
 }

@@ -3,61 +3,74 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using LostArkBot.Bot;
 using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Bot.Modules;
-using LostArkBot.Src.Bot;
 using Microsoft.Extensions.DependencyInjection;
-using Timer = System.Timers.Timer;
+using Discord.Interactions;
 using System.Collections.Generic;
+using Discord.Commands;
 
 namespace LostArkBot
 {
-    /// <summary>
-    ///     Class that gets executed when the program starts, it also starts up the bot.
-    /// </summary>
     public class Program
     {
-        /// <summary>
-        ///     Gets the timer that is needed for the score tracking.
-        /// </summary>
-        public static Timer Timer { get; } = new();
-
-        /// <summary>
-        ///     Gets the discord client.
-        /// </summary>
-        public static DiscordSocketClient Client { get; private set; }
+        private static DiscordSocketClient Client { get; set; }
 
         public static Random Random { get; } = new Random();
 
+        public static List<GuildEmote> GuildEmotes { get; private set; }
+
         public static Task Log(LogMessage log)
         {
-            Console.WriteLine(log);
-            File.AppendAllText("log.txt", log + "\n");
+            string text = $"[General/{log.Severity}] {log}";
+            
+            if(log.Exception is CommandException commandException)
+            {
+                text = $"[Command/{log.Severity}] {commandException.Command.Name} failed to execute in {commandException.Context.Channel.Name}\n{commandException}";
+            }
+
+            if(log.Severity == LogSeverity.Critical)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+            } else if(log.Severity == LogSeverity.Error)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            } else if (log.Severity == LogSeverity.Warning)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+            } else
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
+            Console.WriteLine(text);
+            File.AppendAllText("log.txt", text + "\n");
 
             return Task.CompletedTask;
         }
 
-        private static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
+        private static void Main() => MainAsync().GetAwaiter().GetResult();
 
-        private async Task MainAsync()
+        private static async Task MainAsync()
         {
             ServiceProvider services = ConfigureServices();
+            Client = services.GetRequiredService<DiscordSocketClient>();
+            InteractionService commands = services.GetRequiredService<InteractionService>();
+            CommandHandlingService commandHandlingService = services.GetRequiredService<CommandHandlingService>();
 
-            Client = services!.GetRequiredService<DiscordSocketClient>();
+            await commandHandlingService.Initialize();
 
             Client.Log += Log;
-            services!.GetRequiredService<CommandService>().Log += Log;
+            commands.Log += Log;
+            Client.Ready += InitializeEmotes;
 
             Config config = Config.Default;
 
             if (string.IsNullOrEmpty(config.Token))
             {
-                string log = "The bot token is not available in the config.json file. Add it and restart the bot.";
-                Console.WriteLine(log);
-                await File.AppendAllTextAsync("log.txt", log);
+                LogMessage logMessage = new(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
+                await Log(logMessage);
                 Environment.Exit(0);
             }
 
@@ -65,31 +78,32 @@ namespace LostArkBot
 
             await Client.LoginAsync(TokenType.Bot, token);
             await Client.StartAsync();
-
-            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-
-            string prefix = config.Prefix;
-
             await Client.SetGameAsync($"Lost Ark || /help");
-
-            Client.Ready += this.ClientReady;
 
             await Task.Delay(Timeout.Infinite);
         }
 
-        private ServiceProvider ConfigureServices() => new ServiceCollection()
-                                                       .AddSingleton<DiscordSocketClient>()
-                                                       .AddSingleton<CommandService>()
+        private static async Task InitializeEmotes()
+        {
+            IReadOnlyCollection<GuildEmote> emotes = await Client.GetGuild(Config.Default.Server).GetEmotesAsync();
+            GuildEmotes = new(emotes);
+            Client.Ready -= InitializeEmotes;
+        }
+
+        private static DiscordSocketConfig BuildDiscordSocketConfig()
+        {
+            DiscordSocketConfig config = new()
+            {
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages,
+            };
+
+            return config;
+        }
+
+        private static ServiceProvider ConfigureServices() => new ServiceCollection()
+                                                       .AddSingleton(new DiscordSocketClient(BuildDiscordSocketConfig()))
+                                                       .AddSingleton<InteractionService>()
                                                        .AddSingleton<CommandHandlingService>()
                                                        .BuildServiceProvider();
-
-        private async Task ClientReady()
-        {
-            List<ApplicationCommandProperties> applicationCommandProperties = new();
-            applicationCommandProperties.AddRange(await SlashCommandInitialization.CreateSlashCommands());
-            applicationCommandProperties.AddRange(await GuildUserCommandInitialization.CreateGuildUserCommands());
-
-            await Client.GetGuild(Config.Default.Server).BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
-        }
     }
 }
