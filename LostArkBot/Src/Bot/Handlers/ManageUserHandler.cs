@@ -64,7 +64,7 @@ namespace LostArkBot.Src.Bot.Handlers
                     {
                         if (component.Data.Values.First() == "Default")
                         {
-                            newEmbed.AddField(field.Name, $"{component.User.Mention}", true);
+                            newEmbed.AddField(field.Name, $"{component.User.Mention}\n{user.DisplayName}", true);
 
                             characterAdded = true;
                         }
@@ -83,6 +83,9 @@ namespace LostArkBot.Src.Bot.Handlers
 
                             characterAdded = true;
                         }
+                    } else
+                    {
+                        newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
                     }
                 } else if(model.Action == ManageAction.Kick)
                 {
@@ -110,7 +113,7 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 if (characterName == "Default")
                 {
-                    newEmbed.AddField($"{user.DisplayName} has joined", $"{component.User.Mention}", true);
+                    newEmbed.AddField($"{user.DisplayName} has joined", $"{component.User.Mention}\n{user.DisplayName}", true);
                 }
                 else
                 {

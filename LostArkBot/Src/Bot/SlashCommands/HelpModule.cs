@@ -26,8 +26,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Color = Color.Gold,
             };
 
-            
-
             if(commandSpecific == Commands.Default)
             {
                 List<SocketApplicationCommand> commandsUnsorted = new(commandCollection);

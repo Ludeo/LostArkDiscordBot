@@ -29,7 +29,7 @@ namespace LostArkBot.Src.Bot.FileObjects
 
         public SelectMenuBuilder HomeLfg { get; set; }
 
-        public List<LfgModel> LfgModels { get; private set; } = new();
+        public List<LfgModel> LfgModels { get; set; } = new();
 
         public List<ManageUserModel> ManageUserModels { get; private set; } = new();
 

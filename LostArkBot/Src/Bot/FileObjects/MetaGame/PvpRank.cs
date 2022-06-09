@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LostArkBot.Src.Bot.FileObjects.MetaGame
+﻿namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
     public enum PvpRank
     {
+        Default,
         Grade20,
         Grade19,
         Grade18,

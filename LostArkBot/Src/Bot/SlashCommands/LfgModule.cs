@@ -1,7 +1,12 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.Src.Bot.FileObjects;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -11,8 +16,20 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("lfg", "Creates an LFG event")]
         public async Task Lfg(
             [Summary("custom-message", "Custom Message that will be displayed in the LFG")] string customMessage = "",
-            [Summary("time", "Time of the LFG, must have format: DD/MM hh:mm")] string time = "")
+            [Summary("time", "Time of the LFG, must have format: DD/MM hh:mm")] string time = "",
+            [Summary("static-group", "Name of the static group")] string staticGroup = "")
         {
+            if(!string.IsNullOrEmpty(staticGroup))
+            {
+                List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+
+                if(!staticGroups.Any(x => x.Name == staticGroup))
+                {
+                    await RespondAsync(text: "The given static group doesn't exist", ephemeral: true);
+                    return;
+                }
+            }
+
             ComponentBuilder component = new ComponentBuilder().WithSelectMenu(Program.StaticObjects.HomeLfg).WithButton(Program.StaticObjects.DeleteButton);
 
             EmbedBuilder embed = new()
@@ -40,7 +57,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.Timestamp = new DateTimeOffset(now.Year, month, day, hour, minute, 0, now.Offset);
             }
 
-            await RespondAsync(embed: embed.Build(), components: component.Build());
+            await RespondAsync(text: staticGroup, embed: embed.Build(), components: component.Build());
         }
     }
 }
