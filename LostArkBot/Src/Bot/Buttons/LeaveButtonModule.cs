@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Net;
 using Discord.WebSocket;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,8 +12,21 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("leavebutton")]
         public async Task Leave()
         {
-            Embed originalEmbed = Context.Interaction.Message.Embeds.First();
+            Embed originalEmbed;
+            SocketThreadChannel threadChannel;
             string userMention = Context.User.Mention;
+
+            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+            {
+                threadChannel = Context.Channel as SocketThreadChannel;
+                ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
+                IMessage message = await textChannel.GetMessageAsync(threadChannel.Id);
+                originalEmbed = message.Embeds.First() as Embed;
+            } else
+            {
+                threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as SocketThreadChannel;
+                originalEmbed = Context.Interaction.Message.Embeds.First();
+            }
 
             EmbedBuilder newEmbed = new()
             {
@@ -59,9 +73,25 @@ namespace LostArkBot.Src.Bot.Buttons
                 string playerNumberMax = title2.Split("/")[1];
                 newEmbed.Title = $"{title.Split("(")[0]}({int.Parse(playerNumberJoined) - 1}/{playerNumberMax})";
 
-                await Context.Interaction.UpdateAsync(x => x.Embed = newEmbed.Build());
+                if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+                {
+                    ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
+                    IUserMessage message = await textChannel.GetMessageAsync(threadChannel.Id) as IUserMessage;
+                    await message.ModifyAsync(x => x.Embed = newEmbed.Build());
 
-                IThreadChannel threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as IThreadChannel;
+                    try
+                    {
+                        await RespondAsync();
+                    } catch(HttpException exception)
+                    {
+                        await Program.Log(new LogMessage(LogSeverity.Error, "LeaveButtonModule.cs", exception.Message));
+                    }
+                    
+                } else
+                {
+                    await Context.Interaction.UpdateAsync(x => x.Embed = newEmbed.Build());
+                }
+
                 await threadChannel.RemoveUserAsync(Context.User as IGuildUser);
             } else
             {

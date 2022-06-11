@@ -11,9 +11,23 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("kickbutton")]
         public async Task Kick()
         {
-            if (Context.User.Id == Context.Interaction.Message.Interaction.User.Id || Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            IMessage message;
+            SocketGuild guild;
+
+            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
             {
-                Embed originalEmbed = Context.Interaction.Message.Embeds.First();
+                SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
+                ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
+                message = await textChannel.GetMessageAsync(threadChannel.Id);
+                guild = threadChannel.Guild;
+            } else
+            {
+                message = Context.Interaction.Message;
+                guild = Context.Guild;
+            }
+            if (Context.User.Id == message.Interaction.User.Id || guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            {
+                Embed originalEmbed = message.Embeds.First() as Embed;
 
                 if (originalEmbed.Fields.Length == 0
                     || (originalEmbed.Fields.Length == 1 && (originalEmbed.Fields.First().Name == "Custom Message" || originalEmbed.Fields.First().Name == "Time"))

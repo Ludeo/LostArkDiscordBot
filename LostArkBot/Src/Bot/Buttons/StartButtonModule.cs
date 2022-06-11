@@ -15,7 +15,18 @@ namespace LostArkBot.Src.Bot.Buttons
         {
             if (Context.User.Id == Context.Interaction.Message.Interaction.User.Id || Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
-                Embed originalEmbed = Context.Interaction.Message.Embeds.First();
+                Embed originalEmbed;
+
+                if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+                {
+                    SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
+                    ITextChannel lfgChannel = threadChannel.ParentChannel as ITextChannel;
+                    IMessage message = await lfgChannel.GetMessageAsync(threadChannel.Id);
+                    originalEmbed = message.Embeds.First() as Embed;
+                } else
+                {
+                    originalEmbed = originalEmbed = Context.Interaction.Message.Embeds.First();
+                }
 
                 if (originalEmbed.Fields.Length is not 0)
                 {
@@ -56,8 +67,14 @@ namespace LostArkBot.Src.Bot.Buttons
                             pingMessage += playerMention + "\n";
                         }
 
-                        IThreadChannel threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as IThreadChannel;
-                        await threadChannel.SendMessageAsync(pingMessage);
+                        if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+                        {
+                            await Context.Channel.SendMessageAsync(pingMessage);
+                        } else
+                        {
+                            IThreadChannel threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as IThreadChannel;
+                            await threadChannel.SendMessageAsync(pingMessage);
+                        }
 
                         try
                         {
@@ -66,6 +83,8 @@ namespace LostArkBot.Src.Bot.Buttons
                         {
                             await Program.Log(new LogMessage(LogSeverity.Error, "StartButton.cs", exception.Message));
                         }
+
+                        return;
                     } else
                     {
                         await RespondAsync(text: "This event doesn't have participants", ephemeral: true);

@@ -85,7 +85,8 @@ namespace LostArkBot.Src.Bot.Handlers
                 .WithButton(Program.StaticObjects.DeleteButton)
                 .WithButton(Program.StaticObjects.StartButton);
 
-                await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message, autoArchiveDuration: ThreadArchiveDuration.OneDay);
+                IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message);
+                await threadChannel.ModifyAsync(x => x.AutoArchiveDuration = ThreadArchiveDuration.OneWeek);
 
             } else
             {

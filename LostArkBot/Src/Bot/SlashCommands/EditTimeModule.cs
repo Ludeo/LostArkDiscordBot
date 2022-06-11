@@ -10,7 +10,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class EditTimeModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("edittime", "Edits the time of the LFG")]
-        public async Task EditTime([Summary("time", "New time for the event, Format: DD/MM hh:mm")] string time)
+        public async Task EditTime([Summary("time", "New time of the LFG, must be server time and must have format: DD/MM hh:mm")] string time)
         {
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
@@ -48,19 +48,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Color = originalEmbed.Color.Value,
             };
 
-            DateTimeOffset now = DateTimeOffset.Now;
             int day = int.Parse(time[..2]);
             int month = int.Parse(time.Substring(3, 2));
             int hour = int.Parse(time.Substring(6, 2));
             int minute = int.Parse(time.Substring(9, 2));
-            int year = now.Year;
+            int year = DateTimeOffset.Now.Year;
 
-            if (month < now.Month)
+            if (month < DateTimeOffset.Now.Month)
             {
                 year += 1;
             }
 
-            DateTimeOffset newDateTime = new(year, month, day, hour, minute, 0, now.Offset);
+            DateTimeOffset newDateTime = new(year, month, day, hour, minute, DateTimeOffset.Now.Second, new TimeSpan(1, 0, 0));
 
             if (!originalEmbed.Fields.Any(x => x.Name == "Time"))
             {

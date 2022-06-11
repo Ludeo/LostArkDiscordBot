@@ -16,11 +16,27 @@ namespace LostArkBot.Src.Bot.Handlers
         public static async Task ManageUserHandlerAsync(SocketMessageComponent component, ManageUserModel model)
         {
             string characterName = component.Data.Values.First();
-            ulong messageId = (ulong)component.Message.Reference.MessageId;
-            ITextChannel channel = component.Channel as ITextChannel;
-            IMessage messageRaw = await channel.GetMessageAsync(messageId);
-            IUserMessage message = messageRaw as IUserMessage;
-            Embed originalEmbed = messageRaw.Embeds.First() as Embed;
+            SocketThreadChannel threadChannel;
+            ITextChannel channel;
+            Embed originalEmbed;
+            SocketGuildUser user;
+            IUserMessage message;
+
+            if(component.Channel.GetChannelType() == ChannelType.PublicThread)
+            {
+                threadChannel = component.Channel as SocketThreadChannel;
+                channel = threadChannel.ParentChannel as ITextChannel;
+                message = await channel.GetMessageAsync(threadChannel.Id) as IUserMessage;
+                originalEmbed = message.Embeds.First() as Embed;
+                user = await channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+            } else
+            {
+                user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+                threadChannel = user.Guild.GetChannel((ulong)component.Message.Reference.MessageId) as SocketThreadChannel;
+                channel = component.Channel as ITextChannel;
+                message = await channel.GetMessageAsync((ulong)component.Message.Reference.MessageId) as IUserMessage;
+                originalEmbed = message.Embeds.First() as Embed;
+            }
 
             EmbedBuilder newEmbed = new()
             {
@@ -44,9 +60,6 @@ namespace LostArkBot.Src.Bot.Handlers
             int playerNumberJoined = int.Parse(title2.Split("/")[0]);
             string playerNumberMax = title2.Split("/")[1];
 
-            SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
-            IThreadChannel threadChannel = user.Guild.GetChannel(messageId) as IThreadChannel;
-            
             List<Character> characterList =
                 JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
 
@@ -135,10 +148,7 @@ namespace LostArkBot.Src.Bot.Handlers
 
             newEmbed.Title = $"{title.Split("(")[0]}({playerNumberJoined}/{playerNumberMax})";
 
-            await message.ModifyAsync(x =>
-            {
-                x.Embed = newEmbed.Build();
-            });
+            await message.ModifyAsync(x => x.Embed = newEmbed.Build());
 
             try
             {

@@ -16,7 +16,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("lfg", "Creates an LFG event")]
         public async Task Lfg(
             [Summary("custom-message", "Custom Message that will be displayed in the LFG")] string customMessage = "",
-            [Summary("time", "Time of the LFG, must have format: DD/MM hh:mm")] string time = "",
+            [Summary("time", "Time of the LFG, must be server time and must have format: DD/MM hh:mm")] string time = "",
             [Summary("static-group", "Name of the static group")] string staticGroup = "")
         {
             if(!string.IsNullOrEmpty(staticGroup))
@@ -53,8 +53,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 int month = int.Parse(time.Substring(3, 2));
                 int hour = int.Parse(time.Substring(6, 2));
                 int minute = int.Parse(time.Substring(9, 2));
-                DateTimeOffset now = DateTimeOffset.Now;
-                embed.Timestamp = new DateTimeOffset(now.Year, month, day, hour, minute, 0, now.Offset);
+                int year = DateTimeOffset.Now.Year;
+
+                if (month < DateTimeOffset.Now.Month)
+                {
+                    year += 1;
+                }
+
+                embed.Timestamp = new DateTimeOffset(year, month, day, hour, minute, 0, new TimeSpan(1, 0, 0));
             }
 
             await RespondAsync(text: staticGroup, embed: embed.Build(), components: component.Build());
