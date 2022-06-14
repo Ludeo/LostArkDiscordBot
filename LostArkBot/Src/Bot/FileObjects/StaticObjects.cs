@@ -108,6 +108,16 @@ namespace LostArkBot.Src.Bot.FileObjects
                 { "Valtan Full [Normal]", "https://i.imgur.com/lWGHAxj.png" },
                 { "Valtan Full [Hard]", "https://i.imgur.com/lWGHAxj.png" },
 
+                //Vykas
+                { "Vykas Gate 1 [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Gate 2 [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Gate 3 [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Gate 1 [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Gate 2 [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Gate 3 [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Full [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Full [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+
                 //Cube
                 { "Cube", "https://i.imgur.com/1NmM7St.png" },
                 { "Elite Cube", "https://i.imgur.com/dOIurSp.png" },
@@ -570,6 +580,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
                     new MenuBuilderOption("Valtan", "valtan", "iLvl: 1415-1445"),
+                    new MenuBuilderOption("Vykas", "vykas", "iLvl: 1430-1460"),
                 },
                 Title = "Legion Raid",
                 Description = "Select the Legion Commander you want to do",
@@ -601,7 +612,30 @@ namespace LostArkBot.Src.Bot.FileObjects
 
             model = new()
             {
-                MenuId = new[] { "valtan" },
+                MenuId = new[] { "legionraid" },
+                MenuItemId = "vykas",
+                MenuPlaceholder = "Select Vykas Gate and Difficulty",
+                MenuBuilderOptions = new List<MenuBuilderOption>()
+                {
+                    new MenuBuilderOption("Vykas Full [Normal]", "Vykas Full [Normal]", "Item Level: 1430"),
+                    new MenuBuilderOption("Vykas Gate 1 [Normal]", "Vykas Gate 1 [Normal]", "Item Level: 1430"),
+                    new MenuBuilderOption("Vykas Gate 2 [Normal]", "Vykas Gate 2 [Normal]", "Item Level: 1430"),
+                    new MenuBuilderOption("Vykas Gate 3 [Normal]", "Vykas Gate 3 [Normal]", "Item Level: 1430"),
+                    new MenuBuilderOption("Vykas Full [Hard]", "Vykas Full [Hard]", "Item Level: 1460"),
+                    new MenuBuilderOption("Vykas Gate 1 [Hard]", "Vykas Gate 1 [Hard]", "Item Level: 1460"),
+                    new MenuBuilderOption("Vykas Gate 2 [Hard]", "Vykas Gate 2 [Hard]", "Item Level: 1460"),
+                    new MenuBuilderOption("Vykas Gate 3 [Hard]", "Vykas Gate 3 [Hard]", "Item Level: 1460"),
+                },
+                Title = "Vykas",
+                Description = "Select the Vykas Gate and Difficulty you want to do",
+                ThumbnailUrl = LegionRaidIconUrl,
+                Color = Color.Teal,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "valtan", "vykas" },
                 Title = "[Legion Raid]",
                 ThumbnailUrl = LegionRaidIconUrl,
                 Color = Color.Teal,

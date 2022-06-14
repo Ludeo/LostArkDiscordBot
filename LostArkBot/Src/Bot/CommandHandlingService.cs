@@ -77,6 +77,7 @@ namespace LostArkBot.Bot
             SocketSlashCommand slash => new SocketInteractionContext<SocketSlashCommand>(client, slash),
             SocketMessageCommand command => new SocketInteractionContext<SocketMessageCommand>(client, command),
             SocketMessageComponent component => new SocketInteractionContext<SocketMessageComponent>(client, component),
+            SocketModal modal => new SocketInteractionContext<SocketModal>(client, modal),
             _ => throw new InvalidOperationException("This interaction type is not supported!")
         };
     }

@@ -26,6 +26,9 @@ namespace LostArkBot.Src.Bot.FileObjects
         [JsonPropertyName("server")]
         public ulong Server { get; set; }
 
+        [JsonPropertyName("admin")]
+        public ulong Admin { get; set; }
+
         private static Config GetConfig()
         {
             if (!File.Exists("config.json"))
