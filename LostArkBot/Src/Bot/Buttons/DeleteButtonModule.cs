@@ -34,14 +34,6 @@ namespace LostArkBot.Src.Bot.Buttons
                     await threadChannel.DeleteAsync();
                 }
             }
-
-            try
-            {
-                await RespondAsync();
-            } catch(HttpException exception)
-            {
-                await Program.Log(new LogMessage(LogSeverity.Error, "DeleteButton.cs", exception.Message));
-            }
                 
             return;
         }
