@@ -29,6 +29,9 @@ namespace LostArkBot.Src.Bot.FileObjects
         [JsonPropertyName("admin")]
         public ulong Admin { get; set; }
 
+        [JsonPropertyName("merchantchannel")]
+        public ulong MerchantChannel { get; set; }
+
         private static Config GetConfig()
         {
             if (!File.Exists("config.json"))

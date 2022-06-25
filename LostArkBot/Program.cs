@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Discord.Interactions;
 using System.Collections.Generic;
 using Discord.Commands;
+using Quartz.Impl;
+using Quartz;
+using LostArkBot.Src.Bot.QuartzJobs;
 
 namespace LostArkBot
 {
@@ -23,6 +26,7 @@ namespace LostArkBot
 
         public static StaticObjects StaticObjects { get; } = new StaticObjects();
 
+        public static SocketTextChannel MerchantChannel { get; private set; }
         public static Task Log(LogMessage log)
         {
             string text = $"[General/{log.Severity}] {log}";
@@ -66,6 +70,7 @@ namespace LostArkBot
             Client.Log += Log;
             commands.Log += Log;
             Client.Ready += InitializeEmotes;
+            Client.Ready += InitializeScheduledTask;
 
             Config config = Config.Default;
 
@@ -92,11 +97,34 @@ namespace LostArkBot
             Client.Ready -= InitializeEmotes;
         }
 
+        private static async Task InitializeScheduledTask()
+        {
+            MerchantChannel = Client.GetGuild(Config.Default.Server).GetTextChannel(Config.Default.MerchantChannel);
+            StdSchedulerFactory stdSchedulerFactory = new();
+            IScheduler scheduler = await stdSchedulerFactory.GetScheduler();
+
+            await scheduler.Start();
+
+            IJobDetail merchantJob = JobBuilder.Create<MerchantJob>()
+                .WithIdentity("merchantjob", "merchantgroup")
+                .Build();
+
+            ITrigger merchantTrigger = TriggerBuilder.Create()
+                .WithIdentity("merchanttrigger", "merchantgroup")
+                .StartNow()
+                .WithCronSchedule("* 56 * * * ?")
+                .Build();
+
+            await scheduler.ScheduleJob(merchantJob, merchantTrigger);
+            Client.Ready -= InitializeScheduledTask;
+        }
+
         private static DiscordSocketConfig BuildDiscordSocketConfig()
         {
             DiscordSocketConfig config = new()
             {
                 GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages,
+                UseInteractionSnowflakeDate = false,
             };
 
             return config;

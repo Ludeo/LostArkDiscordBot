@@ -17,6 +17,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("updatemeta", "Updates the profile of the currently logged in character")]
         public async Task UpdateMeta([Summary("twitch-name", "Your twitch name")] string twitchName)
         {
+            await DeferAsync(ephemeral: true);
             string updateUrl = "https://lostark-lookup.herokuapp.com/api/refresh?twitchUsername=" + twitchName;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(updateUrl);
@@ -36,13 +37,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    await RespondAsync(text: "This user is currently not online or doesn't have the twitch extension enabled", ephemeral: true);
+                    await FollowupAsync(text: "This user is currently not online or doesn't have the twitch extension enabled");
 
                     return;
                 }
                 else if (response.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    await RespondAsync(text: "This twitch user doesn't exist", ephemeral: true);
+                    await FollowupAsync(text: "This twitch user doesn't exist");
 
                     return;
                 }
@@ -57,14 +58,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (oldCharacter is null)
             {
-                await RespondAsync(text: metaGameRefresh.CharacterName + " is not registered yet. You can register it with /register", ephemeral: true);
+                await FollowupAsync(text: metaGameRefresh.CharacterName + " is not registered yet. You can register it with /register");
 
                 return;
             }
 
             if (oldCharacter.DiscordUserId != Context.User.Id)
             {
-                await RespondAsync(text: metaGameRefresh.CharacterName + " does not belong to you", ephemeral: true);
+                await FollowupAsync(text: metaGameRefresh.CharacterName + " does not belong to you");
 
                 return;
             }
@@ -81,7 +82,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(responseString) || responseString == "[]")
             {
-                await RespondAsync(text: oldCharacter.CharacterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
+                await FollowupAsync(text: oldCharacter.CharacterName + " does not exist. Login with the character and enable the twitch extension");
 
                 return;
             }
@@ -146,12 +147,16 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("Item Level", newCharacter.ItemLevel, true);
             embedBuilder.AddField("Class", newCharacter.ClassName, true);
 
-            string[] engravings = newCharacter.Engravings.Split(",");
             string engraving = string.Empty;
 
-            foreach (string x in engravings)
+            if(!string.IsNullOrEmpty(newCharacter.Engravings))
             {
-                engraving += x + "\n";
+                string[] engravings = newCharacter.Engravings.Split(",");
+
+                foreach (string x in engravings)
+                {
+                    engraving += x + "\n";
+                }
             }
 
             embedBuilder.AddField("Engravings", engraving == string.Empty ? "\u200b" : engraving, true);
@@ -159,7 +164,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("\u200b", $"Swift: {newCharacter.Swift}\nEnd: {newCharacter.End}\nExp: {newCharacter.Exp}", true);
             embedBuilder.AddField("Custom Message", newCharacter.CustomProfileMessage == string.Empty ? "\u200b" : newCharacter.CustomProfileMessage);
 
-            await RespondAsync(text: $"{newCharacter.CharacterName} got successfully updated", embed: embedBuilder.Build());
+            await FollowupAsync(text: $"{newCharacter.CharacterName} got successfully updated", embed: embedBuilder.Build());
         }
     }
 }

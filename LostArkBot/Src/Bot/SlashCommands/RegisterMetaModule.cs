@@ -17,7 +17,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("registermeta", "Registers the currently logged in character")]
         public async Task RegisterMeta([Summary("twitch-name", "Your twitch name")] string twitchName)
         {
-            await RespondAsync(text: "Processing..", ephemeral: true);
+            await DeferAsync(ephemeral: true);
 
             string updateUrl = "https://lostark-lookup.herokuapp.com/api/refresh?twitchUsername=" + twitchName;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(updateUrl);
@@ -36,13 +36,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    await ModifyOriginalResponseAsync(x => x.Content = "This user is currently not online or doesn't have the twitch extension enabled");
+                    await FollowupAsync(text: "This user is currently not online or doesn't have the twitch extension enabled");
 
                     return;
                 }
                 else if (response.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    await ModifyOriginalResponseAsync(x => x.Content = "This twitch user doesn't exist");
+                    await FollowupAsync(text: "This twitch user doesn't exist");
 
                     return;
                 }
@@ -54,7 +54,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (characterCheck != null)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = characterCheck.CharacterName + " is already registered. You can update it with **/update**");
+                await FollowupAsync(text: characterCheck.CharacterName + " is already registered. You can update it with **/update**");
 
                 return;
             }
@@ -80,7 +80,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(responseString) || responseString == "[]")
             {
-                await ModifyOriginalResponseAsync(x => x.Content = character.CharacterName + " does not exist. Login with the character and enable the twitch extension");
+                await FollowupAsync(text: character.CharacterName + " does not exist. Login with the character and enable the twitch extension");
 
                 return;
             }
@@ -147,10 +147,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
             embedBuilder.AddField("Custom Message", "\u200b");
 
-            await ModifyOriginalResponseAsync(x => {
-                x.Content = character.CharacterName + " got successfully registered";
-                x.Embed = embedBuilder.Build();
-            });
+            await FollowupAsync(text: character.CharacterName + " got successfully registered", embed: embedBuilder.Build());
         } 
     }
 }

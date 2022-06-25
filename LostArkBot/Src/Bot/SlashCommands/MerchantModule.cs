@@ -15,6 +15,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
 {
     public class MerchantModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        HubConnection hubConnection;
+
         [SlashCommand("merchant", "Connects to lostmerchants and starts posting merchant locations when available")]
         public async Task Merchant()
         {
@@ -40,17 +42,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
             Dictionary<string, MerchantInfo> merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
-            HubConnection hubConnection = new HubConnectionBuilder().WithUrl("https://lostmerchants.com/MerchantHub").Build();
+            hubConnection = new HubConnectionBuilder().WithUrl("https://lostmerchants.com/MerchantHub").Build();
             hubConnection.KeepAliveInterval = new TimeSpan(0, 4, 0);
             hubConnection.ServerTimeout = new TimeSpan(0, 8, 0);
+            hubConnection.Closed -= OnConnectionClosedAsync;
+            hubConnection.Closed += OnConnectionClosedAsync;
 
-            await hubConnection.StartAsync();
+            await StartConnectionAsync();
             await hubConnection.InvokeAsync("SubscribeToServer", "Wei");
 
             hubConnection.On<string, object>("UpdateMerchantGroup", async (server, merchants) =>
             {
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchants.ToString());
-                Merchant merchant = merchantGroup.ActiveMerchants.First();
+                Merchant merchant = merchantGroup.ActiveMerchants.Last();
                 string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
 
                 Rarity highestRarity = merchant.Card.Rarity;
@@ -110,11 +114,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     embedDescription = "\u200b";
                 }
 
+                DateTimeOffset now = DateTimeOffset.Now;
+                DateTimeOffset expiryDate = new(now.Year, now.Month, now.Day, now.Hour, 55, 0, now.Offset);
+
                 EmbedBuilder embedBuilder = new()
                 {
-                    Title = merchantInfo[merchant.Name].Region + ", " + merchant.Zone,
-                    Description = "\u200b",
-                    ImageUrl = "https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg",
+                    Title = merchantInfo[merchant.Name].Region + " - " + merchant.Zone,
+                    Description = $"Expires <t:{expiryDate.ToUnixTimeSeconds()}:R>",
+                    ThumbnailUrl = "https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg",
                     Color = embedColor,
                 };
 
@@ -122,19 +129,42 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 {
                     Name = ":black_joker: Card",
                     Value = "```ansi\n" + ansiColors[merchant.Card.Rarity.ToString()] + merchant.Card.Name + "```",
-                    IsInline = false,
+                    IsInline = true,
                 });
 
                 embedBuilder.AddField(new EmbedFieldBuilder()
                 {
                     Name = ":gift: Rapport",
                     Value = "```ansi\n" + ansiColors[merchant.Rapport.Rarity.ToString()] + merchant.Rapport.Name + "```",
-                    IsInline = false,
+                    IsInline = true,
                 });
 
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embedBuilder.Build());
                 await message.AddReactionAsync(new Emoji("✅"));
             });
+        }
+
+        private async Task StartConnectionAsync()
+        {
+            try
+            {
+                await hubConnection.StartAsync();
+            } catch(Exception exception)
+            {
+                await OnConnectionExceptionAsync(exception);
+            }
+        }
+
+        private async Task OnConnectionClosedAsync(Exception exception)
+        {
+            await Program.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", exception.Message));
+            await Task.Delay(2000);
+            await StartConnectionAsync();
+        }
+
+        private async Task OnConnectionExceptionAsync(Exception exception)
+        {
+            await OnConnectionClosedAsync(exception);
         }
     }
 }

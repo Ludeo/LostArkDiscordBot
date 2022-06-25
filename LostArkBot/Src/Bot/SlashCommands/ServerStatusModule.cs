@@ -14,7 +14,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("serverstatus", "Shows the current status of the Wei server")]
         public async Task ServerStatus()
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://lostarkapi.herokuapp.com/server/Wei");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://lastarkapi-m2.herokuapp.com/server/Wei");
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream receiveStream = response.GetResponseStream();
             StreamReader readStream = new(receiveStream, Encoding.UTF8);

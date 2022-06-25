@@ -137,7 +137,10 @@ namespace LostArkBot.Src.Bot.FileObjects
                 { "Tier 3", "https://i.imgur.com/JuMUtQt.png" },
 
                 //Coop Battle
-                { "Coop Battle", "https://i.imgur.com/tvvlWbS.jpg" }
+                { "Coop Battle", "https://i.imgur.com/tvvlWbS.jpg" },
+
+                //Guild Siege
+                { "Guild Siege", "https://i.imgur.com/tvvlWbS.jpg" },
             };
         }
 
@@ -165,6 +168,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                                             .AddOption("Platinum Fields", "platinumfields")
                                             .AddOption("Chaos Maps", "chaosmaps")
                                             .AddOption("Coop Battle", "Coop Battle")
+                                            .AddOption("Guild Siege", "Guild Siege")
                                             .AddOption("Challenge Guardian", "challengeguardian");
 
             HomeLfg = menuBuilder;
@@ -649,11 +653,26 @@ namespace LostArkBot.Src.Bot.FileObjects
             model = new()
             {
                 MenuId = new[] { "home-lfg" },
+                MenuItemId = "Coop Battle",
                 Title = "[Coop Battle]",
                 ThumbnailUrl = CoopBattleIconUrl,
                 Color = Color.Red,
                 IsEnd = true,
                 Players = 6,
+            };
+            LfgModels.Add(model);
+            #endregion
+
+            #region Siege
+            model = new()
+            {
+                MenuId = new[] { "home-lfg" },
+                MenuItemId = "Guild Siege",
+                Title = "[Guild Siege]",
+                ThumbnailUrl = CoopBattleIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+                Players = 8,
             };
             LfgModels.Add(model);
             #endregion
