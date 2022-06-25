@@ -44,7 +44,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             long unixSeconds = long.Parse(timeField.Value.Replace("<t:", "").Replace(":F>", ""));
 
-            await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's in <t:{unixSeconds}:R>");
+            await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's <t:{unixSeconds}:R>");
         }
     }
 }
