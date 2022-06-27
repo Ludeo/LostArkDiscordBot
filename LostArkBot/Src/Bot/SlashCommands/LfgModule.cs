@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -19,11 +20,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("time", "Time of the LFG, must be server time and must have format: DD/MM hh:mm")] string time = "",
             [Summary("static-group", "Name of the static group")] string staticGroup = "")
         {
-            if(!string.IsNullOrEmpty(staticGroup))
+            if (!string.IsNullOrEmpty(staticGroup))
             {
                 List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
 
-                if(!staticGroups.Any(x => x.Name == staticGroup))
+                if (!staticGroups.Any(x => x.Name == staticGroup))
                 {
                     await RespondAsync(text: "The given static group doesn't exist", ephemeral: true);
                     return;
@@ -49,18 +50,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!string.IsNullOrEmpty(time))
             {
-                int day = int.Parse(time[..2]);
-                int month = int.Parse(time.Substring(3, 2));
-                int hour = int.Parse(time.Substring(6, 2));
-                int minute = int.Parse(time.Substring(9, 2));
-                int year = DateTimeOffset.Now.Year;
+                DateTime dtParsed;
 
-                if (month < DateTimeOffset.Now.Month)
+                if (DateTime.TryParseExact(time, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed))
                 {
-                    year += 1;
-                }
+                    int year = DateTimeOffset.Now.Year;
+                    if (dtParsed.Month < DateTimeOffset.Now.Month)
+                    {
+                        year += 1;
+                    }
+                    dtParsed = dtParsed.AddYears(year - dtParsed.Year);
 
-                embed.Timestamp = new DateTimeOffset(year, month, day, hour, minute, 0, new TimeSpan(1, 0, 0));
+                    embed.Timestamp = new DateTimeOffset(dtParsed, new TimeSpan(1, 0, 0));
+                }
             }
 
             await RespondAsync(text: staticGroup, embed: embed.Build(), components: component.Build());

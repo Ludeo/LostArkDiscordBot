@@ -44,18 +44,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             long unixSeconds = long.Parse(timeField.Value.Replace("<t:", "").Replace(":F>", ""));
 
-            DateTimeOffset time = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
-            DateTimeOffset now = DateTimeOffset.Now;
-            TimeSpan difference = time - now;
-
-            if (time.ToUnixTimeSeconds() < now.ToUnixTimeSeconds())
-            {
-                await RespondAsync("This event has already started");
-            }
-            else
-            {
-                await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's in {difference.Days} days, {difference.Hours} hours and {difference.Minutes} minutes");
-            }
+            await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's <t:{unixSeconds}:R>");
         }
     }
 }

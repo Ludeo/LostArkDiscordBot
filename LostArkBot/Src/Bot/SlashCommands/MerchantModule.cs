@@ -157,7 +157,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
         private async Task OnConnectionClosedAsync(Exception exception)
         {
-            await Program.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", exception.Message));
+            string errorMsg = exception != null ? exception.Message : "Connection error 'Merchants'";
+
+            await Program.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", errorMsg));
             await Task.Delay(2000);
             await StartConnectionAsync();
         }

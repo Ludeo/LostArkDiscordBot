@@ -14,9 +14,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
             int minute = int.Parse(serverTime.Substring(3, 2));
 
             DateTimeOffset now = DateTimeOffset.Now;
-            DateTimeOffset dateTimeOffset = new(now.Year, now.Month, now.Day, hour, minute, now.Second, new TimeSpan(1,0,0));
+            DateTimeOffset dateTimeOffset = new(now.Year, now.Month, now.Day, hour, minute, now.Second, new TimeSpan(1, 0, 0));
 
-            await RespondAsync(text: "Server time: " + serverTime + "\n\nLocal time: <t:" + dateTimeOffset.ToUnixTimeSeconds() + ":t>");
+            await RespondAsync(text: $"Server time: {serverTime}\nLocal time: <t:{dateTimeOffset.ToUnixTimeSeconds()}:t>\n<t:{dateTimeOffset.ToUnixTimeSeconds()}:R>");
         }
     }
 }

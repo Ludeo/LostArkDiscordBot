@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,7 +29,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
             if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 await RespondAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
-
                 return;
             }
 
@@ -48,40 +48,37 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Color = originalEmbed.Color.Value,
             };
 
-            int day = int.Parse(time[..2]);
-            int month = int.Parse(time.Substring(3, 2));
-            int hour = int.Parse(time.Substring(6, 2));
-            int minute = int.Parse(time.Substring(9, 2));
+            DateTime dtParsed;
+            DateTimeOffset newDateTime;
             int year = DateTimeOffset.Now.Year;
 
-            if (month < DateTimeOffset.Now.Month)
+            if (DateTime.TryParseExact(time, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed))
             {
-                year += 1;
-            }
-
-            DateTimeOffset newDateTime = new(year, month, day, hour, minute, DateTimeOffset.Now.Second, new TimeSpan(1, 0, 0));
-
-            if (!originalEmbed.Fields.Any(x => x.Name == "Time"))
-            {
-                newEmbed.AddField("Time", $"<t:{newDateTime.ToUnixTimeSeconds()}:F>");
-            }
-
-            foreach (EmbedField field in originalEmbed.Fields)
-            {
-                string value = field.Value;
-
-                if (field.Name == "Time")
+                if (dtParsed.Month < DateTimeOffset.Now.Month)
                 {
-                    value = $"<t:{newDateTime.ToUnixTimeSeconds()}:F>";
+                    year += 1;
                 }
 
-                newEmbed.AddField(field.Name, value, field.Inline);
+                dtParsed = dtParsed.AddYears(year - dtParsed.Year);
+                newDateTime = new DateTimeOffset(dtParsed, new TimeSpan(1, 0, 0));
+
+                EmbedField timeField = originalEmbed.Fields.Where(x => x.Name == "Time").SingleOrDefault();
+                newEmbed.AddField("Time", $"<t:{newDateTime.ToUnixTimeSeconds()}:F>", timeField.Inline);
+
+
+                foreach (EmbedField field in originalEmbed.Fields)
+                {
+                    if (field.Name == "Time") continue;
+                    newEmbed.AddField(field.Name, field.Value, field.Inline);
+                }
+
+                await message.ModifyAsync(x => x.Embed = newEmbed.Build());
+                await Context.Channel.SendMessageAsync(text: "@everyone");
+                await RespondAsync(text: $"Time updated to: <t:{newDateTime.ToUnixTimeSeconds()}:F>");
             }
 
-            await message.ModifyAsync(x => x.Embed = newEmbed.Build());
+            await RespondAsync(text: "Wrong time format: Use dd/MM HH:mm", ephemeral: true);
 
-            await RespondAsync(text: "Time updated");
-            await Context.Channel.SendMessageAsync(text: "@everyone");
         }
     }
 }
