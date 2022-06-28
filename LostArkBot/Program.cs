@@ -27,25 +27,41 @@ namespace LostArkBot
         public static StaticObjects StaticObjects { get; } = new StaticObjects();
 
         public static SocketTextChannel MerchantChannel { get; private set; }
+
         public static Task Log(LogMessage log)
         {
-            string text = $"[General/{log.Severity}] {log}";
+            string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
             
             if(log.Exception is CommandException commandException)
             {
                 text = $"[Command/{log.Severity}] {commandException.Command.Name} failed to execute in {commandException.Context.Channel.Name}\n{commandException}";
             }
 
-            if(log.Severity == LogSeverity.Critical)
+            if (log.Severity == LogSeverity.Critical)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-            } else if(log.Severity == LogSeverity.Error)
+            }
+            else if (log.Severity == LogSeverity.Error)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-            } else if (log.Severity == LogSeverity.Warning)
+            }
+            else if (log.Severity == LogSeverity.Warning)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-            } else
+            }
+            else if (log.Severity == LogSeverity.Debug)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+            }
+            else if(log.Severity == LogSeverity.Info)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else if(log.Severity == LogSeverity.Verbose)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+            }
+            else
             {
                 Console.ForegroundColor = ConsoleColor.White;
             }
