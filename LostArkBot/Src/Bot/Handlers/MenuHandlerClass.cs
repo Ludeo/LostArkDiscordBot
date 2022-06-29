@@ -29,7 +29,10 @@ namespace LostArkBot.Src.Bot.Handlers
                 ManageUserModel resultModel = manageUserModels.Find(x => x.MenuId == component.Data.CustomId);
 
                 await ManageUserHandler.ManageUserHandlerAsync(component, resultModel);
-            } 
+            } else if (component.Data.CustomId == "subscribe" || component.Data.CustomId == "unsubscribe")
+            {
+                await SubscriptionsHandler.Subscribe(component);
+            }
         }
     }
 }

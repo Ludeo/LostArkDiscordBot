@@ -1,12 +1,15 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
+using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -145,7 +148,53 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Embed embed = embedBuilder.Build();
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embed);
                 await message.AddReactionAsync(new Emoji("✅"));
+
+                await GetUserSubsriptions(1, embed);
             });
+
+        }
+
+        private Task GetUserSubsriptions(int notableItem, Embed embed)
+        {
+            string json;
+
+            List<UserSubscriptions> merchantSubs;
+            try
+            {
+                json = File.ReadAllText("MerchantSubscriptions.json");
+            }
+            catch (FileNotFoundException)
+            {
+                File.WriteAllText("MerchantSubscriptions.json", "[]");
+                return Task.CompletedTask;
+            }
+
+            merchantSubs = JsonSerializer.Deserialize<List<UserSubscriptions>>(json);
+            if (merchantSubs.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            merchantSubs.ForEach(async sub =>
+            {
+                if (sub.SubscribedItems.Contains(notableItem))
+                {
+                    SocketGuildUser user = Context.Guild.GetUser(sub.UserId);
+
+                    if (user != null)
+                    {
+                        try
+                        {
+                            await user.SendMessageAsync(embed: embed);
+                        }
+                        catch (HttpException)
+                        {
+                            Console.WriteLine("User cannot recieve DM's");
+                        }
+                    }
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private async Task StartConnectionAsync()
