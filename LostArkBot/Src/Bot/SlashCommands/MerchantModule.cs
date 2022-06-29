@@ -153,6 +153,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embedBuilder.Build());
                 await message.AddReactionAsync(new Emoji("✅"));
             });
+
+            hubConnection.On<List<object>>("UpdateVotes", async (votes) => {
+                Console.WriteLine(votes.ToString());
+                // create Object MerchantMessage - contains MessageId, MerchantId
+                // on UpdateVotes get MerchantMessages that containd MerchantId
+                // update the votes of the message which is linked to the merchant
+                // if votes are negative, delete the message
+            });
         }
 
         private async Task StartConnectionAsync()
