@@ -22,13 +22,6 @@ namespace LostArkBot.Src.Bot.Buttons
 
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
-            // I think this does nothing, it is never null
-            if (characters is null)
-            {
-                await RespondAsync(text: "Select your character from the menu", components: new ComponentBuilder().WithSelectMenu(joinMenu).Build(), ephemeral: true);
-                return;
-            }
-
             joinMenu.AddOption("Default", "Default", "Uses only your discord name, no additional informations");
 
             List<GuildEmote> emotes = Program.GuildEmotes;

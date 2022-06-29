@@ -50,9 +50,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!string.IsNullOrEmpty(time))
             {
-                DateTime dtParsed;
-
-                if (DateTime.TryParseExact(time, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed))
+                if (DateTime.TryParseExact(time, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out DateTime dtParsed))
                 {
                     int year = DateTimeOffset.Now.Year;
                     if (dtParsed.Month < DateTimeOffset.Now.Month)
