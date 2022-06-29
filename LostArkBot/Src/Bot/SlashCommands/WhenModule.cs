@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,7 +41,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            long unixSeconds = long.Parse(timeField.Value.Replace("<t:", "").Replace(":F>", ""));
+            string time = timeField.Value.Split("\n")[0];
+            long unixSeconds = long.Parse(time.Replace("<t:", "").Replace(":F>", ""));
 
             await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's <t:{unixSeconds}:R>");
         }
