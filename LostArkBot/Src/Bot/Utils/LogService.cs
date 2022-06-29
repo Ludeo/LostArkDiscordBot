@@ -13,7 +13,7 @@ namespace LostArkBot.Src.Bot.Utils
     {
         public static async Task<Task> Log(LogMessage log)
         {
-            string text = $"[General/{log.Severity}] {log}";
+            string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
             string logFileName = $"Logs\\log_{DateTime.Now.ToString("MM_dd_yyyy")}.txt";
 
             if (log.Exception is CommandException commandException)
@@ -32,6 +32,18 @@ namespace LostArkBot.Src.Bot.Utils
             else if (log.Severity == LogSeverity.Warning)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
+            }
+            else if (log.Severity == LogSeverity.Debug)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+            }
+            else if (log.Severity == LogSeverity.Info)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else if (log.Severity == LogSeverity.Verbose)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
             }
             else
             {

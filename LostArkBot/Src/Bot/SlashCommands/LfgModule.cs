@@ -31,6 +31,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
             }
 
+            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+            {
+                await RespondAsync(text: "This command can only be used in a text channel", ephemeral: true);
+                return;
+            }
+
             ComponentBuilder component = new ComponentBuilder().WithSelectMenu(Program.StaticObjects.HomeLfg).WithButton(Program.StaticObjects.DeleteButton);
 
             EmbedBuilder embed = new()

@@ -4,7 +4,9 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.FileObjects.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,11 +45,20 @@ namespace LostArkBot.Src.Bot.SlashCommands
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
             Dictionary<string, MerchantInfo> merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
-            hubConnection = new HubConnectionBuilder().WithUrl("https://lostmerchants.com/MerchantHub").Build();
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://lostmerchants.com/MerchantHub")
+                .ConfigureLogging(logging =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Debug);
+                    logging.AddProvider(new SignalLoggerProvider());
+                })
+                .Build();
             hubConnection.KeepAliveInterval = new TimeSpan(0, 4, 0);
             hubConnection.ServerTimeout = new TimeSpan(0, 8, 0);
             hubConnection.Closed -= OnConnectionClosedAsync;
             hubConnection.Closed += OnConnectionClosedAsync;
+
+            
 
             await StartConnectionAsync();
             await hubConnection.InvokeAsync("SubscribeToServer", "Wei");
@@ -145,6 +156,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Embed embed = embedBuilder.Build();
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embed);
                 await message.AddReactionAsync(new Emoji("✅"));
+            });
+
+            hubConnection.On<List<object>>("UpdateVotes", async (votes) => {
+                Console.WriteLine(votes.ToString());
+                // create Object MerchantMessage - contains MessageId, MerchantId
+                // on UpdateVotes get MerchantMessages that containd MerchantId
+                // update the votes of the message which is linked to the merchant
+                // if votes are negative, delete the message
             });
         }
 

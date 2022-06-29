@@ -16,6 +16,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             DateTimeOffset now = DateTimeOffset.Now;
             DateTimeOffset dateTimeOffset = new(now.Year, now.Month, now.Day, hour, minute, now.Second, new TimeSpan(1, 0, 0));
 
+            if(dateTimeOffset.ToUnixTimeMilliseconds() < now.ToUnixTimeMilliseconds())
+            {
+                dateTimeOffset = dateTimeOffset.AddDays(1);
+            }
+
             await RespondAsync(text: $"Server time: {serverTime}\nLocal time: <t:{dateTimeOffset.ToUnixTimeSeconds()}:t>\n<t:{dateTimeOffset.ToUnixTimeSeconds()}:R>");
         }
     }

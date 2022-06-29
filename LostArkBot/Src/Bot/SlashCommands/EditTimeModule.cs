@@ -63,8 +63,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 newDateTime = new DateTimeOffset(dtParsed, new TimeSpan(1, 0, 0));
 
                 EmbedField timeField = originalEmbed.Fields.Where(x => x.Name == "Time").SingleOrDefault();
-                newEmbed.AddField("Time", $"<t:{newDateTime.ToUnixTimeSeconds()}:F>", timeField.Inline);
-
+                newEmbed.AddField("Time", $"<t:{newDateTime.ToUnixTimeSeconds()}:F>\n<t:{newDateTime.ToUnixTimeSeconds()}:R>", timeField.Inline);
 
                 foreach (EmbedField field in originalEmbed.Fields)
                 {
@@ -75,6 +74,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 await message.ModifyAsync(x => x.Embed = newEmbed.Build());
                 await Context.Channel.SendMessageAsync(text: "@everyone");
                 await RespondAsync(text: $"Time updated to: <t:{newDateTime.ToUnixTimeSeconds()}:F>");
+
+                return;
             }
 
             await RespondAsync(text: "Wrong time format: Use dd/MM HH:mm", ephemeral: true);
