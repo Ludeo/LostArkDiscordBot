@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class EquipmentStat
+    public class EquipmentStat
     {
         [JsonPropertyName("Random Engraving Effect")]
         public List<string> Engravings { get; set; }

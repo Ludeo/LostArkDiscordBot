@@ -1,4 +1,5 @@
 ﻿using Discord;
+using LostArkBot.Src.Bot.Utils;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -8,7 +9,7 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
     {
         public IDisposable BeginScope<TState>(TState state)
         {
-            Program.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Begging Scope with state: " + state));
+            LogService.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Begging Scope with state: " + state));
             return default!;
         }
 
@@ -53,11 +54,11 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
 
             if (exception != null)
             {
-                Program.Log(new LogMessage(discordLogLevel, "SignalLogging", exception.Message, exception));
+                LogService.Log(new LogMessage(discordLogLevel, "SignalLogging", exception.Message, exception));
             }
             else
             {
-                Program.Log(new LogMessage(discordLogLevel, "SignalLogging", $"EventId: {eventId}, TState: {state}"));
+                LogService.Log(new LogMessage(discordLogLevel, "SignalLogging", $"EventId: {eventId}, TState: {state}"));
             }
         }
     }

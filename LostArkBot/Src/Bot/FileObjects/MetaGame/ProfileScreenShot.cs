@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class ProfileScreenShot
+    public class ProfileScreenShot
     {
         public static async Task<bool> MakeProfileScreenshot(List<Engraving> sortedEngravings, List<ArmorPiece> armorPieces, List<Accessory> accessories, MetaGameCharacter metaGameCharacter, MetaGameCharacterJson metaGameCharacterJson, string characterName)
         {

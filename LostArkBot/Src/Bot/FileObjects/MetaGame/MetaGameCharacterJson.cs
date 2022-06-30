@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class MetaGameCharacterJson
+    public class MetaGameCharacterJson
     {
         [JsonPropertyName("statsList")]
         public List<Stat> Stats { get; set; }

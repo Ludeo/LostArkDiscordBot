@@ -1,6 +1,6 @@
 ﻿namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class Accessory
+    public class Accessory
     {
         public string Name { get; set; }
 

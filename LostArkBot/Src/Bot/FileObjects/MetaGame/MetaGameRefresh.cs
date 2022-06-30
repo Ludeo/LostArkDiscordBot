@@ -2,7 +2,7 @@
 
 namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class MetaGameRefresh
+    public class MetaGameRefresh
     {
         [JsonPropertyName("message")]
         public string Message { get; set; }
