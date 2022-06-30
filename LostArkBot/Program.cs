@@ -27,7 +27,6 @@ namespace LostArkBot
 
         public static SocketTextChannel MerchantChannel { get; private set; }
 
-
         private static void Main() => MainAsync().GetAwaiter().GetResult();
 
         private static async Task MainAsync()

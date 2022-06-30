@@ -48,19 +48,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Color = originalEmbed.Color.Value,
             };
 
-            DateTime dtParsed;
-            DateTimeOffset newDateTime;
-            int year = DateTimeOffset.Now.Year;
-
-            if (DateTime.TryParseExact(time, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed))
+            if (DateTime.TryParseExact(time, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out DateTime dtParsed))
             {
+                int year = DateTimeOffset.Now.Year;
+
                 if (dtParsed.Month < DateTimeOffset.Now.Month)
                 {
                     year += 1;
                 }
 
                 dtParsed = dtParsed.AddYears(year - dtParsed.Year);
-                newDateTime = new DateTimeOffset(dtParsed, new TimeSpan(1, 0, 0));
+                DateTimeOffset newDateTime = new (dtParsed, new TimeSpan(1, 0, 0));
 
                 EmbedField timeField = originalEmbed.Fields.Where(x => x.Name == "Time").SingleOrDefault();
                 newEmbed.AddField("Time", $"<t:{newDateTime.ToUnixTimeSeconds()}:F>\n<t:{newDateTime.ToUnixTimeSeconds()}:R>", timeField.Inline);

@@ -11,7 +11,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class CalendarModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("calendar", "Exports the date of the event as a ics file so you can import it into your calendar")]
-        public async Task EditMessage()
+        public async Task Calendar(
+            [Summary("duration", "The duration of the event in hours")] int duration = 2)
         {
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
@@ -45,7 +46,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             DateTimeOffset date = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
 
             string timeStartFormatted = date.ToString("yyyyMMddTHHmmssZ");
-            date = date.AddHours(2);
+            date = date.AddHours(duration);
             string timeEndFormatted = date.ToString("yyyyMMddTHHmmssZ");
             string summary = threadChannel.Name;
 

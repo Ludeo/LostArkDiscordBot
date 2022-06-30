@@ -22,7 +22,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
 {
     public class MerchantModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
-        HubConnection hubConnection;
+        private HubConnection hubConnection;
+        private ITextChannel merchantChannel;
+        private Dictionary<string, MerchantInfo> merchantInfo;
+        private readonly Dictionary<string, string> ansiColors = new()
+        {
+                { "Normal", "[0m" },
+                { "Legendary", "[2;33m" },
+                { "Epic", "[2;35m" },
+                { "Rare", "[2;34m" },
+                { "Uncommon", "[2;32m" }
+        };
 
         [SlashCommand("merchant", "Connects to lostmerchants and starts posting merchant locations when available")]
         public async Task Merchant()
@@ -33,21 +43,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            ITextChannel merchantChannel = Context.Channel as ITextChannel;
-
+            merchantChannel = Context.Channel as ITextChannel;
             await RespondAsync(text: "merchants activated", ephemeral: true);
 
-            Dictionary<string, string> ansiColors = new()
-            {
-                { "Normal", "[0m" },
-                { "Legendary", "[2;33m" },
-                { "Epic", "[2;35m" },
-                { "Rare", "[2;34m" },
-                { "Uncommon", "[2;32m" }
-            };
-
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
-            Dictionary<string, MerchantInfo> merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
+            merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
             hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://lostmerchants.com/MerchantHub")
@@ -63,10 +63,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
             hubConnection.Closed += OnConnectionClosedAsync;
 
 
-
             await StartConnectionAsync();
-            await hubConnection.InvokeAsync("SubscribeToServer", "Wei");
 
+
+            // Use to test sending a DM
+            //await TestDM(241989256258650113);
+        }
+
+        private void OnUpdateMerchantGroup()
+        {
             hubConnection.On<string, object>("UpdateMerchantGroup", async (server, merchants) =>
             {
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchants.ToString());
@@ -174,7 +179,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     await GetUserSubsriptions(notableItem, embed);
                 }
             });
+        }
 
+        private void OnUpdateVotes()
+        {
             hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
                 Console.WriteLine(votes.ToString());
@@ -183,41 +191,38 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 // update the votes of the message which is linked to the merchant
                 // if votes are negative, delete the message
             });
-
-            // Use to test sending a DM
-            //await TestDM(241989256258650113);
         }
 
-        private async Task TestDM(ulong userId)
-        {
-            MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
-            EmbedBuilder embedBuilder = new()
-            {
-                Title = "Test Region" + " - " + "Test Zone",
-                Description = $"Expires <t:{DateTimeOffset.Now.AddMinutes(30).ToUnixTimeSeconds()}:R>",
-                ThumbnailUrl = "https://lostmerchants.com/images/zones/Lake%20Shiverwave.jpg",
-                Color = Color.Purple,
-            };
+        //private async Task TestDM(ulong userId)
+        //{
+        //    MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
+        //    EmbedBuilder embedBuilder = new()
+        //    {
+        //        Title = "Test Region" + " - " + "Test Zone",
+        //        Description = $"Expires <t:{DateTimeOffset.Now.AddMinutes(30).ToUnixTimeSeconds()}:R>",
+        //        ThumbnailUrl = "https://lostmerchants.com/images/zones/Lake%20Shiverwave.jpg",
+        //        Color = Color.Purple,
+        //    };
 
-            embedBuilder.AddField(new EmbedFieldBuilder()
-            {
-                Name = ":black_joker: Card",
-                Value = "```ansi\n" + "[2;35m" + "Test Card" + "```",
-                IsInline = true,
-            });
+        //    embedBuilder.AddField(new EmbedFieldBuilder()
+        //    {
+        //        Name = ":black_joker: Card",
+        //        Value = "```ansi\n" + "[2;35m" + "Test Card" + "```",
+        //        IsInline = true,
+        //    });
 
-            embedBuilder.AddField(new EmbedFieldBuilder()
-            {
-                Name = ":gift: Rapport",
-                Value = "```ansi\n" + "[2;35m" + "Test Rapport" + "```",
-                IsInline = true,
-            });
+        //    embedBuilder.AddField(new EmbedFieldBuilder()
+        //    {
+        //        Name = ":gift: Rapport",
+        //        Value = "```ansi\n" + "[2;35m" + "Test Rapport" + "```",
+        //        IsInline = true,
+        //    });
 
-            Embed embed = embedBuilder.Build();
-            SocketGuildUser serverUser = Context.Guild.GetUser(userId);
+        //    Embed embed = embedBuilder.Build();
+        //    SocketGuildUser serverUser = Context.Guild.GetUser(userId);
 
-            await serverUser.SendMessageAsync(embed: embed, components: component);
-        }
+        //    await serverUser.SendMessageAsync(embed: embed, components: component);
+        //}
 
         private Task GetUserSubsriptions(int notableItem, Embed embed)
         {
@@ -270,6 +275,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
             try
             {
                 await hubConnection.StartAsync();
+                hubConnection.Remove("SubscribeToServer");
+                hubConnection.Remove("UpdateVotes");
+                hubConnection.Remove("UpdateMerchantGroup");
+                await hubConnection.InvokeAsync("SubscribeToServer", "Wei");
+                OnUpdateMerchantGroup();
+                OnUpdateVotes();
             }
             catch (Exception exception)
             {

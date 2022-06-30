@@ -1,20 +1,17 @@
 ﻿using Discord;
 using Discord.Commands;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Utils
 {
-    internal class LogService
+    public class LogService
     {
         public static async Task<Task> Log(LogMessage log)
         {
             string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
-            string logFileName = $"Logs\\log_{DateTime.Now.ToString("MM_dd_yyyy")}.txt";
+            string logFileName = $"Logs\\log_{DateTime.Now:MM_dd_yyyy}.txt";
 
             if (log.Exception is CommandException commandException)
             {

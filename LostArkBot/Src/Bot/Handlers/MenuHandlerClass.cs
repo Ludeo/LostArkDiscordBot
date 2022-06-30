@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Handlers
 {
-    internal class MenuHandlerClass
+    public class MenuHandlerClass
     {
         public static async Task MenuHandler(SocketMessageComponent component)
         {

@@ -1,6 +1,6 @@
 ﻿namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class ArmorPiece
+    public class ArmorPiece
     {
         public string Name { get; set; }
 
