@@ -1,6 +1,8 @@
 ﻿using Discord;
+using LostArkBot.Src.Bot.Utils;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.FileObjects.SignalR
 {
@@ -13,7 +15,12 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
 
         public void Dispose()
         {
-            Program.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Disposing SignalLoggerProvider"));
+            DisposeAsync().GetAwaiter().GetResult();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await LogService.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Disposing SignalLoggerProvider"));
             GC.SuppressFinalize(this);
         }
     }

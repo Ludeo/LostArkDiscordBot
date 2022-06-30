@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Models.Enums
 {
-    public enum WanderingMerchantGoodsEnum
+    public enum WanderingMerchantItemsEnum
     {
         Wei = 1,
         Mokamoka = 2,

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Models
 {
-    internal class UserSubscriptions
+    public class UserSubscription
     {
         public ulong UserId { get; set; }
 
         public List<int> SubscribedItems { get; set; }
 
-        public UserSubscriptions(ulong userId, List<int> subscribedItems)
+        public UserSubscription(ulong userId, List<int> subscribedItems)
         {
             UserId = userId;
             SubscribedItems = subscribedItems;

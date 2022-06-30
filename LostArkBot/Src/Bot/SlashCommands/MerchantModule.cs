@@ -16,6 +16,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LostArkBot.Src.Bot.Models.Enums;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
@@ -61,7 +62,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             hubConnection.Closed -= OnConnectionClosedAsync;
             hubConnection.Closed += OnConnectionClosedAsync;
 
-            
+
 
             await StartConnectionAsync();
             await hubConnection.InvokeAsync("SubscribeToServer", "Wei");
@@ -71,6 +72,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchants.ToString());
                 Merchant merchant = merchantGroup.ActiveMerchants.Last();
                 string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
+                int notableItem = -1;
 
                 Rarity highestRarity = merchant.Card.Rarity;
 
@@ -96,34 +98,41 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 string embedDescription = "";
 
-                if (merchant.Card.Name == "Wei")
+                if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Wei))
                 {
                     embedDescription = "<@&986032976812982343> ";
+                    notableItem = (int)WanderingMerchantItemsEnum.Wei;
                 }
-                else if (merchant.Card.Name == "Mokamoka")
+                else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka))
                 {
                     embedDescription = "<@&986033361770385429> ";
+                    notableItem = (int)WanderingMerchantItemsEnum.Mokamoka;
                 }
-                else if (merchant.Card.Name == "Sian")
+                else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian))
                 {
                     embedDescription = "<@&986033048271331428> ";
+                    notableItem = (int)WanderingMerchantItemsEnum.Sian;
                 }
-                else if (merchant.Card.Name == "Seria")
+                else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria))
                 {
                     embedDescription = "<@&986033604205371463> ";
+                    notableItem = (int)WanderingMerchantItemsEnum.Seria;
                 }
-                else if (merchant.Card.Name == "Madnick")
+                else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick))
                 {
                     embedDescription = "<@&986033108954525836> ";
+                    notableItem = (int)WanderingMerchantItemsEnum.Madnick;
                 }
-                else if (merchant.Card.Name == "Kaysarr")
+                else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr))
                 {
                     embedDescription = "<@&986033435531419679> ";
+                    notableItem = (int)WanderingMerchantItemsEnum.Kaysarr;
                 }
 
                 if (merchant.Rapport.Rarity == Rarity.Legendary)
                 {
                     embedDescription += "<@&986032866053996554>";
+                    notableItem = (int)WanderingMerchantItemsEnum.LegendaryRapport;
                 }
 
                 if (string.IsNullOrEmpty(embedDescription))
@@ -160,10 +169,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embed);
                 await message.AddReactionAsync(new Emoji("✅"));
 
-                await GetUserSubsriptions(1, embed);
+                if (notableItem != -1)
+                {
+                    await GetUserSubsriptions(notableItem, embed);
+                }
             });
 
-            hubConnection.On<List<object>>("UpdateVotes", async (votes) => {
+            hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
+            {
                 Console.WriteLine(votes.ToString());
                 // create Object MerchantMessage - contains MessageId, MerchantId
                 // on UpdateVotes get MerchantMessages that containd MerchantId
@@ -171,13 +184,47 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 // if votes are negative, delete the message
             });
 
+            // Use to test sending a DM
+            //await TestDM(241989256258650113);
+        }
+
+        private async Task TestDM(ulong userId)
+        {
+            MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
+            EmbedBuilder embedBuilder = new()
+            {
+                Title = "Test Region" + " - " + "Test Zone",
+                Description = $"Expires <t:{DateTimeOffset.Now.AddMinutes(30).ToUnixTimeSeconds()}:R>",
+                ThumbnailUrl = "https://lostmerchants.com/images/zones/Lake%20Shiverwave.jpg",
+                Color = Color.Purple,
+            };
+
+            embedBuilder.AddField(new EmbedFieldBuilder()
+            {
+                Name = ":black_joker: Card",
+                Value = "```ansi\n" + "[2;35m" + "Test Card" + "```",
+                IsInline = true,
+            });
+
+            embedBuilder.AddField(new EmbedFieldBuilder()
+            {
+                Name = ":gift: Rapport",
+                Value = "```ansi\n" + "[2;35m" + "Test Rapport" + "```",
+                IsInline = true,
+            });
+
+            Embed embed = embedBuilder.Build();
+            SocketGuildUser serverUser = Context.Guild.GetUser(userId);
+
+            await serverUser.SendMessageAsync(embed: embed, components: component);
         }
 
         private Task GetUserSubsriptions(int notableItem, Embed embed)
         {
             string json;
+            MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
 
-            List<UserSubscriptions> merchantSubs;
+            List<UserSubscription> merchantSubs;
             try
             {
                 json = File.ReadAllText("MerchantSubscriptions.json");
@@ -188,28 +235,30 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return Task.CompletedTask;
             }
 
-            merchantSubs = JsonSerializer.Deserialize<List<UserSubscriptions>>(json);
+            merchantSubs = JsonSerializer.Deserialize<List<UserSubscription>>(json);
             if (merchantSubs.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            merchantSubs.ForEach(async sub =>
+            List<UserSubscription> filteredSubscriptions = merchantSubs.FindAll(userSub =>
             {
-                if (sub.SubscribedItems.Contains(notableItem))
-                {
-                    SocketGuildUser user = Context.Guild.GetUser(sub.UserId);
+                return userSub.SubscribedItems.Contains(notableItem);
+            });
 
-                    if (user != null)
+            filteredSubscriptions.ForEach(async sub =>
+            {
+                SocketGuildUser serverUser = Context.Guild.GetUser(sub.UserId);
+
+                if (serverUser != null)
+                {
+                    try
                     {
-                        try
-                        {
-                            await user.SendMessageAsync(embed: embed);
-                        }
-                        catch (HttpException)
-                        {
-                            Console.WriteLine("User cannot recieve DM's");
-                        }
+                        await serverUser.SendMessageAsync(embed: embed, components: component);
+                    }
+                    catch (HttpException)
+                    {
+                        Console.WriteLine("User cannot recieve DM's");
                     }
                 }
             });

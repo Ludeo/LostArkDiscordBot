@@ -109,7 +109,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 engravings += engravingName + " " + engravingLevel + ",";
             }
 
-            engravings = engravings.Substring(0, engravings.Length - 1);
+            engravings = engravings[..^1];
             character.Engravings = engravings;
 
             characters.Add(character);
@@ -165,7 +165,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     newContent += content[i] + "\n";
                 } else if (content[i].Contains("*"))
                 {
-                    newContent += content[i].Substring(2, content[i].Length - 4) + "\n";
+                    newContent += content[i][2..^4] + "\n";
                 } else if(i == engravingSlot - 1)
                 {
                     newContent += "**" + content[i] + "**" + "\n";
@@ -303,7 +303,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 if (content[i].Contains("*"))
                 {
-                    newContent += content[i].Substring(0, content[i].Length - 2) + " - " + Context.Interaction.Data.Values.First() + "**\n";
+                    newContent += content[i][..^2] + " - " + Context.Interaction.Data.Values.First() + "**\n";
                 }
                 else
                 {

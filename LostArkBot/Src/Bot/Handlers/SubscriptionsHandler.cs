@@ -3,6 +3,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Models.Enums;
+using LostArkBot.Src.Bot.SlashCommands;
 using LostArkBot.Src.Bot.Utils;
 using System;
 using System.Collections.Generic;
@@ -18,15 +19,13 @@ namespace LostArkBot.Src.Bot.Handlers
 
         public static async Task Subscribe(SocketMessageComponent component)
         {
-
-
-            WanderingMerchantGoodsEnum selectedItem = (WanderingMerchantGoodsEnum)Enum.Parse(typeof(WanderingMerchantGoodsEnum), component.Data.Values.First());
+            WanderingMerchantItemsEnum selectedItem = (WanderingMerchantItemsEnum)Enum.Parse(typeof(WanderingMerchantItemsEnum), component.Data.Values.First());
 
             SocketUser user = component.User;
 
             string json;
 
-            List<UserSubscriptions> merchantSubs;
+            List<UserSubscription> merchantSubs;
             try
             {
                 json = File.ReadAllText("MerchantSubscriptions.json");
@@ -34,12 +33,12 @@ namespace LostArkBot.Src.Bot.Handlers
             catch (FileNotFoundException)
             {
                 File.WriteAllText("MerchantSubscriptions.json", "[]");
-                return;
+                json = "[]";
             }
 
-            merchantSubs = JsonSerializer.Deserialize<List<UserSubscriptions>>(json);
+            merchantSubs = JsonSerializer.Deserialize<List<UserSubscription>>(json);
 
-            UserSubscriptions subscription = merchantSubs.Find(sub =>
+            UserSubscription subscription = merchantSubs.Find(sub =>
             {
                 return sub.UserId == user.Id;
             });
@@ -48,11 +47,11 @@ namespace LostArkBot.Src.Bot.Handlers
             {
                 if (subscription == null)
                 {
-                    List<int> newItems = new List<int>
+                    List<int> newItems = new()
                     {
                         (int)selectedItem
                     };
-                    var newSub = new UserSubscriptions(user.Id, newItems);
+                    var newSub = new UserSubscription(user.Id, newItems);
 
                     merchantSubs.Add(newSub);
                 }
@@ -64,28 +63,53 @@ namespace LostArkBot.Src.Bot.Handlers
                     }
                     else
                     {
-                        await component.RespondAsync($"{selectedItem.ToString()} already added");
+                        await component.RespondAsync($"{selectedItem} already added", ephemeral: true);
+                        return;
                     }
                 }
+
+                try
+                {
+                    await component.RespondAsync();
+                }
+                catch (HttpException)
+                {
+                }
+
+                await component.Message.DeleteAsync();
+
+                File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
+                await new SubscriptionsModule().SubscribeMenuBuilder(component.User);
             }
-            else
+
+            if (component.Data.CustomId == "unsubscribe")
             {
-                //TO-DO
-                if (merchantSubs.Count == 0)
+                if (merchantSubs.Count == 0 || subscription == null)
                 {
                     return;
                 }
-            }
 
-            File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
+                if (!subscription.SubscribedItems.Contains((int)selectedItem))
+                {
+                    await component.RespondAsync($"{selectedItem} doesn't exist", ephemeral: true);
+                    return;
+                }
 
-            try
-            {
-                await component.RespondAsync($"{selectedItem.ToString()} added");
-            }
-            catch (HttpException exception)
-            {
-                await LogService.Log(new LogMessage(LogSeverity.Error, "JoinCharacterMenu.cs", exception.Message));
+                subscription.SubscribedItems.Remove((int)selectedItem);
+
+                try
+                {
+                    await component.RespondAsync();
+                }
+                catch (HttpException)
+                {
+                }
+
+                await component.Message.DeleteAsync();
+
+                File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
+
+                await new SubscriptionsModule().UnsubscribeMenuBuilder(component.User);
             }
 
         }

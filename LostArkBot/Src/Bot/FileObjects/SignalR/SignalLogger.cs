@@ -1,6 +1,8 @@
 ﻿using Discord;
+using LostArkBot.Src.Bot.Utils;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.FileObjects.SignalR
 {
@@ -8,7 +10,12 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
     {
         public IDisposable BeginScope<TState>(TState state)
         {
-            Program.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Begging Scope with state: " + state));
+            return BeginScopeAsync(state).GetAwaiter().GetResult();
+        }
+
+        public async Task<IDisposable> BeginScopeAsync<TState>(TState state)
+        {
+            await LogService.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Begging Scope with state: " + state));
             return default!;
         }
 
@@ -22,7 +29,7 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
             return true;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             LogSeverity discordLogLevel = LogSeverity.Info;
 
@@ -53,11 +60,11 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
 
             if (exception != null)
             {
-                Program.Log(new LogMessage(discordLogLevel, "SignalLogging", exception.Message, exception));
+                await LogService.Log(new LogMessage(discordLogLevel, "SignalLogging", exception.Message, exception));
             }
             else
             {
-                Program.Log(new LogMessage(discordLogLevel, "SignalLogging", $"EventId: {eventId}, TState: {state}"));
+                await LogService.Log(new LogMessage(discordLogLevel, "SignalLogging", $"EventId: {eventId}, TState: {state}"));
             }
         }
     }
