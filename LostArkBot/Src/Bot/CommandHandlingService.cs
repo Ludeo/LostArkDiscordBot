@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using Discord.Interactions;
 using LostArkBot.Src.Bot.Handlers;
+using LostArkBot.Src.Bot.Utils;
 
 namespace LostArkBot.Bot
 {
@@ -43,7 +44,7 @@ namespace LostArkBot.Bot
             foreach(SocketGuild guild in client.Guilds)
             {
                 LogMessage connectedGuild = new(LogSeverity.Info, "Ready", "Connected to " + guild.Name);
-                await Program.Log(connectedGuild);
+                await LogService.Log(connectedGuild);
             }
 
             client.Ready -= Ready;

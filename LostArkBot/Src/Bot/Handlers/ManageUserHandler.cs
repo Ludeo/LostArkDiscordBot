@@ -3,6 +3,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
+using LostArkBot.Src.Bot.Utils;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -156,7 +157,7 @@ namespace LostArkBot.Src.Bot.Handlers
             }
             catch (HttpException exception)
             {
-                await Program.Log(new LogMessage(LogSeverity.Error, "JoinCharacterMenu.cs", exception.Message));
+                await LogService.Log(new LogMessage(LogSeverity.Error, "JoinCharacterMenu.cs", exception.Message));
             }
         }
     }

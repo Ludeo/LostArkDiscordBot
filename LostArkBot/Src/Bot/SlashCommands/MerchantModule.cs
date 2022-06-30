@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
+using LostArkBot.Src.Bot.Utils;
 using LostArkBot.Src.Bot.FileObjects.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("merchant", "Connects to lostmerchants and starts posting merchant locations when available")]
         public async Task Merchant()
         {
-            if(Context.User.Id != Config.Default.Admin)
+            if (Context.User.Id != Config.Default.Admin)
             {
                 await RespondAsync(text: "You don't have permission to use this command", ephemeral: true);
                 return;
@@ -70,20 +71,22 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 Rarity highestRarity = merchant.Card.Rarity;
 
-                if(merchant.Rapport.Rarity > highestRarity)
+                if (merchant.Rapport.Rarity > highestRarity)
                 {
                     highestRarity = merchant.Rapport.Rarity;
                 }
 
                 Color embedColor = Color.Green;
 
-                if(highestRarity == Rarity.Legendary)
+                if (highestRarity == Rarity.Legendary)
                 {
                     embedColor = Color.Gold;
-                } else if(highestRarity == Rarity.Epic)
+                }
+                else if (highestRarity == Rarity.Epic)
                 {
                     embedColor = Color.Purple;
-                } else if(highestRarity == Rarity.Rare)
+                }
+                else if (highestRarity == Rarity.Rare)
                 {
                     embedColor = Color.Blue;
                 }
@@ -115,12 +118,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     embedDescription = "<@&986033435531419679> ";
                 }
 
-                if(merchant.Rapport.Rarity == Rarity.Legendary)
+                if (merchant.Rapport.Rarity == Rarity.Legendary)
                 {
                     embedDescription += "<@&986032866053996554>";
                 }
 
-                if(string.IsNullOrEmpty(embedDescription))
+                if (string.IsNullOrEmpty(embedDescription))
                 {
                     embedDescription = "\u200b";
                 }
@@ -150,7 +153,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     IsInline = true,
                 });
 
-                IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embedBuilder.Build());
+                Embed embed = embedBuilder.Build();
+                IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embed);
                 await message.AddReactionAsync(new Emoji("✅"));
             });
 
@@ -168,7 +172,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             try
             {
                 await hubConnection.StartAsync();
-            } catch(Exception exception)
+            }
+            catch (Exception exception)
             {
                 await OnConnectionExceptionAsync(exception);
             }
@@ -178,7 +183,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             string errorMsg = exception != null ? exception.Message : "Connection error 'Merchants'";
 
-            await Program.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", errorMsg));
+            await LogService.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", errorMsg));
             await Task.Delay(2000);
             await StartConnectionAsync();
         }

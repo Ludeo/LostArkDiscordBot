@@ -4,6 +4,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
+using LostArkBot.Src.Bot.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -185,7 +186,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await Program.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
+                await LogService.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
             }
         }
 
@@ -253,7 +254,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await Program.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
+                await LogService.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
             }
         }
 
@@ -321,7 +322,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await Program.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
+                await LogService.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
             }
         }
     }

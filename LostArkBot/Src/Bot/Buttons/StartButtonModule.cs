@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.Net;
 using Discord.WebSocket;
+using LostArkBot.Src.Bot.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,7 +82,7 @@ namespace LostArkBot.Src.Bot.Buttons
                             await RespondAsync();
                         } catch(HttpException exception)
                         {
-                            await Program.Log(new LogMessage(LogSeverity.Error, "StartButton.cs", exception.Message));
+                            await LogService.Log(new LogMessage(LogSeverity.Error, "StartButton.cs", exception.Message));
                         }
 
                         return;

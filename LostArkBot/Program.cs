@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -9,10 +8,10 @@ using LostArkBot.Src.Bot.FileObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Discord.Interactions;
 using System.Collections.Generic;
-using Discord.Commands;
 using Quartz.Impl;
 using Quartz;
 using LostArkBot.Src.Bot.QuartzJobs;
+using LostArkBot.Src.Bot.Utils;
 
 namespace LostArkBot
 {
@@ -28,49 +27,6 @@ namespace LostArkBot
 
         public static SocketTextChannel MerchantChannel { get; private set; }
 
-        public static Task Log(LogMessage log)
-        {
-            string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
-            
-            if(log.Exception is CommandException commandException)
-            {
-                text = $"[Command/{log.Severity}] {commandException.Command.Name} failed to execute in {commandException.Context.Channel.Name}\n{commandException}";
-            }
-
-            if (log.Severity == LogSeverity.Critical)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-            }
-            else if (log.Severity == LogSeverity.Error)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-            else if (log.Severity == LogSeverity.Warning)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-            }
-            else if (log.Severity == LogSeverity.Debug)
-            {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-            }
-            else if(log.Severity == LogSeverity.Info)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-            }
-            else if(log.Severity == LogSeverity.Verbose)
-            {
-                Console.ForegroundColor = ConsoleColor.Magenta;
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-            }
-
-            Console.WriteLine(text);
-            File.AppendAllText("log.txt", text + "\n");
-
-            return Task.CompletedTask;
-        }
 
         private static void Main() => MainAsync().GetAwaiter().GetResult();
 
@@ -81,10 +37,17 @@ namespace LostArkBot
             InteractionService commands = services.GetRequiredService<InteractionService>();
             CommandHandlingService commandHandlingService = services.GetRequiredService<CommandHandlingService>();
 
+            LogMessage logMessage = new(LogSeverity.Info, "Setup", "============================================================================");
+            await LogService.Log(logMessage);
+            logMessage = new(LogSeverity.Info, "Setup", "=========================== Application starting ===========================");
+            await LogService.Log(logMessage);
+            logMessage = new(LogSeverity.Info, "Setup", "============================================================================");
+            await LogService.Log(logMessage);
+
             await commandHandlingService.Initialize();
 
-            Client.Log += Log;
-            commands.Log += Log;
+            Client.Log += LogService.Log;
+            commands.Log += LogService.Log;
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
 
@@ -92,8 +55,8 @@ namespace LostArkBot
 
             if (string.IsNullOrEmpty(config.Token))
             {
-                LogMessage logMessage = new(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
-                await Log(logMessage);
+                logMessage = new(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
+                await LogService.Log(logMessage);
                 Environment.Exit(0);
             }
 
