@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Net;
 using Discord.WebSocket;
 using System.Threading.Tasks;
 
@@ -29,7 +28,7 @@ namespace LostArkBot.Src.Bot.Buttons
             {
                 await Context.Interaction.Message.DeleteAsync();
 
-                if (Context.Guild.GetChannel(Context.Interaction.Message.Id) is IThreadChannel threadChannel)
+                if (Context.Guild != null && Context.Guild.GetChannel(Context.Interaction.Message.Id) is IThreadChannel threadChannel)
                 {
                     await threadChannel.DeleteAsync();
                 }

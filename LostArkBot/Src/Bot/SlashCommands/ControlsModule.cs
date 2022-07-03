@@ -22,7 +22,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                                                                 .WithButton(Program.StaticObjects.DeleteButton)
                                                                 .WithButton(Program.StaticObjects.StartButton);
 
-
             await RespondAsync(components: components.Build());
         }
     }

@@ -41,7 +41,8 @@ namespace LostArkBot.Src.Bot.Handlers
                     embed.AddField(new EmbedFieldBuilder()
                     {
                         Name = "Time",
-                        Value = $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:F>\n<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:R>"
+                        Value = $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:F>\n" +
+                                $"<t:{component.Message.Embeds.First().Timestamp.Value.ToUnixTimeSeconds()}:R>"
                     });
                 }
 

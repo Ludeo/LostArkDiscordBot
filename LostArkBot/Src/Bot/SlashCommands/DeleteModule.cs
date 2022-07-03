@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
-    internal class DeleteModule
+    public class DeleteModule
     {
         public class AccountModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
         {

@@ -2,7 +2,7 @@
 
 namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class Engraving
+    public class Engraving
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }

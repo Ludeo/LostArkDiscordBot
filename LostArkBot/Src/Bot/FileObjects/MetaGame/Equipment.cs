@@ -2,7 +2,7 @@
 
 namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
-    internal class Equipment
+    public class Equipment
     {
         [JsonPropertyName("slotType")]
         public int SlotType { get; set; }
