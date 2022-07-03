@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
+    [Group("subscriptions", "Mange your merchant subscriptions")]
     public class SubscriptionsModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
-        [SlashCommand("subscribe", "Get DM's for selected merchant items")]
-        public async Task Subscribe()
+        [SlashCommand("add", "Add subscription to selected merchant items")]
+        public async Task Add()
         {
             SocketUser user = Context.User;
             await SubscribeMenuBuilder(user);
@@ -22,8 +23,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await DeleteOriginalResponseAsync();
         }
 
-        [SlashCommand("unsubscribe", "Remove subscription to selected merchant items")]
-        public async Task Unsubscribe()
+        [SlashCommand("remove", "Remove subscription to selected merchant items")]
+        public async Task Remove()
         {
             SocketUser user = Context.User;
             await UnsubscribeMenuBuilder(user);
@@ -31,7 +32,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await DeleteOriginalResponseAsync();
         }
 
-        [SlashCommand("subscriptions", "List of active merchant subscriptions")]
+        [SlashCommand("list", "List of active merchant subscriptions")]
         public async Task Subscriptions()
         {
             SocketUser user = Context.User;
@@ -39,7 +40,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
         }
 
-        public async Task SubscribeMenuBuilder(SocketUser user)
+        public static async Task SubscribeMenuBuilder(SocketUser user)
         {
             SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("subscribe").WithPlaceholder("Add subscription");
             UserSubscription userSub = GetSubscriptionForUser(user.Id);
@@ -62,7 +63,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, menu);
         }
 
-        public async Task UnsubscribeMenuBuilder(SocketUser user)
+        public static async Task UnsubscribeMenuBuilder(SocketUser user)
         {
             SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("unsubscribe").WithPlaceholder("Remove subscription");
             UserSubscription userSub = GetSubscriptionForUser(user.Id);

@@ -16,7 +16,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("edit-challenge-guardian", "Edits the list of the current challenge guardians")]
         public async Task EditChallengeGuardian([Summary("name", "Name of the guardian")] string guardianName)
         {
-            if(!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 await RespondAsync(text: "You don't have permission to execute this command", ephemeral: true);
                 return;

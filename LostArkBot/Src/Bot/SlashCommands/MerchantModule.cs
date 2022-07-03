@@ -23,7 +23,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class MerchantModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         private HubConnection hubConnection;
-        private SocketTextChannel merchantChannel = Program.MerchantChannel;
+        private readonly SocketTextChannel merchantChannel = Program.MerchantChannel;
         private Dictionary<string, MerchantInfo> merchantInfo;
         private readonly Dictionary<string, string> ansiColors = new()
         {

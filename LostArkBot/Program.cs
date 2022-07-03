@@ -13,7 +13,6 @@ using Quartz;
 using LostArkBot.Src.Bot.QuartzJobs;
 using LostArkBot.Src.Bot.Shared;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
-using System.IO;
 
 namespace LostArkBot
 {

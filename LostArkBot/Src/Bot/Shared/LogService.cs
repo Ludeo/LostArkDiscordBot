@@ -11,7 +11,7 @@ namespace LostArkBot.Src.Bot.Shared
         public static async Task<Task> Log(LogMessage log)
         {
             string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
-            string logFileName = $"Logs\\log_{DateTime.Now:MM_dd_yyyy}.txt";
+            string logFileName = $"Logs/log_{DateTime.Now:MM_dd_yyyy}.txt";
 
             if (log.Exception is CommandException commandException)
             {

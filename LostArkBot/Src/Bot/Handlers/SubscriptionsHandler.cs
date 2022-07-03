@@ -79,7 +79,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 await component.Message.DeleteAsync();
 
                 File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
-                await new SubscriptionsModule().SubscribeMenuBuilder(component.User);
+                await SubscriptionsModule.SubscribeMenuBuilder(component.User);
             }
 
             if (component.Data.CustomId == "unsubscribe")
@@ -109,9 +109,8 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
 
-                await new SubscriptionsModule().UnsubscribeMenuBuilder(component.User);
+                await SubscriptionsModule.UnsubscribeMenuBuilder(component.User);
             }
-
         }
     }
 }
