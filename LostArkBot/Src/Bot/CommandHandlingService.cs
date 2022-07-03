@@ -6,7 +6,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using Discord.Interactions;
 using LostArkBot.Src.Bot.Handlers;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 
 namespace LostArkBot.Bot
 {

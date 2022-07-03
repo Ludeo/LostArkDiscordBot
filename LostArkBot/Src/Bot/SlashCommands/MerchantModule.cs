@@ -5,7 +5,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using LostArkBot.Src.Bot.Models;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 using LostArkBot.Src.Bot.FileObjects.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;

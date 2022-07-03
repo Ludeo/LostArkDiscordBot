@@ -145,7 +145,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("Engravings", "\u200b", true);
             embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
             embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
-            embedBuilder.AddField("Custom Message", "\u200b");
+            //embedBuilder.AddField("Custom Message", "\u200b");
 
             await FollowupAsync(text: character.CharacterName + " got successfully registered", embed: embedBuilder.Build());
         } 

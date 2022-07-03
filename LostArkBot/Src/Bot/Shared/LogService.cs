@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace LostArkBot.Src.Bot.Utils
+namespace LostArkBot.Src.Bot.Shared
 {
     public class LogService
     {

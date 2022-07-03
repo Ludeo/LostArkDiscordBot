@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using Quartz.Impl;
 using Quartz;
 using LostArkBot.Src.Bot.QuartzJobs;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using System.IO;
 

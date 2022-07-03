@@ -1,5 +1,5 @@
 ﻿using Discord;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;

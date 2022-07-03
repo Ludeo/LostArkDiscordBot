@@ -4,7 +4,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;

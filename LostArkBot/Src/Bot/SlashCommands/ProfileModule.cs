@@ -47,8 +47,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("Engravings", engraving, true);
             embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
             embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
-            embedBuilder.AddField("Custom Message", character.CustomProfileMessage == string.Empty ? "\u200b" : character.CustomProfileMessage);
-
+            if (character.CustomProfileMessage != string.Empty)
+            {
+                embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
+            }
             await RespondAsync(embed: embedBuilder.Build());
         }
     }
