@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using Quartz;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,7 +19,10 @@ namespace LostArkBot.Src.Bot.QuartzJobs
             {
                 messageList.Add(message);
             }
+
             await textChannel.DeleteMessagesAsync(messageList);
+
+            Program.MerchantMessages = new List<MerchantMessage>();
         }
     }
 }

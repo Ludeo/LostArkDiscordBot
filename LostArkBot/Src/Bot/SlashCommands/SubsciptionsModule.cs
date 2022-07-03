@@ -1,13 +1,11 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 

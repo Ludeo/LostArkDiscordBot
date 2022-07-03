@@ -12,6 +12,8 @@ using Quartz.Impl;
 using Quartz;
 using LostArkBot.Src.Bot.QuartzJobs;
 using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.FileObjects.LostMerchants;
+using System.IO;
 
 namespace LostArkBot
 {
@@ -26,6 +28,8 @@ namespace LostArkBot
         public static StaticObjects StaticObjects { get; } = new StaticObjects();
 
         public static SocketTextChannel MerchantChannel { get; private set; }
+
+        public static List<MerchantMessage> MerchantMessages { get; set; } = new();
 
         private static void Main() => MainAsync().GetAwaiter().GetResult();
 

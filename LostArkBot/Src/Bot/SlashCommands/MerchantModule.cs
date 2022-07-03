@@ -23,7 +23,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class MerchantModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         private HubConnection hubConnection;
-        private ITextChannel merchantChannel;
+        private SocketTextChannel merchantChannel = Program.MerchantChannel;
         private Dictionary<string, MerchantInfo> merchantInfo;
         private readonly Dictionary<string, string> ansiColors = new()
         {
@@ -43,7 +43,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            merchantChannel = Context.Channel as ITextChannel;
             await RespondAsync(text: "merchants activated", ephemeral: true);
 
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
@@ -57,17 +56,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     logging.AddProvider(new SignalLoggerProvider());
                 })
                 .Build();
+
             hubConnection.KeepAliveInterval = new TimeSpan(0, 4, 0);
             hubConnection.ServerTimeout = new TimeSpan(0, 8, 0);
             hubConnection.Closed -= OnConnectionClosedAsync;
             hubConnection.Closed += OnConnectionClosedAsync;
 
-
             await StartConnectionAsync();
-
-
-            // Use to test sending a DM
-            //await TestDM(241989256258650113);
         }
 
         private void OnUpdateMerchantGroup()
@@ -101,48 +96,48 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     embedColor = Color.Blue;
                 }
 
-                string embedDescription = "";
+                string rolePing = "";
 
                 if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Wei))
                 {
-                    embedDescription = "<@&986032976812982343> ";
+                    rolePing = "<@&986032976812982343> ";
                     notableItem = (int)WanderingMerchantItemsEnum.Wei;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka))
                 {
-                    embedDescription = "<@&986033361770385429> ";
+                    rolePing = "<@&986033361770385429> ";
                     notableItem = (int)WanderingMerchantItemsEnum.Mokamoka;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian))
                 {
-                    embedDescription = "<@&986033048271331428> ";
+                    rolePing = "<@&986033048271331428> ";
                     notableItem = (int)WanderingMerchantItemsEnum.Sian;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria))
                 {
-                    embedDescription = "<@&986033604205371463> ";
+                    rolePing = "<@&986033604205371463> ";
                     notableItem = (int)WanderingMerchantItemsEnum.Seria;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick))
                 {
-                    embedDescription = "<@&986033108954525836> ";
+                    rolePing = "<@&986033108954525836> ";
                     notableItem = (int)WanderingMerchantItemsEnum.Madnick;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr))
                 {
-                    embedDescription = "<@&986033435531419679> ";
+                    rolePing = "<@&986033435531419679> ";
                     notableItem = (int)WanderingMerchantItemsEnum.Kaysarr;
                 }
 
                 if (merchant.Rapport.Rarity == Rarity.Legendary)
                 {
-                    embedDescription += "<@&986032866053996554>";
+                    rolePing += "<@&986032866053996554>";
                     notableItem = (int)WanderingMerchantItemsEnum.LegendaryRapport;
                 }
 
-                if (string.IsNullOrEmpty(embedDescription))
+                if (string.IsNullOrEmpty(rolePing))
                 {
-                    embedDescription = "\u200b";
+                    rolePing = "\u200b";
                 }
 
                 DateTimeOffset now = DateTimeOffset.Now;
@@ -170,9 +165,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     IsInline = true,
                 });
 
+                embedBuilder.WithFooter(new EmbedFooterBuilder()
+                {
+                    Text = "Votes: 0",
+                });
+
                 Embed embed = embedBuilder.Build();
-                IUserMessage message = await merchantChannel.SendMessageAsync(text: embedDescription, embed: embed);
+                IUserMessage message = await merchantChannel.SendMessageAsync(text: rolePing, embed: embed);
                 await message.AddReactionAsync(new Emoji("✅"));
+                Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
 
                 if (notableItem != -1)
                 {
@@ -185,44 +186,47 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
-                Console.WriteLine(votes.ToString());
-                // create Object MerchantMessage - contains MessageId, MerchantId
-                // on UpdateVotes get MerchantMessages that containd MerchantId
-                // update the votes of the message which is linked to the merchant
-                // if votes are negative, delete the message
+                foreach(object obj in votes)
+                {
+                    MerchantVote vote = JsonSerializer.Deserialize<MerchantVote>(obj.ToString());
+                    MerchantMessage merchantMessage = Program.MerchantMessages.First(x => x.MerchantId == vote.Id);
+                    IUserMessage message = await merchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
+                    IEmbed oldEmbed = message.Embeds.First();
+
+                    if(vote.Votes <= -5)
+                    {
+                        await message.DeleteAsync();
+                        Program.MerchantMessages.Remove(merchantMessage);
+
+                        return;
+                    }
+
+                    EmbedBuilder newEmbed = new()
+                    {
+                        Title = oldEmbed.Title,
+                        Description = oldEmbed.Description,
+                        ThumbnailUrl = oldEmbed.Thumbnail.Value.Url,
+                        Color = oldEmbed.Color,
+                        Footer = new EmbedFooterBuilder()
+                        {
+                            Text = "Votes: " + vote.Votes.ToString(),
+                        },
+                    };
+
+                    foreach(EmbedField embedField in oldEmbed.Fields)
+                    {
+                        newEmbed.AddField(new EmbedFieldBuilder()
+                        {
+                            Name = embedField.Name,
+                            Value = embedField.Value,
+                            IsInline = embedField.Inline,
+                        });
+                    }
+
+                    await message.ModifyAsync(x => x.Embed = newEmbed.Build());
+                }
             });
         }
-
-        //private async Task TestDM(ulong userId)
-        //{
-        //    MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
-        //    EmbedBuilder embedBuilder = new()
-        //    {
-        //        Title = "Test Region" + " - " + "Test Zone",
-        //        Description = $"Expires <t:{DateTimeOffset.Now.AddMinutes(30).ToUnixTimeSeconds()}:R>",
-        //        ThumbnailUrl = "https://lostmerchants.com/images/zones/Lake%20Shiverwave.jpg",
-        //        Color = Color.Purple,
-        //    };
-
-        //    embedBuilder.AddField(new EmbedFieldBuilder()
-        //    {
-        //        Name = ":black_joker: Card",
-        //        Value = "```ansi\n" + "[2;35m" + "Test Card" + "```",
-        //        IsInline = true,
-        //    });
-
-        //    embedBuilder.AddField(new EmbedFieldBuilder()
-        //    {
-        //        Name = ":gift: Rapport",
-        //        Value = "```ansi\n" + "[2;35m" + "Test Rapport" + "```",
-        //        IsInline = true,
-        //    });
-
-        //    Embed embed = embedBuilder.Build();
-        //    SocketGuildUser serverUser = Context.Guild.GetUser(userId);
-
-        //    await serverUser.SendMessageAsync(embed: embed, components: component);
-        //}
 
         private Task GetUserSubsriptions(int notableItem, Embed embed)
         {
@@ -230,6 +234,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
 
             List<UserSubscription> merchantSubs;
+
             try
             {
                 json = File.ReadAllText("MerchantSubscriptions.json");
@@ -241,6 +246,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             merchantSubs = JsonSerializer.Deserialize<List<UserSubscription>>(json);
+
             if (merchantSubs.Count == 0)
             {
                 return Task.CompletedTask;
@@ -261,12 +267,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     {
                         await serverUser.SendMessageAsync(embed: embed, components: component);
                     }
-                    catch (HttpException)
+                    catch (HttpException exception)
                     {
-                        Console.WriteLine("User cannot recieve DM's");
+                        await LogService.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", "User cannot receive DMs", exception));
                     }
                 }
             });
+
             return Task.CompletedTask;
         }
 
