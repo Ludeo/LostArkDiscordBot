@@ -5,7 +5,11 @@ using LostArkBot.Src.Bot.FileObjects;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Linq;
+using System;
+using LostArkBot.Src.Bot.Shared;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
@@ -28,8 +32,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
             ulong discordUserId = Context.User.Id;
+            characterName = characterName.ToTitleCase();
 
-            Character oldCharacter = characterList.Find(x => x.CharacterName == characterName);
+            Character oldCharacter = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
             Character newCharacter = oldCharacter;
 
             if (oldCharacter is not null)
@@ -48,22 +53,50 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            if(className is not ClassName.Default)
+            if (className is not ClassName.Default)
             {
                 newCharacter.ClassName = className.ToString();
             }
 
-            if(itemLevel is not 0)
+            if (itemLevel is not 0)
             {
                 newCharacter.ItemLevel = itemLevel;
             }
 
             if (!string.IsNullOrEmpty(engravings))
             {
-                newCharacter.Engravings = engravings;
+                List<string> splitEngravings = new();
+                if (engravings.Contains(","))
+                {
+                    splitEngravings = (engravings.Split(",")).ToList();
+                }
+                else if (engravings.Contains("\\"))
+                {
+                    splitEngravings = engravings.Split("\\").ToList();
+                }
+                else if (engravings.Contains("/"))
+                {
+                    splitEngravings = engravings.Split("/").ToList();
+                }
+                else
+                {
+                    MatchCollection matches = Regex.Matches(engravings, "([[a-zA-Z\\s]+\\d)");
+                    foreach (Match match in matches)
+                    {
+                        splitEngravings.Add(match.ToString());
+                    }
+                }
+
+                List<string> parsedEngravings = new();
+                foreach (string engraving in splitEngravings)
+                {
+                    parsedEngravings.Add(engraving.Trim().ToTitleCase());
+                }
+
+                newCharacter.Engravings = String.Join(", ", parsedEngravings);
             }
 
-            if(crit is not 0)
+            if (crit is not 0)
             {
                 newCharacter.Crit = crit;
             }
@@ -117,18 +150,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("Item Level", newCharacter.ItemLevel, true);
             embedBuilder.AddField("Class", newCharacter.ClassName, true);
 
-            string[] engravings2 = newCharacter.Engravings.Split(",");
-            string engraving = "\u200b";
-
-            foreach (string x in engravings2)
+            string engravingsString = "\u200b";
+            foreach (string x in newCharacter.Engravings.Split(","))
             {
-                engraving += x + "\n";
+                engravingsString += x + "\n";
             }
 
-            embedBuilder.AddField("Engravings", engraving, true);
+            embedBuilder.AddField("Engravings", engravingsString, true);
             embedBuilder.AddField("Stats", $"Crit: {newCharacter.Crit}\nSpec: {newCharacter.Spec}\nDom: {newCharacter.Dom}", true);
             embedBuilder.AddField("\u200b", $"Swift: {newCharacter.Swift}\nEnd: {newCharacter.End}\nExp: {newCharacter.Exp}", true);
-            embedBuilder.AddField("Custom Message", customMessage == string.Empty ? "\u200b" : customMessage);
+            if (customMessage != string.Empty)
+            {
+                embedBuilder.AddField("Custom Message", customMessage);
+            }
 
             await RespondAsync(text: $"{characterName} got successfully updated", embed: embedBuilder.Build());
         }

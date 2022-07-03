@@ -127,7 +127,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
         private static async Task BuildCommonComponentsAsync(string text, SocketUser user, SelectMenuBuilder menu = null)
         {
-            ButtonBuilder delete = Program.StaticObjects.DeleteButton;
+            ButtonBuilder delete = Shared.Utils.DeepCopy(Program.StaticObjects.DeleteButton);
             delete.WithLabel("Exit");
 
             ComponentBuilder menuBuilder = new();

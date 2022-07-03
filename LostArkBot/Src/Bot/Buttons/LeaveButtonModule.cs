@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using Discord.Net;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 

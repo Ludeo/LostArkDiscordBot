@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Models.Enums;
 using LostArkBot.Src.Bot.SlashCommands;
-using LostArkBot.Src.Bot.Utils;
+using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
