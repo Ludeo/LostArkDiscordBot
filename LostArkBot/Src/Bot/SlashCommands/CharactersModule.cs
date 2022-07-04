@@ -98,35 +98,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!string.IsNullOrEmpty(newCharacter.Engravings))
             {
-                List<string> splitEngravings = new();
-                if (engravings.Contains(","))
-                {
-                    splitEngravings = (engravings.Split(",")).ToList();
-                }
-                else if (engravings.Contains("\\"))
-                {
-                    splitEngravings = engravings.Split("\\").ToList();
-                }
-                else if (engravings.Contains("/"))
-                {
-                    splitEngravings = engravings.Split("/").ToList();
-                }
-                else
-                {
-                    MatchCollection matches = Regex.Matches(engravings, "([[a-zA-Z\\s]+\\d)");
-                    foreach (Match match in matches)
-                    {
-                        splitEngravings.Add(match.ToString());
-                    }
-                }
-
-                List<string> parsedEngravings = new();
-                foreach (string eng in splitEngravings)
-                {
-                    parsedEngravings.Add(eng.Trim().ToTitleCase());
-                }
-
-                newCharacter.Engravings = string.Join(",", parsedEngravings);
+                newCharacter.Engravings = Utils.ParseEngravings(engravings);
             }
 
             characterList.Add(newCharacter);
@@ -210,35 +182,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!string.IsNullOrEmpty(engravings))
             {
-                List<string> splitEngravings = new();
-                if (engravings.Contains(","))
-                {
-                    splitEngravings = engravings.Split(",").ToList();
-                }
-                else if (engravings.Contains("\\"))
-                {
-                    splitEngravings = engravings.Split("\\").ToList();
-                }
-                else if (engravings.Contains("/"))
-                {
-                    splitEngravings = engravings.Split("/").ToList();
-                }
-                else
-                {
-                    MatchCollection matches = Regex.Matches(engravings, "([[a-zA-Z\\s]+\\d)");
-                    foreach (Match match in matches)
-                    {
-                        splitEngravings.Add(match.ToString());
-                    }
-                }
-
-                List<string> parsedEngravings = new();
-                foreach (string engraving in splitEngravings)
-                {
-                    parsedEngravings.Add(engraving.Trim().ToTitleCase());
-                }
-
-                newCharacter.Engravings = string.Join(",", parsedEngravings);
+                newCharacter.Engravings = Utils.ParseEngravings(engravings);
             }
 
             if (crit is not -1)
