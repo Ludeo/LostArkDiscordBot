@@ -5,7 +5,6 @@ using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
