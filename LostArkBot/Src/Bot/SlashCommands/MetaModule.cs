@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
+using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -51,7 +52,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             MetaGameRefresh metaGameRefresh = JsonSerializer.Deserialize<MetaGameRefresh>(responseString);
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character characterCheck = characterList.FirstOrDefault(x => x.CharacterName == metaGameRefresh.CharacterName);
 
             if (characterCheck != null)
@@ -132,7 +133,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             character.ClassName = metaGameCharacter.ClassName;
             characterList.Add(character);
 
-            await File.WriteAllTextAsync("characters.json", JsonSerializer.Serialize(characterList));
+            await JsonParsers.WriteCharactersAsync(characterList);
 
             EmbedBuilder embedBuilder = new()
             {
@@ -189,7 +190,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             MetaGameRefresh metaGameRefresh = JsonSerializer.Deserialize<MetaGameRefresh>(responseString);
 
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
 
             Character oldCharacter = characterList.First(x => x.CharacterName == metaGameRefresh.CharacterName);
             Character newCharacter = oldCharacter;
@@ -271,7 +272,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             characterList.Add(newCharacter);
             characterList.Remove(oldCharacter);
 
-            await File.WriteAllTextAsync("characters.json", JsonSerializer.Serialize(characterList));
+            await JsonParsers.WriteCharactersAsync(characterList);
 
             EmbedBuilder embedBuilder = new()
             {
@@ -313,7 +314,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             string amazonBaseLink = "https://cdn.lostark.games.aws.dev/";
 
-            List<Dictionary<string, Engraving>> engravingListDict = JsonSerializer.Deserialize<List<Dictionary<string, Engraving>>>(File.ReadAllText("engravings.json"));
+            List<Dictionary<string, Engraving>> engravingListDict = await JsonParsers.GetEngravingsFromJsonAsync();
             Dictionary<string, Engraving> engravingDict = engravingListDict.First();
             List<Engraving> engravings = new();
 

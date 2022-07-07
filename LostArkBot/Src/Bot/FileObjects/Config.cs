@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text.Json;
+﻿using LostArkBot.Src.Bot.Shared;
 using System.Text.Json.Serialization;
 
 namespace LostArkBot.Src.Bot.FileObjects
@@ -34,16 +33,7 @@ namespace LostArkBot.Src.Bot.FileObjects
 
         private static Config GetConfig()
         {
-            if (!File.Exists("config.json"))
-            {
-                Config configFile = new();
-                string jsonData = JsonSerializer.Serialize(configFile);
-                File.WriteAllText("config.json", jsonData);
-
-                return configFile;
-            }
-
-            return JsonSerializer.Deserialize<Config>(File.ReadAllText("config.json"));
+            return JsonParsers.GetConfigFromJson();
         }
     }
 }

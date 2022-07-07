@@ -1,8 +1,7 @@
 ﻿using Discord;
 using LostArkBot.Src.Bot.Models;
+using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 
 namespace LostArkBot.Src.Bot.FileObjects
 {
@@ -174,7 +173,7 @@ namespace LostArkBot.Src.Bot.FileObjects
             HomeLfg = menuBuilder;
         }
 
-        private void MenuModelsInitialization()
+        private async void MenuModelsInitialization()
         {
             #region Guardian Raids
             LfgModel model = new()
@@ -678,7 +677,7 @@ namespace LostArkBot.Src.Bot.FileObjects
             #endregion
 
             #region Challenge Guardian
-            List<ChallengeGuardian> challengeGuardians = JsonSerializer.Deserialize<List<ChallengeGuardian>>(File.ReadAllText("challengeguardians.json"));
+            List<ChallengeGuardian> challengeGuardians = await JsonParsers.GetChallengeGuardiansFromJson();
 
             model = new()
             {

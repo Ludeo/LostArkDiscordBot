@@ -8,8 +8,15 @@ namespace LostArkBot.Src.Bot.Shared
 {
     public class LogService
     {
-        public static async Task<Task> Log(LogMessage log)
+
+        public static async Task<Task> LogHandler(LogMessage log)
         {
+            return await Log(log.Severity, log.Source, log.Message, log.Exception);
+        }
+
+        public static async Task<Task> Log(LogSeverity severity, string source, string message, Exception exception = null)
+        {
+            LogMessage log = new(severity, source, message, exception);
             string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
             string logFileName = $"Logs/log_{DateTime.Now:MM_dd_yyyy}.txt";
 

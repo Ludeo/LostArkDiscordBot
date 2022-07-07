@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.Net;
+﻿using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Models.Enums;
@@ -7,9 +6,7 @@ using LostArkBot.Src.Bot.SlashCommands;
 using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Handlers
@@ -23,20 +20,7 @@ namespace LostArkBot.Src.Bot.Handlers
 
             SocketUser user = component.User;
 
-            string json;
-
-            List<UserSubscription> merchantSubs;
-            try
-            {
-                json = File.ReadAllText("MerchantSubscriptions.json");
-            }
-            catch (FileNotFoundException)
-            {
-                File.WriteAllText("MerchantSubscriptions.json", "[]");
-                json = "[]";
-            }
-
-            merchantSubs = JsonSerializer.Deserialize<List<UserSubscription>>(json);
+            List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
 
             UserSubscription subscription = merchantSubs.Find(sub =>
             {
@@ -78,7 +62,7 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 await component.Message.DeleteAsync();
 
-                File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
+                JsonParsers.WriteMerchants(merchantSubs);
                 await SubscriptionsModule.SubscribeMenuBuilder(component.User);
             }
 
@@ -107,8 +91,7 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 await component.Message.DeleteAsync();
 
-                File.WriteAllText("MerchantSubscriptions.json", JsonSerializer.Serialize(merchantSubs));
-
+                JsonParsers.WriteMerchants(merchantSubs);
                 await SubscriptionsModule.UnsubscribeMenuBuilder(component.User);
             }
         }

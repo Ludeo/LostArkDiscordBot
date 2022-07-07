@@ -2,9 +2,8 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.UserCommands
@@ -15,7 +14,7 @@ namespace LostArkBot.Src.Bot.UserCommands
         public async Task AccountUserCommand(IUser user)
         {
             ulong userId = user.Id;
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)

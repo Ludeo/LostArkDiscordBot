@@ -20,7 +20,7 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
 
         public async Task DisposeAsync()
         {
-            await LogService.Log(new LogMessage(LogSeverity.Info, "SignalLogging", "Disposing SignalLoggerProvider"));
+            await LogService.Log(LogSeverity.Info, this.GetType().Name, "Disposing SignalLoggerProvider");
             GC.SuppressFinalize(this);
         }
     }

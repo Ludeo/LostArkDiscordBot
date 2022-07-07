@@ -3,10 +3,9 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Models.Enums;
+using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -36,14 +35,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public async Task Subscriptions()
         {
             SocketUser user = Context.User;
-            string activeSubs = GetActiveSubscriptionsString(user);
+            string activeSubs = await GetActiveSubscriptionsStringAsync(user);
             await RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
         }
 
         public static async Task SubscribeMenuBuilder(SocketUser user)
         {
             SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("subscribe").WithPlaceholder("Add subscription");
-            UserSubscription userSub = GetSubscriptionForUser(user.Id);
+            UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
 
             if (userSub != null && userSub.SubscribedItems.Count == Enum.GetValues(typeof(WanderingMerchantItemsEnum)).Length)
             {
@@ -59,14 +58,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
             }
 
-            string activeSubs = GetActiveSubscriptionsString(user);
+            string activeSubs = await GetActiveSubscriptionsStringAsync(user);
             await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, menu);
         }
 
         public static async Task UnsubscribeMenuBuilder(SocketUser user)
         {
             SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("unsubscribe").WithPlaceholder("Remove subscription");
-            UserSubscription userSub = GetSubscriptionForUser(user.Id);
+            UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
 
             if (userSub == null || userSub.SubscribedItems.Count == 0)
             {
@@ -81,26 +80,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     menu = AddToMenu(menu, value);
                 }
             }
-            string activeSubs = GetActiveSubscriptionsString(user);
+            string activeSubs = await GetActiveSubscriptionsStringAsync(user);
             await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, menu);
         }
 
-        private static UserSubscription GetSubscriptionForUser(ulong userId)
+        private static async Task<UserSubscription> GetSubscriptionForUserAsync(ulong userId)
         {
-            string json;
-            List<UserSubscription> merchantSubs;
-
-            try
-            {
-                json = File.ReadAllText("MerchantSubscriptions.json");
-            }
-            catch (FileNotFoundException)
-            {
-                File.WriteAllText("MerchantSubscriptions.json", "[]");
-                json = "[]";
-            }
-
-            merchantSubs = JsonSerializer.Deserialize<List<UserSubscription>>(json);
+            List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
             UserSubscription userSub = merchantSubs.Find(sub =>
             {
                 return sub.UserId == userId;
@@ -143,9 +129,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await user.SendMessageAsync(text: text, components: menuComponent);
         }
 
-        private static string GetActiveSubscriptionsString(SocketUser user)
+        private static async Task<string> GetActiveSubscriptionsStringAsync(SocketUser user)
         {
-            UserSubscription userSub = GetSubscriptionForUser(user.Id);
+            UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
 
             string activeSubs = "";
 

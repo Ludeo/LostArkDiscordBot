@@ -43,8 +43,7 @@ namespace LostArkBot.Bot
 
             foreach(SocketGuild guild in client.Guilds)
             {
-                LogMessage connectedGuild = new(LogSeverity.Info, "Ready", "Connected to " + guild.Name);
-                await LogService.Log(connectedGuild);
+                await LogService.Log(LogSeverity.Info, "Ready", "Connected to " + guild.Name);
             }
 
             client.Ready -= Ready;
