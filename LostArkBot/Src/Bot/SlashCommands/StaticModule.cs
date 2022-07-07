@@ -2,10 +2,9 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -18,7 +17,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("name", "Name for the Static Group")] string name,
             [Summary("character-name", "Name of your character")] string characterName)
         {
-            List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (staticGroups.Any(x => x.Name == name))
             {
@@ -26,7 +25,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
+            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
@@ -45,7 +44,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             };
 
             staticGroups.Add(staticGroup);
-            File.WriteAllText("staticgroups.json", JsonSerializer.Serialize(staticGroups));
+            JsonParsers.WriteStaticGroups(staticGroups);
 
             await RespondAsync(text: name + " got successfully registered");
         }
@@ -53,7 +52,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("delete", "Deletes a Static Group")]
         public async Task Delete([Summary("name", "Name of the Static Group")] string name)
         {
-            List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
@@ -70,7 +69,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             staticGroups.Remove(staticGroup);
-            File.WriteAllText("staticgroups.json", JsonSerializer.Serialize(staticGroups));
+            JsonParsers.WriteStaticGroups(staticGroups);
 
             await RespondAsync(text: name + " got successfully deleted", ephemeral: true);
         }
@@ -80,7 +79,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("character-name", "Name of the character that you want to add")] string characterName,
             [Summary("group-name", "Name of the static group")] string name)
         {
-            List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
@@ -102,7 +101,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
+            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
@@ -114,7 +113,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             staticGroup.Players.Add(characterName);
             staticGroups.Add(staticGroup);
 
-            File.WriteAllText("staticgroups.json", JsonSerializer.Serialize(staticGroups));
+            JsonParsers.WriteStaticGroups(staticGroups);
 
             await RespondAsync(text: characterName + " got succesfully added to the static group", ephemeral: true);
         }
@@ -124,7 +123,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("character-name", "Name of the character that you want to remove")] string characterName,
             [Summary("group-name", "Name of the static group")] string name)
         {
-            List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
@@ -140,7 +139,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
+            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
@@ -152,15 +151,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
             staticGroup.Players.Remove(characterName);
             staticGroups.Add(staticGroup);
 
-            File.WriteAllText("staticgroups.json", JsonSerializer.Serialize(staticGroups));
-
+            JsonParsers.WriteStaticGroups(staticGroups);
             await RespondAsync(text: characterName + " got succesfully removed from the static group", ephemeral: true);
         }
 
         [SlashCommand("list", "Displays all static groups")]
         public async Task List()
         {
-            List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             EmbedBuilder embed = new()
             {
@@ -179,7 +177,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("view", "View members of a specific static group")]
         public async Task View([Summary("group-name", "Name of the static group")] string name)
         {
-            List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {

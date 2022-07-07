@@ -39,17 +39,14 @@ namespace LostArkBot
             InteractionService commands = services.GetRequiredService<InteractionService>();
             CommandHandlingService commandHandlingService = services.GetRequiredService<CommandHandlingService>();
 
-            LogMessage logMessage = new(LogSeverity.Info, "Setup", "============================================================================");
-            await LogService.Log(logMessage);
-            logMessage = new(LogSeverity.Info, "Setup", "=========================== Application starting ===========================");
-            await LogService.Log(logMessage);
-            logMessage = new(LogSeverity.Info, "Setup", "============================================================================");
-            await LogService.Log(logMessage);
+            await LogService.Log(LogSeverity.Info, "Setup", "============================================================================");
+            await LogService.Log(LogSeverity.Info, "Setup", "=========================== Application starting ===========================");
+            await LogService.Log(LogSeverity.Info, "Setup", "============================================================================");
 
             await commandHandlingService.Initialize();
 
-            Client.Log += LogService.Log;
-            commands.Log += LogService.Log;
+            Client.Log += LogService.LogHandler;
+            commands.Log += LogService.LogHandler;
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
 
@@ -57,8 +54,7 @@ namespace LostArkBot
 
             if (string.IsNullOrEmpty(config.Token))
             {
-                logMessage = new(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
-                await LogService.Log(logMessage);
+                await LogService.Log(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
                 Environment.Exit(0);
             }
 

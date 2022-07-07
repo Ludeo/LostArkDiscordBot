@@ -2,10 +2,9 @@
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
+using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Handlers
@@ -25,7 +24,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 Color = model.Color,
             };
 
-            if(model.IsEnd)
+            if (model.IsEnd)
             {
                 SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
 
@@ -60,9 +59,9 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 if (!string.IsNullOrEmpty(staticGroupName))
                 {
-                    List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+                    List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
                     StaticGroup staticGroup = staticGroups.Find(x => x.Name == staticGroupName);
-                    List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
+                    List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
                     List<GuildEmote> emotes = Program.GuildEmotes;
 
                     foreach (string player in staticGroup.Players)
@@ -89,7 +88,8 @@ namespace LostArkBot.Src.Bot.Handlers
                 IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message);
                 await threadChannel.ModifyAsync(x => x.AutoArchiveDuration = ThreadArchiveDuration.OneWeek);
 
-            } else
+            }
+            else
             {
                 if (component.Message.Embeds.First().Timestamp != null)
                 {
@@ -98,14 +98,15 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 if (!string.IsNullOrEmpty(customMessage))
                 {
-                    embed.Footer = new EmbedFooterBuilder() {
+                    embed.Footer = new EmbedFooterBuilder()
+                    {
                         Text = customMessage,
                     };
                 }
 
                 SelectMenuBuilder menuBuilder = new SelectMenuBuilder().WithCustomId(model.MenuItemId).WithPlaceholder(model.MenuPlaceholder);
 
-                foreach(MenuBuilderOption option in model.MenuBuilderOptions)
+                foreach (MenuBuilderOption option in model.MenuBuilderOptions)
                 {
                     menuBuilder.AddOption(new SelectMenuOptionBuilder().WithLabel(option.Label).WithValue(option.Value).WithDescription(option.Description));
                 }

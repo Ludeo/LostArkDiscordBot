@@ -2,10 +2,9 @@
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
+using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -22,7 +21,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<ChallengeGuardian> challengeGuardians = JsonSerializer.Deserialize<List<ChallengeGuardian>>(File.ReadAllText("challengeguardians.json"));
+            List<ChallengeGuardian> challengeGuardians = await JsonParsers.GetChallengeGuardiansFromJson();
             ChallengeGuardian old = challengeGuardians.First();
             challengeGuardians.Remove(old);
 
@@ -32,8 +31,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             };
 
             challengeGuardians.Add(newChallengeGuardian);
-            File.WriteAllText("challengeguardians.json", JsonSerializer.Serialize(challengeGuardians));
-
+            JsonParsers.WriteChallengeGuardians(challengeGuardians);
             List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
             LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeguardian");
             LfgModel newModel = oldModel;

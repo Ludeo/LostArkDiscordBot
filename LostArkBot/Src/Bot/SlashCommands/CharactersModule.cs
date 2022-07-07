@@ -4,8 +4,6 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -18,7 +16,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public async Task List()
         {
             ulong userId = Context.User.Id;
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)
@@ -69,7 +67,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("custom-profile-message", "Custom message for your profile")] string customMessage = "")
         {
             characterName = characterName.ToTitleCase();
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character oldCharacter = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
 
             if (oldCharacter is not null)
@@ -101,7 +99,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             characterList.Add(newCharacter);
-            await File.WriteAllTextAsync("characters.json", JsonSerializer.Serialize(characterList));
+            await JsonParsers.WriteCharactersAsync(characterList);
 
             EmbedBuilder embedBuilder = new()
             {
@@ -146,7 +144,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("profile-picture", "Link for a profile picture")] string profilePicture = "",
             [Summary("custom-profile-message", "Custom message for your profile")] string customMessage = "")
         {
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             ulong discordUserId = Context.User.Id;
             characterName = characterName.ToTitleCase();
 
@@ -226,7 +224,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             characterList.Add(newCharacter);
             characterList.Remove(oldCharacter);
-            await File.WriteAllTextAsync("characters.json", JsonSerializer.Serialize(characterList));
+            await JsonParsers.WriteCharactersAsync(characterList);
 
             EmbedBuilder embedBuilder = new()
             {
@@ -260,7 +258,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public async Task Remove([Summary("character-name", "Name of the character you want to remove")] string characterName)
         {
             ulong userId = Context.User.Id;
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character character = characterList.Find(x => x.DiscordUserId == userId && x.CharacterName == characterName);
 
             if (character is null)
@@ -272,7 +270,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             characterList.Remove(character);
 
-            await File.WriteAllTextAsync("characters.json", JsonSerializer.Serialize(characterList));
+            await JsonParsers.WriteCharactersAsync(characterList);
 
             await RespondAsync(text: $"{characterName} has been successfully deleted", ephemeral: true);
         }
@@ -281,7 +279,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public async Task Profile([Summary("character-name", "Name of the character")] string characterName)
         {
             characterName = characterName.ToTitleCase();
-            List<Character> characterList = JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
 
             if (character is null)

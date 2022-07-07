@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -186,14 +185,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
-                foreach(object obj in votes)
+                foreach (object obj in votes)
                 {
                     MerchantVote vote = JsonSerializer.Deserialize<MerchantVote>(obj.ToString());
                     MerchantMessage merchantMessage = Program.MerchantMessages.First(x => x.MerchantId == vote.Id);
                     IUserMessage message = await merchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
                     IEmbed oldEmbed = message.Embeds.First();
 
-                    if(vote.Votes <= -5)
+                    if (vote.Votes <= -5)
                     {
                         await message.DeleteAsync();
                         Program.MerchantMessages.Remove(merchantMessage);
@@ -213,7 +212,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                         },
                     };
 
-                    foreach(EmbedField embedField in oldEmbed.Fields)
+                    foreach (EmbedField embedField in oldEmbed.Fields)
                     {
                         newEmbed.AddField(new EmbedFieldBuilder()
                         {
@@ -228,24 +227,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             });
         }
 
-        private Task GetUserSubsriptions(int notableItem, Embed embed)
+        private async Task<Task> GetUserSubsriptions(int notableItem, Embed embed)
         {
-            string json;
             MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
 
-            List<UserSubscription> merchantSubs;
-
-            try
-            {
-                json = File.ReadAllText("MerchantSubscriptions.json");
-            }
-            catch (FileNotFoundException)
-            {
-                File.WriteAllText("MerchantSubscriptions.json", "[]");
-                return Task.CompletedTask;
-            }
-
-            merchantSubs = JsonSerializer.Deserialize<List<UserSubscription>>(json);
+            List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
 
             if (merchantSubs.Count == 0)
             {
@@ -256,6 +242,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 return userSub.SubscribedItems.Contains(notableItem);
             });
+
+            await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Found {filteredSubscriptions.Count} players subscribed to {notableItem}");
 
             filteredSubscriptions.ForEach(async sub =>
             {
@@ -269,7 +257,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     }
                     catch (HttpException exception)
                     {
-                        await LogService.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", "User cannot receive DMs", exception));
+                        await LogService.Log(LogSeverity.Error, this.GetType().Name, "User cannot receive DMs", exception);
                     }
                 }
             });
@@ -299,7 +287,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             string errorMsg = exception != null ? exception.Message : "Connection error 'Merchants'";
 
-            await LogService.Log(new LogMessage(LogSeverity.Error, "MerchantModule.cs", errorMsg));
+            await LogService.Log(LogSeverity.Error, this.GetType().Name, errorMsg);
             await Task.Delay(2000);
             await StartConnectionAsync();
         }

@@ -2,9 +2,8 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
@@ -17,10 +16,9 @@ namespace LostArkBot.Src.Bot.Buttons
             SelectMenuBuilder joinMenu = new SelectMenuBuilder().WithCustomId("join").WithPlaceholder("Select Character");
             ulong userId = Context.User.Id;
 
-            List<Character> characterList =
-                JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
 
-            List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
+            List <Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             joinMenu.AddOption("Default", "Default", "Uses only your discord name, no additional informations");
 

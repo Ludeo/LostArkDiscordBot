@@ -5,9 +5,7 @@ using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Handlers
@@ -23,14 +21,15 @@ namespace LostArkBot.Src.Bot.Handlers
             SocketGuildUser user;
             IUserMessage message;
 
-            if(component.Channel.GetChannelType() == ChannelType.PublicThread)
+            if (component.Channel.GetChannelType() == ChannelType.PublicThread)
             {
                 threadChannel = component.Channel as SocketThreadChannel;
                 channel = threadChannel.ParentChannel as ITextChannel;
                 message = await channel.GetMessageAsync(threadChannel.Id) as IUserMessage;
                 originalEmbed = message.Embeds.First() as Embed;
                 user = await channel.GetUserAsync(component.User.Id) as SocketGuildUser;
-            } else
+            }
+            else
             {
                 user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
                 threadChannel = user.Guild.GetChannel((ulong)component.Message.Reference.MessageId) as SocketThreadChannel;
@@ -48,10 +47,16 @@ namespace LostArkBot.Src.Bot.Handlers
                     Name = originalEmbed.Author!.Value.Name,
                     IconUrl = originalEmbed.Author!.Value.IconUrl,
                 },
-                ThumbnailUrl = originalEmbed.Thumbnail.Value.Url,
-                ImageUrl = originalEmbed.Image.Value.Url,
                 Color = originalEmbed.Color.Value,
             };
+            if (originalEmbed.Thumbnail != null)
+            {
+                newEmbed.ThumbnailUrl = originalEmbed.Thumbnail.Value.Url;
+            }
+            if (originalEmbed.Image != null)
+            {
+                newEmbed.ImageUrl = originalEmbed.Image.Value.Url;
+            }
 
             bool characterAdded = false;
 
@@ -61,8 +66,8 @@ namespace LostArkBot.Src.Bot.Handlers
             int playerNumberJoined = int.Parse(title2.Split("/")[0]);
             string playerNumberMax = title2.Split("/")[1];
 
-            List<Character> characterList =
-                JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync("characters.json"));
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
+
 
             foreach (EmbedField field in originalEmbed.Fields)
             {
@@ -72,7 +77,7 @@ namespace LostArkBot.Src.Bot.Handlers
                     continue;
                 }
 
-                if(model.Action == ManageAction.Join)
+                if (model.Action == ManageAction.Join)
                 {
                     if (field.Value.Contains(component.User.Mention))
                     {
@@ -97,11 +102,13 @@ namespace LostArkBot.Src.Bot.Handlers
 
                             characterAdded = true;
                         }
-                    } else
+                    }
+                    else
                     {
                         newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
                     }
-                } else if(model.Action == ManageAction.Kick)
+                }
+                else if (model.Action == ManageAction.Kick)
                 {
                     if (field.Value.Split("\n")[1] == characterName)
                     {
@@ -109,7 +116,8 @@ namespace LostArkBot.Src.Bot.Handlers
                         ulong discordId = ulong.Parse(mention.Replace("<", "").Replace(">", "").Replace("!", "").Replace("@", ""));
                         await threadChannel.RemoveUserAsync(user);
                         playerNumberJoined--;
-                    } else
+                    }
+                    else
                     {
                         newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
                     }
@@ -157,7 +165,7 @@ namespace LostArkBot.Src.Bot.Handlers
             }
             catch (HttpException exception)
             {
-                await LogService.Log(new LogMessage(LogSeverity.Error, "JoinCharacterMenu.cs", exception.Message));
+                await LogService.Log(LogSeverity.Error, typeof(ManageUserHandler).Name, exception.Message);
             }
         }
     }

@@ -63,5 +63,4 @@ namespace LostArkBot.Src.Bot.Shared
             return new CultureInfo("en-US", false).TextInfo.ToTitleCase(str);
         }
     }
-
 }

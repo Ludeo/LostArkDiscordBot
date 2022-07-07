@@ -2,12 +2,12 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -23,7 +23,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             if (!string.IsNullOrEmpty(staticGroup))
             {
-                List<StaticGroup> staticGroups = JsonSerializer.Deserialize<List<StaticGroup>>(File.ReadAllText("staticgroups.json"));
+                List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
                 if (!staticGroups.Any(x => x.Name == staticGroup))
                 {
@@ -82,7 +82,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
+            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
@@ -188,8 +188,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 + "\nSUMMARY:" + summary + "\nEND:VEVENT\nEND:VCALENDAR";
 
             await File.WriteAllTextAsync("DateExport.ics", icsString);
-            await RespondWithFileAsync(fileStream: File.OpenRead("DateExport.ics"), fileName: "DateExport.ics", ephemeral: true);
-            File.Delete("DateExport.ics");
+            await RespondWithFileAsync(fileStream: File.OpenRead(FileConfigurations.DateExportFile), fileName: FileConfigurations.DateExportFile, ephemeral: true);
+            File.Delete(FileConfigurations.DateExportFile);
         }
 
         [SlashCommand("controls", "Posts the buttons of the lfg")]

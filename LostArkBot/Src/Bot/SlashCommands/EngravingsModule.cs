@@ -7,9 +7,7 @@ using LostArkBot.Src.Bot.FileObjects.MetaGame;
 using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -23,10 +21,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("engravings", "Edits the engravings of the given character")]
         public async Task Engravings([Summary("character-name", "Name of the character you want to update the engravings")] string characterName)
         {
-            List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
+            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
             Character character = characters.Find(x => x.CharacterName == characterName);
 
-            List<Dictionary<string, Engraving>> engravings = JsonSerializer.Deserialize<List<Dictionary<string, Engraving>>>(File.ReadAllText("engravings.json"));
+            List<Dictionary<string, Engraving>> engravings = await JsonParsers.GetEngravingsFromJsonAsync();
             List<Engraving> engravings2 = new();
 
             foreach(KeyValuePair<string, Engraving> valuePair in engravings.First())
@@ -88,9 +86,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
             string[] content = Context.Interaction.Message.Content.Split("\n");
             string characterName = content[SlotNumbers];
 
-            List<Character> characters = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText("characters.json"));
-            Character character = characters.Find(x => x.CharacterName == characterName);
-            characters.Remove(character);
+            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
+            Character character = characterList.Find(x => x.CharacterName == characterName);
+            characterList.Remove(character);
 
             string regexContent = "";
             for(int i = 0; i < SlotNumbers; i++)
@@ -112,8 +110,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             engravings = engravings[..^1];
             character.Engravings = engravings;
 
-            characters.Add(character);
-            File.WriteAllText("characters.json", JsonSerializer.Serialize(characters));
+            characterList.Add(character);
+            JsonParsers.WriteCharacters(characterList);
 
             await Context.Interaction.Message.DeleteAsync();
             await RespondAsync(text: "Successfully updated engravings for your character", ephemeral: true);
@@ -186,7 +184,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await LogService.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
+                await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
             }
         }
 
@@ -254,7 +252,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await LogService.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
+                await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
             }
         }
 
@@ -322,7 +320,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await LogService.Log(new LogMessage(LogSeverity.Error, "EngravingsModule.cs", exception.Message));
+                await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
             }
         }
     }
