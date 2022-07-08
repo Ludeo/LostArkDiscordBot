@@ -10,29 +10,28 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("deletebutton")]
         public async Task Delete()
         {
-            if (Context.User.Id != Context.Interaction.User.Id && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            SocketThreadChannel threadChannel;
+            IMessage lfgMessage;
+
+            if (Context.Channel.GetChannelType() == ChannelType.PublicThread)
+            {
+                threadChannel = Context.Channel as SocketThreadChannel;
+                ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
+                lfgMessage = await channel.GetMessageAsync(threadChannel.Id);
+            } else
+            {
+                lfgMessage = Context.Interaction.Message;
+                threadChannel = Context.Guild.GetChannel(lfgMessage.Id) as SocketThreadChannel;
+            }
+
+            if (Context.User.Id != lfgMessage.Interaction.User.Id && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 await RespondAsync(ephemeral: true, text: "You don't have permissions to delete this event!");
                 return;
             }
 
-            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
-            {
-                SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
-                ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
-                IMessage lfgMessage = await channel.GetMessageAsync(threadChannel.Id);
-                await lfgMessage.DeleteAsync();
-                await threadChannel.DeleteAsync();
-
-            } else
-            {
-                await Context.Interaction.Message.DeleteAsync();
-
-                if (Context.Guild != null && Context.Guild.GetChannel(Context.Interaction.Message.Id) is IThreadChannel threadChannel)
-                {
-                    await threadChannel.DeleteAsync();
-                }
-            }
+            await threadChannel.DeleteAsync();
+            await lfgMessage.DeleteAsync();
                 
             return;
         }

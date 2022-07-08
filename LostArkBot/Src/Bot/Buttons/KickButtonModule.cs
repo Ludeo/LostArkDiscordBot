@@ -25,6 +25,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 message = Context.Interaction.Message;
                 guild = Context.Guild;
             }
+
             if (Context.User.Id == message.Interaction.User.Id || guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
                 Embed originalEmbed = message.Embeds.First() as Embed;
@@ -53,7 +54,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 return;
             }
 
-            await RespondAsync(ephemeral: true, text: "You don't have permissions to delete this event!");
+            await RespondAsync(ephemeral: true, text: "You don't have permissions to kick users from the event!");
         }
     }
 }
