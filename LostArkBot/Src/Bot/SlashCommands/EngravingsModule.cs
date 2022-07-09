@@ -18,7 +18,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
     {
         private static readonly int SlotNumbers = 5;
 
-        [SlashCommand("engravings", "Edits the engravings of the given character")]
+        [SlashCommand("engravings2", "Edits the engravings of the given character")]
         public async Task Engravings([Summary("character-name", "Name of the character you want to update the engravings")] string characterName)
         {
             List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();

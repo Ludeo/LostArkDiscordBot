@@ -30,6 +30,7 @@ namespace LostArkBot.Bot
                 await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
                 client.InteractionCreated += InteractionCreated;
                 client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
+                client.ModalSubmitted += ModalHandlers.ModalHandler;
                 client.Ready += Ready;
             } catch (Exception)
             {

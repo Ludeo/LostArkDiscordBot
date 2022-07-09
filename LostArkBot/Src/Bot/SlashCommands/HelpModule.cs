@@ -22,11 +22,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             EmbedBuilder embed = new()
             {
                 Title = "Help",
-                Description = "List of all commands",
+                Description = "List of all commands:",
                 Color = Color.Gold,
             };
 
-            if(commandSpecific == Commands.Default)
+            if (commandSpecific == Commands.Default)
             {
                 List<SocketApplicationCommand> commandsUnsorted = new(commandCollection);
                 IOrderedEnumerable<SocketApplicationCommand> commands = commandsUnsorted.OrderBy(x => x.Name);
@@ -36,20 +36,21 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 {
                     if (command.Type == ApplicationCommandType.Slash)
                     {
-                        if(commandValues.Contains(command.Name.ToLower().Replace("-", "")))
+                        if (commandValues.Contains(command.Name.ToLower().Replace("-", "")))
                         {
-                            embed.AddField(command.Name, command.Description, true);
+                            embed.AddField($"/{command.Name}", command.Description, false);
                         }
                     }
                 }
-            } else
+            }
+            else
             {
                 SocketApplicationCommand command = commandCollection.First(x => x.Name.Replace("-", "").ToLower() == commandSpecific.ToString().ToLower());
 
                 embed.Title += " for " + command.Name;
                 embed.Description = command.Description;
 
-                foreach(SocketApplicationCommandOption option in command.Options)
+                foreach (SocketApplicationCommandOption option in command.Options)
                 {
                     embed.AddField(option.Name, option.Description);
                 }
