@@ -33,7 +33,7 @@ namespace LostArkBot.Src.Bot.Shared
 
         public static Task WriteCharactersAsync(List<Character> values)
         {
-            return File.WriteAllTextAsync(FileConfigurations.StaticGroupsJson, JsonSerializer.Serialize(values));
+            return File.WriteAllTextAsync(FileConfigurations.CharactersJson, JsonSerializer.Serialize(values));
         }
 
         public static void WriteCharacters(List<Character> values)
@@ -62,7 +62,7 @@ namespace LostArkBot.Src.Bot.Shared
 
         public static async Task<List<StaticGroup>> GetStaticGroupsFromJsonAsync()
         {
-            return JsonSerializer.Deserialize<List<StaticGroup>>(await File.ReadAllTextAsync(FileConfigurations.EngravingsJson));
+            return JsonSerializer.Deserialize<List<StaticGroup>>(await File.ReadAllTextAsync(FileConfigurations.StaticGroupsJson));
         }
 
         public static Task WriteStaticGroupsAsync(List<StaticGroup> values)

@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -318,6 +319,55 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
             }
             await RespondAsync(embed: embedBuilder.Build());
+        }
+
+        [SlashCommand("engravings", "Edits the engravings of the given character")]
+        public async Task Engravings([Summary("character-name", "Name of the character")] string characterName)
+        {
+            characterName = characterName.ToTitleCase();
+
+            var chars = await JsonParsers.GetCharactersFromJsonAsync();
+
+            var selectedChar = chars.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+
+            if (selectedChar == null)
+            {
+                await RespondAsync($"No character named {characterName} was found", ephemeral: true);
+                return;
+            }
+
+            var engString = Utils.ParseEngravings(selectedChar.Engravings);
+            List<string> splitEngravings = engString.Split(",").ToList();
+
+            var input1 = new TextInputBuilder().WithCustomId("eng1").WithLabel("Engraving 1").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            var input2 = new TextInputBuilder().WithCustomId("eng2").WithLabel("Engraving 2").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            var input3 = new TextInputBuilder().WithCustomId("eng3").WithLabel("Engraving 3").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            var input4 = new TextInputBuilder().WithCustomId("eng4").WithLabel("Engraving 4").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            var input5 = new TextInputBuilder().WithCustomId("eng5").WithLabel("Engraving 5").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+
+            var inputBuilders = new List<TextInputBuilder>() { input1, input2, input3, input4, input5 };
+
+            for (int i = 0; i < splitEngravings.Count; i++)
+            {
+                var eng = splitEngravings[i];
+                var input = inputBuilders.Find(x => x.CustomId[3..] == (i + 1).ToString());
+                input = input.WithValue(eng);
+            }
+
+            List<IMessageComponent> inputs = new();
+            inputBuilders.ForEach(inp => inputs.Add(inp.Build()));
+
+            var modal = new ModalBuilder()
+                .WithCustomId($"eng:{characterName}")
+                .WithTitle($"{characterName}'s Engravings")
+                .AddTextInput(inputBuilders[0])
+                .AddTextInput(inputBuilders[1])
+                .AddTextInput(inputBuilders[2])
+                .AddTextInput(inputBuilders[3])
+                .AddTextInput(inputBuilders[4])
+                .Build();
+
+            await RespondWithModalAsync(modal);
         }
     }
 }
