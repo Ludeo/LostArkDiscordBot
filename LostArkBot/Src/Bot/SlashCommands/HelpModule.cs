@@ -19,6 +19,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 #else
             IReadOnlyCollection<SocketApplicationCommand> commandCollection = await Context.Client.GetGlobalApplicationCommandsAsync();
 #endif
+            
             EmbedBuilder embed = new()
             {
                 Title = "Help",
@@ -34,13 +35,47 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 foreach (SocketApplicationCommand command in commands)
                 {
+
                     if (command.Type == ApplicationCommandType.Slash)
                     {
+                        string subcommands = "";
+                        foreach (SocketApplicationCommandOption option in command.Options)
+                        {
+                            subcommands += $"\uFEFF \uFEFF \uFEFF \uFEFF \uFEFF \uFEFF \uFEFF **{option.Name}** - {option.Description}\n";
+                            //embed.AddField($"\t - {option.Name} - {option.Description}", false);
+                        }
+                        if (subcommands == "")
+                        {
+                            subcommands = "*No sub-commands*";
+                        }
                         if (commandValues.Contains(command.Name.ToLower().Replace("-", "")))
                         {
-                            embed.AddField($"/{command.Name}", command.Description, false);
+                            embed.AddField($"/{command.Name} - {command.Description}", subcommands, false);
                         }
+
+                        
                     }
+                    //if (command.Type == ApplicationCommandType.Slash)
+                    //{
+                    //    string subcommands = "```";
+                    //    foreach (SocketApplicationCommandOption option in command.Options)
+                    //    {
+                    //        subcommands += $"\t{option.Name} - {option.Description}\n";
+                    //        //embed.AddField($"\t - {option.Name} - {option.Description}", false);
+                    //    }
+                    //    if (subcommands == "```")
+                    //    {
+                    //        subcommands = "*No sub-commands*";
+                    //    }
+                    //    else
+                    //    {
+                    //        subcommands += "```";
+                    //    }
+                    //    if (commandValues.Contains(command.Name.ToLower().Replace("-", "")))
+                    //    {
+                    //        embed.AddField($"/{command.Name} - {command.Description}", subcommands, false);
+                    //    }
+                    //}
                 }
             }
             else

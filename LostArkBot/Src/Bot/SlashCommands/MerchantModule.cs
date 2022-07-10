@@ -91,7 +91,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchants.ToString());
                 Merchant merchant = merchantGroup.ActiveMerchants.Last();
                 string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
-                int notableItem = -1;
+                int notableCard = -1;
+                int notableRapport = -1;
 
                 Rarity highestRarity = merchant.Card.Rarity;
 
@@ -120,38 +121,38 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Wei))
                 {
                     rolePing = "<@&986032976812982343> ";
-                    notableItem = (int)WanderingMerchantItemsEnum.Wei;
+                    notableCard = (int)WanderingMerchantItemsEnum.Wei;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka))
                 {
                     rolePing = "<@&986033361770385429> ";
-                    notableItem = (int)WanderingMerchantItemsEnum.Mokamoka;
+                    notableCard = (int)WanderingMerchantItemsEnum.Mokamoka;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian))
                 {
                     rolePing = "<@&986033048271331428> ";
-                    notableItem = (int)WanderingMerchantItemsEnum.Sian;
+                    notableCard = (int)WanderingMerchantItemsEnum.Sian;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria))
                 {
                     rolePing = "<@&986033604205371463> ";
-                    notableItem = (int)WanderingMerchantItemsEnum.Seria;
+                    notableCard = (int)WanderingMerchantItemsEnum.Seria;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick))
                 {
                     rolePing = "<@&986033108954525836> ";
-                    notableItem = (int)WanderingMerchantItemsEnum.Madnick;
+                    notableCard = (int)WanderingMerchantItemsEnum.Madnick;
                 }
                 else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr))
                 {
                     rolePing = "<@&986033435531419679> ";
-                    notableItem = (int)WanderingMerchantItemsEnum.Kaysarr;
+                    notableCard = (int)WanderingMerchantItemsEnum.Kaysarr;
                 }
 
                 if (merchant.Rapport.Rarity == Rarity.Legendary)
                 {
                     rolePing += "<@&986032866053996554>";
-                    notableItem = (int)WanderingMerchantItemsEnum.LegendaryRapport;
+                    notableRapport = (int)WanderingMerchantItemsEnum.LegendaryRapport;
                 }
 
                 if (string.IsNullOrEmpty(rolePing))
@@ -194,9 +195,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 await message.AddReactionAsync(new Emoji("✅"));
                 Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
 
-                if (notableItem != -1)
+                if (notableCard != -1 || notableRapport != -1)
                 {
-                    await GetUserSubsriptions(notableItem, embed);
+                    await GetUserSubsriptions(notableCard, notableRapport, embed);
                 }
             });
         }
@@ -247,22 +248,38 @@ namespace LostArkBot.Src.Bot.SlashCommands
             });
         }
 
-        private async Task<Task> GetUserSubsriptions(int notableItem, Embed embed)
+        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, Embed embed)
         {
             MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
 
-            List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
-            List<UserSubscription> filteredSubscriptions = merchantSubs.FindAll(userSub =>
+            List<UserSubscription> allSubscriptions = await JsonParsers.GetMerchantSubsFromJsonAsync();
+            List<UserSubscription> filteredSubscriptions = allSubscriptions.FindAll(userSub =>
             {
-                return userSub.SubscribedItems.Contains(notableItem);
+                var card = userSub.SubscribedItems.Contains(notableCard);
+                var rapport = userSub.SubscribedItems.Contains(notableRapport);
+
+                return card || rapport ? true : false; 
             });
 
-            if (merchantSubs.Count == 0 || filteredSubscriptions.Count == 0)
+            if (allSubscriptions.Count == 0 || filteredSubscriptions.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Found {filteredSubscriptions.Count} players subscribed to {(WanderingMerchantItemsEnum)notableItem}");
+            string logMsg = $"Found {filteredSubscriptions.Count} players subscribed to ";
+            if (notableCard != -1)
+            {
+                logMsg += (WanderingMerchantItemsEnum)notableCard;
+            }
+            if (notableRapport != -1)
+            {
+                if (notableCard != -1)
+                {
+                    logMsg += " and ";
+                }
+                logMsg += (WanderingMerchantItemsEnum)notableRapport;
+            }
+            await LogService.Log(LogSeverity.Debug, this.GetType().Name, logMsg);
 
             filteredSubscriptions.ForEach(async sub =>
             {
