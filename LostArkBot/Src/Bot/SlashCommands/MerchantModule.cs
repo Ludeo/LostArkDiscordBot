@@ -56,6 +56,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 })
                 .Build();
 
+#if DEBUG
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://test.lostmerchants.com/MerchantHub")
+                .ConfigureLogging(logging =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Debug);
+                    logging.AddProvider(new SignalLoggerProvider());
+                })
+                .Build();
+#else
+                hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://lostmerchants.com/MerchantHub")
+                .ConfigureLogging(logging =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Debug);
+                    logging.AddProvider(new SignalLoggerProvider());
+                })
+                .Build();
+#endif
+
             hubConnection.KeepAliveInterval = new TimeSpan(0, 4, 0);
             hubConnection.ServerTimeout = new TimeSpan(0, 8, 0);
             hubConnection.Closed -= OnConnectionClosedAsync;
@@ -232,33 +252,35 @@ namespace LostArkBot.Src.Bot.SlashCommands
             MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
 
             List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
-
-            if (merchantSubs.Count == 0)
-            {
-                return Task.CompletedTask;
-            }
-
             List<UserSubscription> filteredSubscriptions = merchantSubs.FindAll(userSub =>
             {
                 return userSub.SubscribedItems.Contains(notableItem);
             });
 
-            await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Found {filteredSubscriptions.Count} players subscribed to {notableItem}");
+            if (merchantSubs.Count == 0 || filteredSubscriptions.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Found {filteredSubscriptions.Count} players subscribed to {(WanderingMerchantItemsEnum)notableItem}");
 
             filteredSubscriptions.ForEach(async sub =>
             {
                 SocketGuildUser serverUser = Context.Guild.GetUser(sub.UserId);
 
-                if (serverUser != null)
+                if (serverUser == null)
                 {
-                    try
-                    {
-                        await serverUser.SendMessageAsync(embed: embed, components: component);
-                    }
-                    catch (HttpException exception)
-                    {
-                        await LogService.Log(LogSeverity.Error, this.GetType().Name, "User cannot receive DMs", exception);
-                    }
+                    await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Server user with Id:{sub.UserId} not found");
+                    return;
+                }
+
+                try
+                {
+                    await serverUser.SendMessageAsync(embed: embed, components: component);
+                }
+                catch (HttpException exception)
+                {
+                    await LogService.Log(LogSeverity.Error, this.GetType().Name, "User cannot receive DMs", exception);
                 }
             });
 

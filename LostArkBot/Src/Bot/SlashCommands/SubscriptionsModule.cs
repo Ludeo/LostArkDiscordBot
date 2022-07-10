@@ -139,8 +139,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 if (userSub.SubscribedItems.Contains((int)value))
                 {
-                    if (activeSubs != "") activeSubs += "\n";
-                    activeSubs += $" - {value}";
+                    if (activeSubs != "")
+                    {
+                        activeSubs += "\n";
+                    }
+
+                    if (value.ToString() == "LegendaryRapport")
+                    {
+                        activeSubs += $" - Legendary Rapport";
+                    }
+                    else
+                    {
+                        activeSubs += $" - {value}";
+                    }
                 }
             }
 

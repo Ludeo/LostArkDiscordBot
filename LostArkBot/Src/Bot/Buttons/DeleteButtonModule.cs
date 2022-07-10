@@ -18,7 +18,13 @@ namespace LostArkBot.Src.Bot.Buttons
                 threadChannel = Context.Channel as SocketThreadChannel;
                 ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
                 lfgMessage = await channel.GetMessageAsync(threadChannel.Id);
-            } else
+            }
+            else if (Context.Channel.GetChannelType() == ChannelType.DM)
+            {
+                await Context.Interaction.Message.DeleteAsync();
+                return;
+            }
+            else
             {
                 lfgMessage = Context.Interaction.Message;
                 threadChannel = Context.Guild.GetChannel(lfgMessage.Id) as SocketThreadChannel;
@@ -32,7 +38,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
             await threadChannel.DeleteAsync();
             await lfgMessage.DeleteAsync();
-                
+
             return;
         }
     }
