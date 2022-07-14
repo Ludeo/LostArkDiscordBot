@@ -31,7 +31,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             };
 
             challengeGuardians.Add(newChallengeGuardian);
-            JsonParsers.WriteChallengeGuardians(challengeGuardians);
+            await JsonParsers.WriteChallengeGuardiansAsync(challengeGuardians);
             List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
             LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeguardian");
             LfgModel newModel = oldModel;

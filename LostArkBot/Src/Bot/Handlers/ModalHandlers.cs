@@ -1,6 +1,9 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
+using LostArkBot.Src.Bot.SlashCommands;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +16,7 @@ namespace LostArkBot.Src.Bot.Handlers
         {
             if (modal.Data.CustomId[..3] == "eng")
             {
-                IEnumerable<string> nonEmptyEngravings = modal.Data.Components.ToList<SocketMessageComponentData>().FindAll(x => x.Value.Trim() != "").Select(x => x.Value.ToTitleCase());
+                IEnumerable<string> nonEmptyEngravings = modal.Data.Components.ToList().FindAll(x => x.Value.Trim() != "").Select(x => x.Value.ToTitleCase());
                 string engravingsString = string.Join(",", nonEmptyEngravings);
                 List<Character> chars = await JsonParsers.GetCharactersFromJsonAsync();
                 Character character = chars.Find(x => x.CharacterName.ToLower() == modal.Data.CustomId[4..].Trim().ToLower());
@@ -26,7 +29,13 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 character.Engravings = engravingsString;
                 await JsonParsers.WriteCharactersAsync(chars);
-                await modal.RespondAsync("Character updated", ephemeral: true);
+                SocketGuildUser user = await modal.Channel.GetUserAsync(modal.User.Id) as SocketGuildUser;
+                EmbedBuilder embedBuilder = await new CharactersModule().CreateEmbedAsync(character.CharacterName, (character) =>
+                {
+                    return user;
+                });
+
+                await modal.RespondAsync(embed: embedBuilder.Build());
             }
         }
     }

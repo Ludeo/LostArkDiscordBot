@@ -2,7 +2,7 @@
 
 namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
 {
-    public class Rapport
+    public class MerchantItem
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }

@@ -44,7 +44,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             };
 
             staticGroups.Add(staticGroup);
-            JsonParsers.WriteStaticGroups(staticGroups);
+            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
             await RespondAsync(text: name + " got successfully registered");
         }
@@ -69,7 +69,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             staticGroups.Remove(staticGroup);
-            JsonParsers.WriteStaticGroups(staticGroups);
+
+            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
             await RespondAsync(text: name + " got successfully deleted", ephemeral: true);
         }
@@ -113,7 +114,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             staticGroup.Players.Add(characterName);
             staticGroups.Add(staticGroup);
 
-            JsonParsers.WriteStaticGroups(staticGroups);
+            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
             await RespondAsync(text: characterName + " got succesfully added to the static group", ephemeral: true);
         }
@@ -151,7 +152,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             staticGroup.Players.Remove(characterName);
             staticGroups.Add(staticGroup);
 
-            JsonParsers.WriteStaticGroups(staticGroups);
+            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
+
             await RespondAsync(text: characterName + " got succesfully removed from the static group", ephemeral: true);
         }
 

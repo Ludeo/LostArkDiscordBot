@@ -1,4 +1,5 @@
 ﻿using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
 using LostArkBot.Src.Bot.Models;
 using System.Collections.Generic;
@@ -31,16 +32,10 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<List<Character>>(await File.ReadAllTextAsync(FileConfigurations.CharactersJson));
         }
 
-        public static Task WriteCharactersAsync(List<Character> values)
+        public static async Task WriteCharactersAsync(List<Character> values)
         {
-            return File.WriteAllTextAsync(FileConfigurations.CharactersJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.CharactersJson, JsonSerializer.Serialize(values));
         }
-
-        public static void WriteCharacters(List<Character> values)
-        {
-            WriteCharactersAsync(values).GetAwaiter().GetResult();
-        }
-
 
 
         public static async Task<List<Dictionary<string, Engraving>>> GetEngravingsFromJsonAsync()
@@ -48,16 +43,10 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<List<Dictionary<string, Engraving>>>(await File.ReadAllTextAsync(FileConfigurations.EngravingsJson));
         }
 
-        public static Task WriteEngravingsAsync(List<Dictionary<string, Engraving>> values)
+        public static async Task WriteEngravingsAsync(List<Dictionary<string, Engraving>> values)
         {
-            return File.WriteAllTextAsync(FileConfigurations.EngravingsJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.EngravingsJson, JsonSerializer.Serialize(values));
         }
-
-        public static void WriteEngravings(List<Dictionary<string, Engraving>> values)
-        {
-            WriteEngravingsAsync(values).GetAwaiter().GetResult();
-        }
-
 
 
         public static async Task<List<StaticGroup>> GetStaticGroupsFromJsonAsync()
@@ -65,16 +54,10 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<List<StaticGroup>>(await File.ReadAllTextAsync(FileConfigurations.StaticGroupsJson));
         }
 
-        public static Task WriteStaticGroupsAsync(List<StaticGroup> values)
+        public static async Task WriteStaticGroupsAsync(List<StaticGroup> values)
         {
-            return File.WriteAllTextAsync(FileConfigurations.StaticGroupsJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.StaticGroupsJson, JsonSerializer.Serialize(values));
         }
-
-        public static void WriteStaticGroups(List<StaticGroup> values)
-        {
-            WriteStaticGroupsAsync(values).GetAwaiter().GetResult();
-        }
-
 
 
         public static async Task<List<ChallengeGuardian>> GetChallengeGuardiansFromJson()
@@ -82,17 +65,10 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<List<ChallengeGuardian>>(await File.ReadAllTextAsync(FileConfigurations.ChallengeGuardiansJson));
         }
 
-        public static Task WriteChallengeGuardiansAsync(List<ChallengeGuardian> values)
+        public static async Task WriteChallengeGuardiansAsync(List<ChallengeGuardian> values)
         {
-            return File.WriteAllTextAsync(FileConfigurations.ChallengeGuardiansJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.ChallengeGuardiansJson, JsonSerializer.Serialize(values));
         }
-
-        public static void WriteChallengeGuardians(List<ChallengeGuardian> values)
-        {
-            WriteChallengeGuardiansAsync(values).GetAwaiter().GetResult();
-        }
-
-
 
         public static async Task<List<UserSubscription>> GetMerchantSubsFromJsonAsync()
         {
@@ -109,9 +85,27 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<List<UserSubscription>>(json);
         }
 
-        public static void WriteMerchants(List<UserSubscription> values)
+        public static async Task WriteMerchantsAsync(List<UserSubscription> values)
         {
-            File.WriteAllText(FileConfigurations.MerchantsJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.MerchantsJson, JsonSerializer.Serialize(values));
         }
+
+
+
+        public static async Task<List<MerchantVote>> GetActiveMerchantVotesJsonAsync()
+        {
+            var json = JsonSerializer.Deserialize<List<MerchantVote>>(await File.ReadAllTextAsync(FileConfigurations.ActiveMerchantVotesJson));
+            if (json == null)
+            {
+                json = new List<MerchantVote>();
+            }
+            return json;
+        }
+
+        public static async Task WriteActiveMerchantVotesAsync(List<MerchantVote> values)
+        {
+            await File.WriteAllTextAsync(FileConfigurations.ActiveMerchantVotesJson, JsonSerializer.Serialize(values));
+        }
+
     }
 }

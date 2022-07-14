@@ -14,10 +14,10 @@ namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
         public string Zone { get; set; }
 
         [JsonPropertyName("card")]
-        public Card Card { get; set; }
+        public MerchantItem Card { get; set; }
 
         [JsonPropertyName("rapport")]
-        public Rapport Rapport { get; set; }
+        public MerchantItem Rapport { get; set; }
 
         [JsonPropertyName("votes")]
         public int Votes { get; set; }

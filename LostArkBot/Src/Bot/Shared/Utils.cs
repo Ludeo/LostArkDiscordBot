@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -53,6 +54,64 @@ namespace LostArkBot.Src.Bot.Shared
             }
 
             return string.Join(",", parsedEngravings);
+        }
+
+        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return dateTime;
+        }
+    
+        public static DateTime? TryParseDateString(string dateString)
+        {
+            bool res;
+            DateTime dtParsed = new();
+
+            res = DateTime.TryParseExact(dateString, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "d/M H:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "d/M/yyyy H:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "dd.MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "d.M H:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "dd.MM. HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "d.M. H:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+            if (!res)
+            {
+                res = DateTime.TryParseExact(dateString, "d.M.yyyy H:mm", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dtParsed);
+            }
+
+            if (!res)
+            {
+                return null;
+            }
+
+            return dtParsed;
         }
     }
 

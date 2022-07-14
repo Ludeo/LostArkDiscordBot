@@ -16,7 +16,10 @@ namespace LostArkBot.Src.Bot.Handlers
 
         public static async Task Subscribe(SocketMessageComponent component)
         {
-            WanderingMerchantItemsEnum selectedItem = (WanderingMerchantItemsEnum)Enum.Parse(typeof(WanderingMerchantItemsEnum), component.Data.Values.First());
+            List<WanderingMerchantItemsEnum> selectedItems = component.Data.Values.Select(x =>
+            {
+                return (WanderingMerchantItemsEnum)Enum.Parse(typeof(WanderingMerchantItemsEnum), x);
+            }).ToList();
 
             SocketUser user = component.User;
 
@@ -31,39 +34,31 @@ namespace LostArkBot.Src.Bot.Handlers
             {
                 if (subscription == null)
                 {
-                    List<int> newItems = new()
-                    {
-                        (int)selectedItem
-                    };
+                    List<int> newItems = selectedItems.Select(x => (int)x).ToList();
                     var newSub = new UserSubscription(user.Id, newItems);
 
                     merchantSubs.Add(newSub);
                 }
                 else
                 {
-                    if (!subscription.SubscribedItems.Contains((int)selectedItem))
+                    selectedItems.ForEach(async selectedItem =>
                     {
-                        subscription.SubscribedItems.Add((int)selectedItem);
-                    }
-                    else
-                    {
-                        await component.RespondAsync($"{selectedItem} already added", ephemeral: true);
-                        return;
-                    }
-                }
+                        if (subscription.SubscribedItems.Contains((int)selectedItem))
+                        {
+                            await component.RespondAsync($"{selectedItem} already added", ephemeral: true);
+                            return;
+                        }
 
-                try
-                {
-                    await component.RespondAsync();
-                }
-                catch (HttpException)
-                {
+                        subscription.SubscribedItems.Add((int)selectedItem);
+                    });
                 }
 
                 await component.Message.DeleteAsync();
 
-                JsonParsers.WriteMerchants(merchantSubs);
-                await SubscriptionsModule.SubscribeMenuBuilder(component.User);
+                await JsonParsers.WriteMerchantsAsync(merchantSubs);
+
+                string activeSubs = await SubscriptionsModule.GetActiveSubscriptionsStringAsync(user);
+                await component.RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
             }
 
             if (component.Data.CustomId == "unsubscribe")
@@ -73,26 +68,23 @@ namespace LostArkBot.Src.Bot.Handlers
                     return;
                 }
 
-                if (!subscription.SubscribedItems.Contains((int)selectedItem))
+                selectedItems.ForEach(async selectedItem =>
                 {
-                    await component.RespondAsync($"{selectedItem} doesn't exist", ephemeral: true);
-                    return;
-                }
+                    if (!subscription.SubscribedItems.Contains((int)selectedItem))
+                    {
+                        await component.RespondAsync($"{selectedItem} doesn't exist", ephemeral: true);
+                        return;
+                    }
 
-                subscription.SubscribedItems.Remove((int)selectedItem);
-
-                try
-                {
-                    await component.RespondAsync();
-                }
-                catch (HttpException)
-                {
-                }
+                    subscription.SubscribedItems.Remove((int)selectedItem);
+                });
 
                 await component.Message.DeleteAsync();
 
-                JsonParsers.WriteMerchants(merchantSubs);
-                await SubscriptionsModule.UnsubscribeMenuBuilder(component.User);
+                await JsonParsers.WriteMerchantsAsync(merchantSubs);
+
+                string activeSubs = await SubscriptionsModule.GetActiveSubscriptionsStringAsync(user);
+                await component.RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
             }
         }
     }

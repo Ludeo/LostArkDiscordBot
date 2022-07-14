@@ -58,8 +58,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
             }
 
+            menu.WithMaxValues(menu.Options.Count);
+
             string activeSubs = await GetActiveSubscriptionsStringAsync(user);
-            await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, menu);
+            await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, false, menu);
         }
 
         public static async Task UnsubscribeMenuBuilder(SocketUser user)
@@ -80,8 +82,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     menu = AddToMenu(menu, value);
                 }
             }
+
+            menu.WithMaxValues(menu.Options.Count);
+
             string activeSubs = await GetActiveSubscriptionsStringAsync(user);
-            await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, menu);
+            await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, false, menu);
         }
 
         private static async Task<UserSubscription> GetSubscriptionForUserAsync(ulong userId)
@@ -112,11 +117,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             return menu.AddOption(labelString, valueString);
         }
 
-        private static async Task BuildCommonComponentsAsync(string text, SocketUser user, SelectMenuBuilder menu = null)
+        private static async Task BuildCommonComponentsAsync(string text, SocketUser user, bool withDelete = true, SelectMenuBuilder menu = null)
         {
-            ButtonBuilder delete = Shared.Utils.DeepCopy(Program.StaticObjects.DeleteButton);
-            delete.WithLabel("Exit");
-
             ComponentBuilder menuBuilder = new();
 
             if (menu != null)
@@ -124,12 +126,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 menuBuilder = menuBuilder.WithSelectMenu(menu);
             }
 
-            menuBuilder = menuBuilder.WithButton(delete);
+            if (withDelete)
+            {
+                ButtonBuilder delete = Shared.Utils.DeepCopy(Program.StaticObjects.DeleteButton);
+                delete.WithLabel("Exit");
+                menuBuilder = menuBuilder.WithButton(delete);
+            }
+
             MessageComponent menuComponent = menuBuilder.Build();
             await user.SendMessageAsync(text: text, components: menuComponent);
         }
 
-        private static async Task<string> GetActiveSubscriptionsStringAsync(SocketUser user)
+        public static async Task<string> GetActiveSubscriptionsStringAsync(SocketUser user)
         {
             UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
 

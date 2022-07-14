@@ -47,15 +47,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
             merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://lostmerchants.com/MerchantHub")
-                .ConfigureLogging(logging =>
-                {
-                    logging.SetMinimumLevel(LogLevel.Debug);
-                    logging.AddProvider(new SignalLoggerProvider());
-                })
-                .Build();
-
 #if DEBUG
             hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://test.lostmerchants.com/MerchantHub")
@@ -197,14 +188,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 if (notableCard != -1 || notableRapport != -1)
                 {
-                    await GetUserSubsriptions(notableCard, notableRapport, embed);
+                    await GetUserSubsriptions(notableCard, notableRapport, embedBuilder, merchant.Id, expiryDate.ToUnixTimeSeconds());
                 }
             });
         }
 
         private void OnUpdateVotes()
         {
-            hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
+            hubConnection.On<List<MerchantVote>>("UpdateVotes", async (votes) =>
             {
                 foreach (object obj in votes)
                 {
@@ -245,12 +236,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                     await message.ModifyAsync(x => x.Embed = newEmbed.Build());
                 }
+
+                await JsonParsers.WriteActiveMerchantVotesAsync(votes);
             });
         }
 
-        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, Embed embed)
+        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, EmbedBuilder embedBuilder, string merchantId, double expiryDate)
         {
-            MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).Build();
+            string url = "https://lostmerchants.com/";
+            ButtonBuilder linkButton = new ButtonBuilder().WithLabel("Site").WithStyle(ButtonStyle.Link).WithUrl(url);
+            ButtonBuilder refreshButton = new ButtonBuilder().WithCustomId($"refresh:{merchantId},{expiryDate}").WithEmote(new Emoji("\U0001F504")).WithStyle(ButtonStyle.Primary);
+            MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).WithButton(refreshButton).WithButton(linkButton).Build();
 
             List<UserSubscription> allSubscriptions = await JsonParsers.GetMerchantSubsFromJsonAsync();
             List<UserSubscription> filteredSubscriptions = allSubscriptions.FindAll(userSub =>
@@ -258,7 +254,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 var card = userSub.SubscribedItems.Contains(notableCard);
                 var rapport = userSub.SubscribedItems.Contains(notableRapport);
 
-                return card || rapport ? true : false; 
+                return card || rapport;
             });
 
             if (allSubscriptions.Count == 0 || filteredSubscriptions.Count == 0)
@@ -293,7 +289,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 try
                 {
-                    await serverUser.SendMessageAsync(embed: embed, components: component);
+                    await serverUser.SendMessageAsync(embed: embedBuilder.Build(), components: component);
                 }
                 catch (HttpException exception)
                 {
