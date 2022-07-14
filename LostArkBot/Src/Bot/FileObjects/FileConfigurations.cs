@@ -15,5 +15,6 @@ namespace LostArkBot.Src.Bot.FileObjects
         public const string EngravingsJson = "engravings.json";
         public const string ConfigJson = "config.json";
         public const string DateExportFile = "DateExport.ics";
+        public const string ActiveMerchantVotesJson = "ActiveMerchantVotes.json";
     }
 }

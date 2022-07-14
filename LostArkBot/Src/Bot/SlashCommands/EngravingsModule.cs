@@ -111,7 +111,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             character.Engravings = engravings;
 
             characterList.Add(character);
-            JsonParsers.WriteCharacters(characterList);
+            await JsonParsers.WriteCharactersAsync(characterList);
 
             await Context.Interaction.Message.DeleteAsync();
             await RespondAsync(text: "Successfully updated engravings for your character", ephemeral: true);

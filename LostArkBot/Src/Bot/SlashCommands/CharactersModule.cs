@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -279,6 +280,16 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("profile", "Shows the profile of the given character")]
         public async Task Profile([Summary("character-name", "Name of the character")] string characterName)
         {
+            EmbedBuilder embedBuilder = await CreateEmbedAsync(characterName, (character) =>
+            {
+                return Context.Guild.GetUser(character.DiscordUserId);
+            });
+
+            await RespondAsync(embed: embedBuilder.Build());
+        }
+
+        public async Task<EmbedBuilder> CreateEmbedAsync(string characterName, Func<Character, SocketGuildUser> getUser)
+        {
             characterName = characterName.ToTitleCase();
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
@@ -286,15 +297,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
             if (character is null)
             {
                 await RespondAsync(text: $"{characterName} is not registered. You can register a character with **/register**", ephemeral: true);
-
-                return;
+                return null;
             }
 
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {characterName}",
                 ThumbnailUrl = character.ProfilePicture == string.Empty
-                    ? Context.Guild.GetUser(character.DiscordUserId).GetAvatarUrl()
+                    ? getUser(character).GetAvatarUrl()
                     : character.ProfilePicture,
                 Color = new Color(222, 73, 227),
             };
@@ -318,7 +328,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
             }
-            await RespondAsync(embed: embedBuilder.Build());
+
+            return embedBuilder;
         }
 
         [SlashCommand("engravings", "Edits the engravings of the given character")]

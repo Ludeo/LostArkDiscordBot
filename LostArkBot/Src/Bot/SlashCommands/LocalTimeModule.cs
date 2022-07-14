@@ -8,7 +8,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class LocalTimeModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [SlashCommand("localtime", "Shows the given server time in your local time")]
-        public async Task LocalTime([Summary("server-time", "The server time you want to show in your local time, Format: hh:mm")] string serverTime)
+        public async Task LocalTime([Summary("server-time", "Server time, Format: HH:mm (24h)")] string serverTime)
         {
             int hour = int.Parse(serverTime[..2]);
             int minute = int.Parse(serverTime.Substring(3, 2));
@@ -21,7 +21,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 dateTimeOffset = dateTimeOffset.AddDays(1);
             }
 
-            await RespondAsync(text: $"Server time: {serverTime}\nLocal time: <t:{dateTimeOffset.ToUnixTimeSeconds()}:t>\n<t:{dateTimeOffset.ToUnixTimeSeconds()}:R>");
+            string formatedServerTime = dateTimeOffset.ToString("HH:mm");
+
+            await RespondAsync(text: $"Server time: {formatedServerTime}\nLocal time: <t:{dateTimeOffset.ToUnixTimeSeconds()}:t>\n<t:{dateTimeOffset.ToUnixTimeSeconds()}:R>");
         }
     }
 }
