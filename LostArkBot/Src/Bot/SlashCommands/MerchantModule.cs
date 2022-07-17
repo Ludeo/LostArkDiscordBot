@@ -195,11 +195,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
         private void OnUpdateVotes()
         {
-            hubConnection.On<List<MerchantVote>>("UpdateVotes", async (votes) =>
+            hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
+                List<MerchantVote> merchantVotes = new();
+
                 foreach (object obj in votes)
                 {
                     MerchantVote vote = JsonSerializer.Deserialize<MerchantVote>(obj.ToString());
+                    merchantVotes.Add(vote);
                     MerchantMessage merchantMessage = Program.MerchantMessages.First(x => x.MerchantId == vote.Id);
                     IUserMessage message = await merchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
                     IEmbed oldEmbed = message.Embeds.First();
@@ -237,7 +240,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     await message.ModifyAsync(x => x.Embed = newEmbed.Build());
                 }
 
-                await JsonParsers.WriteActiveMerchantVotesAsync(votes);
+                await JsonParsers.WriteActiveMerchantVotesAsync(merchantVotes);
             });
         }
 
