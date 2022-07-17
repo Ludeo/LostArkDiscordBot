@@ -15,6 +15,6 @@ namespace LostArkBot.Src.Bot.FileObjects
         Meta,
         ServerStatus,
         Static,
-        Timestamp
+        Timestamps
     }
 }
