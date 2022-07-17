@@ -184,7 +184,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
+                await LogService.Log(LogSeverity.Info, this.GetType().Name, exception.Message);
             }
         }
 
@@ -252,7 +252,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
+                await LogService.Log(LogSeverity.Info, this.GetType().Name, exception.Message);
             }
         }
 
@@ -320,7 +320,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             catch (HttpException exception)
             {
-                await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
+                await LogService.Log(LogSeverity.Info, this.GetType().Name, exception.Message);
             }
         }
     }

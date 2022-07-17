@@ -82,7 +82,7 @@ namespace LostArkBot.Src.Bot.Buttons
                             await RespondAsync();
                         } catch(HttpException exception)
                         {
-                            await LogService.Log(LogSeverity.Error, this.GetType().Name, exception.Message);
+                            await LogService.Log(LogSeverity.Info, this.GetType().Name, exception.Message);
                         }
 
                         return;

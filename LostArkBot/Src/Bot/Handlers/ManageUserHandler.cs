@@ -165,7 +165,7 @@ namespace LostArkBot.Src.Bot.Handlers
             }
             catch (HttpException exception)
             {
-                await LogService.Log(LogSeverity.Error, typeof(ManageUserHandler).Name, exception.Message);
+                await LogService.Log(LogSeverity.Info, typeof(ManageUserHandler).Name, exception.Message);
             }
         }
     }

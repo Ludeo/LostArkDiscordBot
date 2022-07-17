@@ -18,8 +18,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 await RespondAsync("Incorrect date-time format", ephemeral: true);
                 return;
             }
-            DateTime date = (DateTime)parsedDate;
-            long utcTime = new DateTimeOffset(date).ToUnixTimeSeconds();
+
+            DateTimeOffset date = (DateTimeOffset)parsedDate;
+            date = new(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, new TimeSpan(1, 0, 0));
+            long utcTime = date.ToUnixTimeSeconds();
 
             await RespondAsync($"```<t:{utcTime}:R>```", ephemeral: true);
         }
