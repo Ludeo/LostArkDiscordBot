@@ -14,78 +14,41 @@ namespace LostArkBot.Src.Bot.Handlers
     public class SubscriptionsHandler
     {
 
-        public static async Task Subscribe(SocketMessageComponent component)
+        public static async Task Update(SocketMessageComponent component)
         {
-            List<WanderingMerchantItemsEnum> selectedItems = component.Data.Values.Select(x =>
+            List<WanderingMerchantItemsEnum> newSubscribedItems = component.Data.Values.Select(x =>
             {
                 return (WanderingMerchantItemsEnum)Enum.Parse(typeof(WanderingMerchantItemsEnum), x);
             }).ToList();
 
             SocketUser user = component.User;
-
-            List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
-
-            UserSubscription subscription = merchantSubs.Find(sub =>
+            List<UserSubscription> allUserSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
+            UserSubscription thisUserSubs = allUserSubs.Find(sub =>
             {
                 return sub.UserId == user.Id;
             });
 
-            if (component.Data.CustomId == "subscribe")
+
+            List<int> parsedNewSubscribedItems = newSubscribedItems.Select(x => (int)x).ToList();
+
+            if (thisUserSubs == null)
             {
-                if (subscription == null)
-                {
-                    List<int> newItems = selectedItems.Select(x => (int)x).ToList();
-                    var newSub = new UserSubscription(user.Id, newItems);
+                var newUserSub = new UserSubscription(user.Id, parsedNewSubscribedItems);
 
-                    merchantSubs.Add(newSub);
-                }
-                else
-                {
-                    selectedItems.ForEach(async selectedItem =>
-                    {
-                        if (subscription.SubscribedItems.Contains((int)selectedItem))
-                        {
-                            await component.RespondAsync($"{selectedItem} already added", ephemeral: true);
-                            return;
-                        }
-
-                        subscription.SubscribedItems.Add((int)selectedItem);
-                    });
-                }
-
-                await component.Message.DeleteAsync();
-
-                await JsonParsers.WriteMerchantsAsync(merchantSubs);
-
-                string activeSubs = await SubscriptionsModule.GetActiveSubscriptionsStringAsync(user);
-                await component.RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
+                allUserSubs.Add(newUserSub);
+            }
+            else
+            {
+                thisUserSubs.SubscribedItems = parsedNewSubscribedItems;
             }
 
-            if (component.Data.CustomId == "unsubscribe")
-            {
-                if (merchantSubs.Count == 0 || subscription == null)
-                {
-                    return;
-                }
+            await component.Message.DeleteAsync();
 
-                selectedItems.ForEach(async selectedItem =>
-                {
-                    if (!subscription.SubscribedItems.Contains((int)selectedItem))
-                    {
-                        await component.RespondAsync($"{selectedItem} doesn't exist", ephemeral: true);
-                        return;
-                    }
+            await JsonParsers.WriteMerchantsAsync(allUserSubs);
 
-                    subscription.SubscribedItems.Remove((int)selectedItem);
-                });
+            string activeSubs = await SubscriptionsModule.GetActiveSubscriptionsStringAsync(user);
+            await component.RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
 
-                await component.Message.DeleteAsync();
-
-                await JsonParsers.WriteMerchantsAsync(merchantSubs);
-
-                string activeSubs = await SubscriptionsModule.GetActiveSubscriptionsStringAsync(user);
-                await component.RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
-            }
         }
     }
 }

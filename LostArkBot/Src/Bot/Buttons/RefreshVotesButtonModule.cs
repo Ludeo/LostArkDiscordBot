@@ -15,7 +15,7 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("refresh:*,*")]
         public async Task RefreshVotes(string merchantId, long expiryDateUnix)
         {
-            var embed = Context.Interaction.Message.Embeds.First();
+            Embed embed = Context.Interaction.Message.Embeds.First();
             DateTimeOffset expiryDate = DateTimeOffset.FromUnixTimeSeconds(expiryDateUnix);
             if (expiryDate.CompareTo(DateTimeOffset.Now) < 0)
             {
@@ -45,14 +45,23 @@ namespace LostArkBot.Src.Bot.Buttons
             {
                 x.Embed = embed.ToEmbedBuilder().WithFooter(Footer).Build();
             });
+
+            await Context.Interaction.DeferAsync();
         }
 
         public async Task ExpiredAsync(Embed embed)
         {
+            ActionRowComponent component = Context.Interaction.Message.Components.First();
+
             await Context.Interaction.Message.ModifyAsync(x =>
             {
-                x.Embed = embed.ToEmbedBuilder().WithDescription("**Expired**").WithColor(Color.Red).Build();
+                x.Embed = embed.ToEmbedBuilder().WithDescription("**Expired**").WithColor(Color.Red).WithFooter(text: "").Build();
+                // TODO: fix
+                //ButtonComponent button = component.Components.ToList().Find(x => x.CustomId.Contains("refresh")) as ButtonComponent;
+                //button = button.ToBuilder().WithDisabled(true).Build();
             });
+
+            await Context.Interaction.DeferAsync();
         }
     }
 }

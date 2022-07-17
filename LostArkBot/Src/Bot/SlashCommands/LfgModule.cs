@@ -144,7 +144,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await RespondAsync(text: characterName + " got successfully added to the LFG", ephemeral: true);
         }
 
-        [SlashCommand("calendar", "Exports the date of the event as a ics file so you can import it into your calendar")]
+        [SlashCommand("calendar", "Download the event as .ics file for calendar import")]
         public async Task Calendar(
             [Summary("duration", "The duration of the event in hours")] int duration = 2)
         {

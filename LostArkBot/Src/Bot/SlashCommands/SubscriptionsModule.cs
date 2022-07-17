@@ -13,24 +13,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
     [Group("subscriptions", "Mange your merchant subscriptions")]
     public class SubscriptionsModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
-        [SlashCommand("add", "Add subscription to selected merchant items")]
-        public async Task Add()
-        {
-            SocketUser user = Context.User;
-            await SubscribeMenuBuilder(user);
-            await RespondAsync("auto-delete");
-            await DeleteOriginalResponseAsync();
-        }
-
-        [SlashCommand("remove", "Remove subscription to selected merchant items")]
-        public async Task Remove()
-        {
-            SocketUser user = Context.User;
-            await UnsubscribeMenuBuilder(user);
-            await RespondAsync("auto-delete");
-            await DeleteOriginalResponseAsync();
-        }
-
         [SlashCommand("list", "List of active merchant subscriptions")]
         public async Task Subscriptions()
         {
@@ -39,47 +21,31 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
         }
 
-        public static async Task SubscribeMenuBuilder(SocketUser user)
+        [SlashCommand("update", "Update subscription to selected merchant items")]
+        public async Task Update()
         {
-            SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("subscribe").WithPlaceholder("Add subscription");
+            SocketUser user = Context.User;
+            await UpdateMenuBuilder(user);
+            await RespondAsync("auto-delete");
+            await DeleteOriginalResponseAsync();
+        }
+
+        public static async Task UpdateMenuBuilder(SocketUser user)
+        {
+            SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("update").WithPlaceholder("Update subscription");
             UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
 
-            if (userSub != null && userSub.SubscribedItems.Count == Enum.GetValues(typeof(WanderingMerchantItemsEnum)).Length)
-            {
-                await BuildCommonComponentsAsync("You are already subscribed to everything", user);
-                return;
-            }
 
             foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
             {
                 if (!userSub.SubscribedItems.Contains((int)value))
                 {
-                    menu = AddToMenu(menu, value);
+                    menu = AddToMenu(menu, value, false);
                 }
-            }
 
-            menu.WithMaxValues(menu.Options.Count);
-
-            string activeSubs = await GetActiveSubscriptionsStringAsync(user);
-            await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, false, menu);
-        }
-
-        public static async Task UnsubscribeMenuBuilder(SocketUser user)
-        {
-            SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("unsubscribe").WithPlaceholder("Remove subscription");
-            UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
-
-            if (userSub == null || userSub.SubscribedItems.Count == 0)
-            {
-                await BuildCommonComponentsAsync("You don't have any active subscriptions", user);
-                return;
-            }
-
-            foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
-            {
                 if (userSub.SubscribedItems.Contains((int)value))
                 {
-                    menu = AddToMenu(menu, value);
+                    menu = AddToMenu(menu, value, true);
                 }
             }
 
@@ -106,15 +72,23 @@ namespace LostArkBot.Src.Bot.SlashCommands
             return userSub;
         }
 
-        private static SelectMenuBuilder AddToMenu(SelectMenuBuilder menu, WanderingMerchantItemsEnum value)
+        private static SelectMenuBuilder AddToMenu(SelectMenuBuilder menu, WanderingMerchantItemsEnum value, bool inList)
         {
+            SelectMenuOptionBuilder option = new();
             string valueString = value.ToString();
             string labelString = value.ToString();
+
+            if (inList)
+            {
+                option.WithDefault(true);
+            }
             if (valueString == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.LegendaryRapport))
             {
                 labelString = "Legendary Rapport";
             }
-            return menu.AddOption(labelString, valueString);
+
+            option.WithLabel(labelString).WithValue(valueString);
+            return menu.AddOption(option);
         }
 
         private static async Task BuildCommonComponentsAsync(string text, SocketUser user, bool withDelete = true, SelectMenuBuilder menu = null)
@@ -128,7 +102,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (withDelete)
             {
-                ButtonBuilder delete = Shared.Utils.DeepCopy(Program.StaticObjects.DeleteButton);
+                ButtonBuilder delete = Utils.DeepCopy(Program.StaticObjects.DeleteButton);
                 delete.WithLabel("Exit");
                 menuBuilder = menuBuilder.WithButton(delete);
             }

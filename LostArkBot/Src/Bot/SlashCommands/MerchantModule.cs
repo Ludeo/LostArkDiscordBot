@@ -47,25 +47,23 @@ namespace LostArkBot.Src.Bot.SlashCommands
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
             merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
-#if DEBUG
+            //hubConnection = new HubConnectionBuilder()
+            //    .WithUrl("https://test.lostmerchants.com/MerchantHub")
+            //    .ConfigureLogging(logging =>
+            //    {
+            //        logging.SetMinimumLevel(LogLevel.Debug);
+            //        logging.AddProvider(new SignalLoggerProvider());
+            //    })
+            //    .Build();
+
             hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://test.lostmerchants.com/MerchantHub")
-                .ConfigureLogging(logging =>
-                {
-                    logging.SetMinimumLevel(LogLevel.Debug);
-                    logging.AddProvider(new SignalLoggerProvider());
-                })
-                .Build();
-#else
-                hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://lostmerchants.com/MerchantHub")
-                .ConfigureLogging(logging =>
-                {
-                    logging.SetMinimumLevel(LogLevel.Debug);
-                    logging.AddProvider(new SignalLoggerProvider());
-                })
-                .Build();
-#endif
+            .WithUrl("https://lostmerchants.com/MerchantHub")
+            .ConfigureLogging(logging =>
+            {
+                logging.SetMinimumLevel(LogLevel.Debug);
+                logging.AddProvider(new SignalLoggerProvider());
+            })
+            .Build();
 
             hubConnection.KeepAliveInterval = new TimeSpan(0, 4, 0);
             hubConnection.ServerTimeout = new TimeSpan(0, 8, 0);

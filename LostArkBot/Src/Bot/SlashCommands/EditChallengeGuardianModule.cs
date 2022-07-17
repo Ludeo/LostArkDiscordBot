@@ -12,7 +12,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class EditChallengeGuardianModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         [RequireUserPermission(Discord.ChannelPermission.ManageChannels)]
-        [SlashCommand("edit-challenge-guardian", "Edits the list of the current challenge guardians")]
+        [SlashCommand("edit-challenge-guardian", "Edits the list of current challenge guardians")]
         public async Task EditChallengeGuardian([Summary("name", "Name of the guardian")] string guardianName)
         {
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
