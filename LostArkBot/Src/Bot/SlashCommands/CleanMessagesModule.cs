@@ -11,7 +11,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 {
     public class CleanMessagesModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
-        [SlashCommand("clean", "[ADMIN] Delete past X messages (14 day limit)")]
+        [SlashCommand("clean", "Delete bot DM's (14 day limit)")]
         public async Task CleanMessages([Summary("number", "Number of messages to delete")] int numberOfMessages = 1)
         {
 
