@@ -114,7 +114,8 @@ namespace LostArkBot.Src.Bot.Handlers
                     {
                         string mention = field.Value.Split("\n")[0];
                         ulong discordId = ulong.Parse(mention.Replace("<", "").Replace(">", "").Replace("!", "").Replace("@", ""));
-                        await threadChannel.RemoveUserAsync(user);
+                        IUser userToKick = await component.Channel.GetUserAsync(discordId);
+                        await threadChannel.RemoveUserAsync(userToKick as IGuildUser);
                         playerNumberJoined--;
                     }
                     else
