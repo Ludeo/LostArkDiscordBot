@@ -36,7 +36,10 @@ namespace LostArkBot.Src.Bot.Buttons
                 return;
             }
 
-            await threadChannel.DeleteAsync();
+            if (threadChannel != null)
+            {
+                await threadChannel.DeleteAsync();
+            }
             await lfgMessage.DeleteAsync();
 
             return;
