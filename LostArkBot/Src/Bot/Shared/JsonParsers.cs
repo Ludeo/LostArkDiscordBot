@@ -1,7 +1,9 @@
-﻿using LostArkBot.Src.Bot.FileObjects;
+﻿using Discord;
+using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
 using LostArkBot.Src.Bot.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -25,7 +27,38 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<Config>(File.ReadAllText(FileConfigurations.ConfigJson));
         }
 
+        public static async Task InitializeAllFiles()
+        {
+            if (!File.Exists(FileConfigurations.CharactersJson))
+            {
+                await File.WriteAllTextAsync(FileConfigurations.CharactersJson, JsonSerializer.Serialize(new List<Character>()));
+            }
 
+            if (!File.Exists(FileConfigurations.EngravingsJson))
+            {
+                await File.WriteAllTextAsync(FileConfigurations.EngravingsJson, JsonSerializer.Serialize(new List<Dictionary<string, Engraving>>()));
+            }
+
+            if (!File.Exists(FileConfigurations.StaticGroupsJson))
+            {
+                await File.WriteAllTextAsync(FileConfigurations.StaticGroupsJson, JsonSerializer.Serialize(new List<StaticGroup>()));
+            }
+
+            if (!File.Exists(FileConfigurations.ChallengeGuardiansJson))
+            {
+                await File.WriteAllTextAsync(FileConfigurations.ChallengeGuardiansJson, JsonSerializer.Serialize(new List<ChallengeGuardian>()));
+            }
+
+            if (!File.Exists(FileConfigurations.SubscriptionsJson))
+            {
+                await File.WriteAllTextAsync(FileConfigurations.SubscriptionsJson, JsonSerializer.Serialize(new List<UserSubscription>()));
+            }
+
+            if (!File.Exists(FileConfigurations.ActiveMerchantsJson))
+            {
+                await File.WriteAllTextAsync(FileConfigurations.ActiveMerchantsJson, JsonSerializer.Serialize(new List<Merchant>()));
+            }
+        }
 
         public static async Task<List<Character>> GetCharactersFromJsonAsync()
         {
@@ -70,41 +103,26 @@ namespace LostArkBot.Src.Bot.Shared
             await File.WriteAllTextAsync(FileConfigurations.ChallengeGuardiansJson, JsonSerializer.Serialize(values));
         }
 
+
         public static async Task<List<UserSubscription>> GetMerchantSubsFromJsonAsync()
         {
-            string json;
-            try
-            {
-                json = await File.ReadAllTextAsync(FileConfigurations.MerchantsJson);
-            }
-            catch (FileNotFoundException)
-            {
-                json = "[]";
-                await File.WriteAllTextAsync(FileConfigurations.MerchantsJson, json);
-            }
-            return JsonSerializer.Deserialize<List<UserSubscription>>(json);
+            return JsonSerializer.Deserialize<List<UserSubscription>>(await File.ReadAllTextAsync(FileConfigurations.SubscriptionsJson));
         }
 
         public static async Task WriteMerchantsAsync(List<UserSubscription> values)
         {
-            await File.WriteAllTextAsync(FileConfigurations.MerchantsJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.SubscriptionsJson, JsonSerializer.Serialize(values));
         }
 
 
-
-        public static async Task<List<MerchantVote>> GetActiveMerchantVotesJsonAsync()
+        public static async Task<List<Merchant>> GetActiveMerchantsJsonAsync()
         {
-            var json = JsonSerializer.Deserialize<List<MerchantVote>>(await File.ReadAllTextAsync(FileConfigurations.ActiveMerchantVotesJson));
-            if (json == null)
-            {
-                json = new List<MerchantVote>();
-            }
-            return json;
+            return JsonSerializer.Deserialize<List<Merchant>>(await File.ReadAllTextAsync(FileConfigurations.ActiveMerchantsJson));
         }
 
-        public static async Task WriteActiveMerchantVotesAsync(List<MerchantVote> values)
+        public static async Task WriteActiveMerchantsAsync(List<Merchant> values)
         {
-            await File.WriteAllTextAsync(FileConfigurations.ActiveMerchantVotesJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.ActiveMerchantsJson, JsonSerializer.Serialize(values));
         }
 
     }

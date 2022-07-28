@@ -47,6 +47,7 @@ namespace LostArkBot
 
             Client.Log += LogService.LogHandler;
             commands.Log += LogService.LogHandler;
+            Client.Ready += JsonParsers.InitializeAllFiles;
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
 
