@@ -89,7 +89,7 @@ namespace LostArkBot
             ITrigger merchantTrigger = TriggerBuilder.Create()
                 .WithIdentity("merchanttrigger", "merchantgroup")
                 .StartNow()
-                .WithCronSchedule("* 56 * * * ?")
+                .WithCronSchedule("0 56 * * * ?")
                 .Build();
 
             await scheduler.ScheduleJob(merchantJob, merchantTrigger);
