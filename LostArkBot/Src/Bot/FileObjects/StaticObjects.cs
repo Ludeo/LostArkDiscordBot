@@ -140,6 +140,11 @@ namespace LostArkBot.Src.Bot.FileObjects
 
                 //Guild Siege
                 { "Guild Siege", "https://i.imgur.com/tvvlWbS.jpg" },
+                { "Snowpang Island", "https://assets.maxroll.gg/wordpress/Islands-island_snowpang_2.jpg" },
+                { "Naruni Island", "https://assets.maxroll.gg/wordpress/Islands-island_naruni.jpg" },
+                { "Death's Hold Island", "https://assets.maxroll.gg/wordpress/Islands-island_deaths_hold.jpg" },
+                { "Tranquil Isle", "https://assets.maxroll.gg/wordpress/Islands-island_tranquil.jpg" },
+                { "Slime Island", "https://assets.maxroll.gg/wordpress/Islands-island_drumbeat.jpg" },
             };
         }
 
@@ -167,7 +172,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                                             .AddOption("Platinum Fields", "platinumfields")
                                             .AddOption("Chaos Maps", "chaosmaps")
                                             .AddOption("Coop Battle", "Coop Battle")
-                                            .AddOption("Guild Siege", "Guild Siege")
+                                            .AddOption("Guild Siege", "guildsiege")
                                             .AddOption("Challenge Guardian", "challengeguardian");
 
             HomeLfg = menuBuilder;
@@ -666,12 +671,80 @@ namespace LostArkBot.Src.Bot.FileObjects
             model = new()
             {
                 MenuId = new[] { "home-lfg" },
-                MenuItemId = "Guild Siege",
-                Title = "[Guild Siege]",
+                MenuItemId = "guildsiege",
+                MenuPlaceholder = "Select Siege",
+                MenuBuilderOptions = new List<MenuBuilderOption>()
+                {
+                    new MenuBuilderOption("Naruni Island", "Naruni Island", "8 people"),
+                    new MenuBuilderOption("Snowpang Island", "Snowpang Island", "8 people"),
+                    new MenuBuilderOption("Death's Hold Island", "Death's Hold Island", "12 people"),
+                    new MenuBuilderOption("Tranquil Isle", "Tranquil Isle", "16 people"),
+                    new MenuBuilderOption("Slime Island", "Slime Island", "16 people"),
+                },
+                Title = "Guild Siege",
+                Description = "Select the Guild Siege you want to do",
                 ThumbnailUrl = CoopBattleIconUrl,
+                Color = Color.Red,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "guildsiege" },
+                MenuItemId = "Naruni Island",
+                Title = "[Guild Siege]",
+                ThumbnailUrl = AbyssRaidIconUrl,
                 Color = Color.Red,
                 IsEnd = true,
                 Players = 8,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "guildsiege" },
+                MenuItemId = "Snowpang Island",
+                Title = "[Guild Siege]",
+                ThumbnailUrl = AbyssRaidIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+                Players = 8,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "guildsiege" },
+                MenuItemId = "Death's Hold Island",
+                Title = "[Guild Siege]",
+                ThumbnailUrl = AbyssRaidIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+                Players = 12,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "guildsiege" },
+                MenuItemId = "Tranquil Isle",
+                Title = "[Guild Siege]",
+                ThumbnailUrl = AbyssRaidIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+                Players = 16,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "guildsiege" },
+                MenuItemId = "Slime Island",
+                Title = "[Guild Siege]",
+                ThumbnailUrl = AbyssRaidIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+                Players = 16,
             };
             LfgModels.Add(model);
             #endregion
