@@ -24,8 +24,8 @@ namespace LostArkBot.Src.Bot.Buttons
             }
 
 
-            List<MerchantVote> activeMerchantVotes = await JsonParsers.GetActiveMerchantVotesJsonAsync();
-            var merchantToRefresh = activeMerchantVotes.Find(merchant =>
+            List<Merchant> activeMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+            var merchantToRefresh = activeMerchants.Find(merchant =>
             {
                 return merchant.Id == merchantId;
             });

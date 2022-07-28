@@ -73,7 +73,8 @@ namespace LostArkBot.Src.Bot.Shared
             }
             catch
             {
-                File.AppendAllText(logFileName, $"Error in writing to log, retrying..." + "\n");
+                LogMessage log = new(LogSeverity.Debug, "LogService", $"Error in writing to log, retrying...\n", null);
+                File.AppendAllText(logFileName, $"[General/{log.Severity}] {log.ToString(padSource: 15)}");
                 await Task.Delay(500);
                 await TryWritingToLog(text, logFileName);
             }

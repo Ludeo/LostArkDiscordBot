@@ -15,7 +15,7 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
 
         public async Task<IDisposable> BeginScopeAsync<TState>(TState state)
         {
-            await LogService.Log(LogSeverity.Info, this.GetType().Name, "Begging Scope with state: " + state);
+            await LogService.Log(LogSeverity.Info, GetType().Name, "Begging Scope with state: " + state);
             return default!;
         }
 
@@ -60,11 +60,11 @@ namespace LostArkBot.Src.Bot.FileObjects.SignalR
 
             if (exception != null)
             {
-                await LogService.Log(discordLogLevel, this.GetType().Name, exception.Message, exception);
+                await LogService.Log(discordLogLevel, GetType().Name, exception.Message, exception);
             }
             else
             {
-                await LogService.Log(discordLogLevel, this.GetType().Name, $"EventId: {eventId}, TState: {state}");
+                //await LogService.Log(discordLogLevel, GetType().Name, $"EventId: {eventId}, TState: {state}");
             }
         }
     }

@@ -25,16 +25,58 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(numberOfMessages).FlattenAsync();
-            var filteredMessages = messages.Where(x => (DateTimeOffset.UtcNow - x.Timestamp).TotalDays <= 14);
+            IEnumerable<IMessage> newerMessages = messages.Where(x => (DateTimeOffset.UtcNow - x.Timestamp).TotalDays <= 14);
+            List<IMessage> olderMessages = messages.Where(x => (DateTimeOffset.UtcNow - x.Timestamp).TotalDays > 14).ToList();
 
-            if (filteredMessages.ToList().Count() == 0)
+            if (newerMessages.ToList().Count + olderMessages.ToList().Count == 0)
             {
-                await RespondAsync("Nothing to delete.", ephemeral: true);
+                await RespondAsync("Nothing found to delete.", ephemeral: true);
                 return;
             }
 
-            await (Context.Channel as ITextChannel).DeleteMessagesAsync(filteredMessages);
-            await Context.Interaction.DeferAsync();
+
+            if (newerMessages.ToList().Count != 0)
+            {
+                try
+                {
+                    if (Context.Channel.GetChannelType() == ChannelType.DM)
+                    {
+                        await RespondAsync("Not yet supported", ephemeral: true);
+                    }
+                    else
+                    {
+                        await (Context.Channel as ITextChannel).DeleteMessagesAsync(newerMessages);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+
+            if (olderMessages.ToList().Count != 0)
+            {
+                olderMessages.ForEach(async msg =>
+                {
+                    try
+                    {
+                        await msg.DeleteAsync();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                });
+            }
+
+            try
+            {
+                await RespondAsync();
+            }
+            catch (Exception e)
+            {
+                await LogService.Log(LogSeverity.Info, GetType().Name, e.Message);
+            }
         }
     }
 }

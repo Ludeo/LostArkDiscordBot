@@ -16,6 +16,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LostArkBot.Src.Bot.Models.Enums;
+using System.Net.Http;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
@@ -43,6 +44,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             await RespondAsync(text: "merchants activated", ephemeral: true);
+
+            //HttpResponseMessage response = await new HttpClient().GetAsync("https://lostmerchants.com/data/merchants.json");
+            //HttpContent content = response.Content;
+            //string merchantInfoString = await content.ReadAsStringAsync();
+            //merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
             merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
@@ -75,10 +81,52 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
         private void OnUpdateMerchantGroup()
         {
-            hubConnection.On<string, object>("UpdateMerchantGroup", async (server, merchants) =>
+            hubConnection.On<string, object>("UpdateMerchantGroup", async (server, merchantGroupObj) =>
             {
-                MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchants.ToString());
-                Merchant merchant = merchantGroup.ActiveMerchants.Last();
+                await UpdateMerchantGroupHandler(merchantGroupObj);
+            });
+
+        }
+
+        private async Task UpdateMerchantGroupHandler(object merchantGroupObj, bool active = false)
+        {
+            List<Merchant> activeMerchants;
+            if (!active)
+            {
+                MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchantGroupObj.ToString());
+                activeMerchants = merchantGroup.ActiveMerchants;
+            }
+            else
+            {
+                List<MerchantGroup> merchantGroups = JsonSerializer.Deserialize<List<MerchantGroup>>(merchantGroupObj.ToString());
+                activeMerchants = new List<Merchant>();
+                merchantGroups.ForEach(mg =>
+                {
+                    activeMerchants.Add(mg.ActiveMerchants.First());
+                });
+            }
+
+            List<Merchant> recordedMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+
+            if (recordedMerchants.Count == 0)
+            {
+                SocketTextChannel textChannel = Program.MerchantChannel;
+                List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
+                await textChannel.DeleteMessagesAsync(messages);
+            }
+
+            foreach (Merchant merchant in activeMerchants)
+            {
+                if (recordedMerchants.Find(x => x.Id == merchant.Id) != null)
+                {
+                    continue;
+                }
+                else
+                {
+                    recordedMerchants.Add(merchant);
+                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Adding missing merchant: {merchant.Name}");
+
+                }
                 string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
                 int notableCard = -1;
                 int notableRapport = -1;
@@ -176,19 +224,28 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 embedBuilder.WithFooter(new EmbedFooterBuilder()
                 {
-                    Text = "Votes: 0",
+                    Text = $"Votes: {merchant.Votes}",
                 });
 
                 Embed embed = embedBuilder.Build();
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: rolePing, embed: embed);
-                await message.AddReactionAsync(new Emoji("✅"));
+                //await message.AddReactionAsync(new Emoji("✅"));
                 Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
 
                 if (notableCard != -1 || notableRapport != -1)
                 {
                     await GetUserSubsriptions(notableCard, notableRapport, embedBuilder, merchant.Id, expiryDate.ToUnixTimeSeconds());
                 }
-            });
+
+
+            }
+
+            if (recordedMerchants.Count != activeMerchants.Count)
+            {
+                await LogService.Log(LogSeverity.Warning, GetType().Name, $"Number of merchants doesn't match. Merchant group: {activeMerchants.Count}, stored JSON: {recordedMerchants.Count}");
+            }
+
+            await JsonParsers.WriteActiveMerchantsAsync(recordedMerchants);
         }
 
         private void OnUpdateVotes()
@@ -196,12 +253,22 @@ namespace LostArkBot.Src.Bot.SlashCommands
             hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
                 List<MerchantVote> merchantVotes = new();
+                List<Merchant> activeMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
 
                 foreach (object obj in votes)
                 {
                     MerchantVote vote = JsonSerializer.Deserialize<MerchantVote>(obj.ToString());
+                    MerchantMessage merchantMessage = Program.MerchantMessages.Find(x => x.MerchantId == vote.Id);
+                    if (merchantMessage == null)
+                    {
+                        await LogService.Log(LogSeverity.Debug, GetType().Name, $"Could not find merchant message to modify. Triggering merchant update.");
+                        object merchantGroupObj = await hubConnection.InvokeAsync<object>($"GetKnownActiveMerchantGroups", "Wei");
+
+                        await UpdateMerchantGroupHandler(merchantGroupObj, true);
+                        continue;
+                    }
+
                     merchantVotes.Add(vote);
-                    MerchantMessage merchantMessage = Program.MerchantMessages.First(x => x.MerchantId == vote.Id);
                     IUserMessage message = await merchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
                     IEmbed oldEmbed = message.Embeds.First();
 
@@ -209,7 +276,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     {
                         await message.DeleteAsync();
                         Program.MerchantMessages.Remove(merchantMessage);
-
                         return;
                     }
 
@@ -221,8 +287,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                         Color = oldEmbed.Color,
                         Footer = new EmbedFooterBuilder()
                         {
-                            Text = "Votes: " + vote.Votes.ToString(),
-                        },
+                            Text = $"Votes: {vote.Votes}"
+                        }
                     };
 
                     foreach (EmbedField embedField in oldEmbed.Fields)
@@ -236,9 +302,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     }
 
                     await message.ModifyAsync(x => x.Embed = newEmbed.Build());
+
+
+                    Merchant merchant = activeMerchants.Find(x => x.Id == vote.Id);
+                    if (merchant == null)
+                    {
+                        await LogService.Log(LogSeverity.Warning, GetType().Name, $"Could not find active merchant with id {vote.Id}, This should no not happen normally");
+                        return;
+                    }
+
+                    merchant.Votes = vote.Votes;
                 }
 
-                await JsonParsers.WriteActiveMerchantVotesAsync(merchantVotes);
+                await JsonParsers.WriteActiveMerchantsAsync(activeMerchants);
             });
         }
 
@@ -291,6 +367,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 try
                 {
                     await serverUser.SendMessageAsync(embed: embedBuilder.Build(), components: component);
+                    await LogService.Log(LogSeverity.Info, this.GetType().Name, $"DM sent to {serverUser.Username}");
                 }
                 catch (HttpException exception)
                 {
