@@ -7,6 +7,7 @@ namespace LostArkBot.Src.Bot.FileObjects
         [Hide]
         Default,
         Characters,
+        Clean,
         EditChallengeGuardian,
         Help,
         Lfg,

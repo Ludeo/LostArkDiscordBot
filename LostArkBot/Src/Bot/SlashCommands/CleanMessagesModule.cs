@@ -11,7 +11,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 {
     public class CleanMessagesModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
-        [SlashCommand("clean", "Delete bot DM's (14 day limit)")]
+        [SlashCommand("clean", "Delete bot DMs (14 day limit)")]
         public async Task CleanMessages([Summary("number", "Number of messages to delete")] int numberOfMessages = 1)
         {
 
@@ -19,7 +19,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
                 {
-                    await RespondAsync("This command can only be used in DM's", ephemeral: true);
+                    await RespondAsync("This command can only be used outside of DMs by admins", ephemeral: true);
                     return;
                 }
             }
