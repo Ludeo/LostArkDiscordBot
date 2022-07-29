@@ -88,10 +88,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
         }
 
-        private async Task UpdateMerchantGroupHandler(object merchantGroupObj, bool active = false)
+        private async Task UpdateMerchantGroupHandler(object merchantGroupObj, bool triggeredManually = false)
         {
             List<Merchant> activeMerchants;
-            if (!active)
+            if (!triggeredManually)
             {
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchantGroupObj.ToString());
                 activeMerchants = merchantGroup.ActiveMerchants;
@@ -265,7 +265,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                         object merchantGroupObj = await hubConnection.InvokeAsync<object>($"GetKnownActiveMerchantGroups", "Wei");
 
                         await UpdateMerchantGroupHandler(merchantGroupObj, true);
-                        continue;
+                        return;
                     }
 
                     merchantVotes.Add(vote);
