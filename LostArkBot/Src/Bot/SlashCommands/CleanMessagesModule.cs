@@ -41,7 +41,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 {
                     if (Context.Channel.GetChannelType() == ChannelType.DM)
                     {
-                        await RespondAsync("Not yet supported", ephemeral: true);
+                        foreach(IMessage msg in newerMessages)
+                        {
+                            olderMessages.Add(msg);
+                        }
                     }
                     else
                     {
@@ -69,14 +72,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 });
             }
 
-            try
-            {
-                await RespondAsync();
-            }
-            catch (Exception e)
-            {
-                await LogService.Log(LogSeverity.Info, GetType().Name, e.Message);
-            }
+            await RespondAsync("Messages deleted", ephemeral: true);
         }
     }
 }
