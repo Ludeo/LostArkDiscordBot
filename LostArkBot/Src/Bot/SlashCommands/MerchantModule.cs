@@ -124,7 +124,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 else
                 {
                     recordedMerchants.Add(merchant);
-                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Adding missing merchant: {merchant.Name}");
+                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Adding merchant: {merchant.Name}");
 
                 }
                 string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
@@ -236,11 +236,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 {
                     await GetUserSubsriptions(notableCard, notableRapport, embedBuilder, merchant.Id, expiryDate.ToUnixTimeSeconds());
                 }
-
-
             }
 
-            if (recordedMerchants.Count != activeMerchants.Count)
+            if (triggeredManually && (recordedMerchants.Count != activeMerchants.Count))
             {
                 await LogService.Log(LogSeverity.Warning, GetType().Name, $"Number of merchants doesn't match. Merchant group: {activeMerchants.Count}, stored JSON: {recordedMerchants.Count}");
             }
@@ -261,8 +259,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     MerchantMessage merchantMessage = Program.MerchantMessages.Find(x => x.MerchantId == vote.Id);
                     if (merchantMessage == null)
                     {
-                        await LogService.Log(LogSeverity.Debug, GetType().Name, $"Could not find merchant message to modify. Triggering merchant update.");
-                        object merchantGroupObj = await hubConnection.InvokeAsync<object>($"GetKnownActiveMerchantGroups", "Wei");
+                        await LogService.Log(LogSeverity.Debug, GetType().Name, "Could not find merchant message to modify. Triggering merchant update.");
+                        object merchantGroupObj = await hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
 
                         await UpdateMerchantGroupHandler(merchantGroupObj, true);
                         return;
