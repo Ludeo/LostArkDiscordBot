@@ -2,13 +2,13 @@
 
 namespace LostArkBot.databasemodels
 {
-    public partial class lostarkbotContext : DbContext
+    public partial class LostArkBotContext : DbContext
     {
-        public lostarkbotContext()
+        public LostArkBotContext()
         {
         }
 
-        public lostarkbotContext(DbContextOptions<lostarkbotContext> options)
+        public LostArkBotContext(DbContextOptions<LostArkBotContext> options)
             : base(options)
         {
         }

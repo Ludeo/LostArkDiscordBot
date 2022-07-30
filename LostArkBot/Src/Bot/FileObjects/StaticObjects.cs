@@ -173,7 +173,8 @@ namespace LostArkBot.Src.Bot.FileObjects
                                             .AddOption("Chaos Maps", "chaosmaps")
                                             .AddOption("Coop Battle", "Coop Battle")
                                             .AddOption("Guild Siege", "guildsiege")
-                                            .AddOption("Challenge Guardian", "challengeguardian");
+                                            .AddOption("Challenge Guardian Raid", "challengeguardian")
+                                            .AddOption("Challenge Abyss Dungeon", "challengeabyss");
 
             HomeLfg = menuBuilder;
         }
@@ -750,7 +751,7 @@ namespace LostArkBot.Src.Bot.FileObjects
             #endregion
 
             #region Challenge Guardian
-            List<ChallengeGuardian> challengeGuardians = await JsonParsers.GetChallengeGuardiansFromJson();
+            ChallengeNames challengeNames = await JsonParsers.GetChallengeNamesFromJson();
 
             model = new()
             {
@@ -759,9 +760,9 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuPlaceholder = "Select Challenge Guardian",
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
-                    new MenuBuilderOption(challengeGuardians[0].GuardianName, challengeGuardians[0].GuardianName),
-                    new MenuBuilderOption(challengeGuardians[1].GuardianName, challengeGuardians[1].GuardianName),
-                    new MenuBuilderOption(challengeGuardians[2].GuardianName, challengeGuardians[2].GuardianName),
+                    new MenuBuilderOption(challengeNames.ChallengeGuardian[0], challengeNames.ChallengeGuardian[0]),
+                    new MenuBuilderOption(challengeNames.ChallengeGuardian[1], challengeNames.ChallengeGuardian[1]),
+                    new MenuBuilderOption(challengeNames.ChallengeGuardian[2], challengeNames.ChallengeGuardian[2]),
                 },
                 Title = "Challenge Guardian",
                 Description = "Select the Challenge Guardian Raid you want to do",
@@ -775,6 +776,36 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuId = new[] { "challengeguardian" },
                 Title = "[Challenge Guardian]",
                 ThumbnailUrl = GuardianIconUrl,
+                Color = Color.Red,
+                IsEnd = true,
+                Players = 4,
+            };
+            LfgModels.Add(model);
+            #endregion
+
+            #region Challenge Abyss
+            model = new()
+            {
+                MenuId = new[] { "home-lfg" },
+                MenuItemId = "challengeabyss",
+                MenuPlaceholder = "Select Challenge Abyss",
+                MenuBuilderOptions = new List<MenuBuilderOption>()
+                {
+                    new MenuBuilderOption(challengeNames.ChallengeAbyss[0], challengeNames.ChallengeAbyss[0]),
+                    new MenuBuilderOption(challengeNames.ChallengeAbyss[1], challengeNames.ChallengeAbyss[1]),
+                },
+                Title = "Challenge Abyss",
+                Description = "Select the Challenge Abyss Dungeon you want to do",
+                ThumbnailUrl = AbyssDungeonIconUrl,
+                Color = Color.Red,
+            };
+            LfgModels.Add(model);
+
+            model = new()
+            {
+                MenuId = new[] { "challengeabyss" },
+                Title = "[Challenge Abyss Dungeon]",
+                ThumbnailUrl = AbyssDungeonIconUrl,
                 Color = Color.Red,
                 IsEnd = true,
                 Players = 4,

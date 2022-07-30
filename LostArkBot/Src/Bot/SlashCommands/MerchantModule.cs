@@ -229,7 +229,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 Embed embed = embedBuilder.Build();
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: rolePing, embed: embed);
-                //await message.AddReactionAsync(new Emoji("✅"));
                 Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
 
                 if (notableCard != -1 || notableRapport != -1)

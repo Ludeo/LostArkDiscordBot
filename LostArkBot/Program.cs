@@ -104,6 +104,7 @@ namespace LostArkBot
                 GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages,
                 UseInteractionSnowflakeDate = false,
                 AlwaysDownloadUsers = true,
+                
             };
 
             return config;

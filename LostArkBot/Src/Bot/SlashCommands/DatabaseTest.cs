@@ -12,7 +12,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("databasetest", "x")]
         public async Task Test()
         {
-            using(lostarkbotContext modelContext = new())
+            using(LostArkBotContext modelContext = new())
             {
                 Character test = modelContext.Characters.Where(x => x.CharacterName == "Xludeo").First();
 

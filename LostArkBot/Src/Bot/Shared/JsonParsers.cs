@@ -44,9 +44,9 @@ namespace LostArkBot.Src.Bot.Shared
                 await File.WriteAllTextAsync(FileConfigurations.StaticGroupsJson, JsonSerializer.Serialize(new List<StaticGroup>()));
             }
 
-            if (!File.Exists(FileConfigurations.ChallengeGuardiansJson))
+            if (!File.Exists(FileConfigurations.ChallengeNamesJson))
             {
-                await File.WriteAllTextAsync(FileConfigurations.ChallengeGuardiansJson, JsonSerializer.Serialize(new List<ChallengeGuardian>()));
+                await File.WriteAllTextAsync(FileConfigurations.ChallengeNamesJson, JsonSerializer.Serialize(new ChallengeNames()));
             }
 
             if (!File.Exists(FileConfigurations.SubscriptionsJson))
@@ -93,14 +93,14 @@ namespace LostArkBot.Src.Bot.Shared
         }
 
 
-        public static async Task<List<ChallengeGuardian>> GetChallengeGuardiansFromJson()
+        public static async Task<ChallengeNames> GetChallengeNamesFromJson()
         {
-            return JsonSerializer.Deserialize<List<ChallengeGuardian>>(await File.ReadAllTextAsync(FileConfigurations.ChallengeGuardiansJson));
+            return JsonSerializer.Deserialize<ChallengeNames>(await File.ReadAllTextAsync(FileConfigurations.ChallengeNamesJson));
         }
 
-        public static async Task WriteChallengeGuardiansAsync(List<ChallengeGuardian> values)
+        public static async Task WriteChallengeNamesAsync(ChallengeNames values)
         {
-            await File.WriteAllTextAsync(FileConfigurations.ChallengeGuardiansJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.ChallengeNamesJson, JsonSerializer.Serialize(values));
         }
 
 

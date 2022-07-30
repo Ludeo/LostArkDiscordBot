@@ -6,9 +6,9 @@ namespace LostArkBot.Src.Bot.FileObjects
     {
         [Hide]
         Default,
+        Admin,
         Characters,
         Clean,
-        EditChallengeGuardian,
         Help,
         Lfg,
         Localtime,

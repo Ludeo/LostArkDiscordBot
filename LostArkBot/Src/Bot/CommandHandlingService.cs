@@ -7,6 +7,7 @@ using LostArkBot.Src.Bot.FileObjects;
 using Discord.Interactions;
 using LostArkBot.Src.Bot.Handlers;
 using LostArkBot.Src.Bot.Shared;
+using System.Collections.Generic;
 
 namespace LostArkBot.Bot
 {
@@ -32,8 +33,9 @@ namespace LostArkBot.Bot
                 client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
                 client.ModalSubmitted += ModalHandlers.ModalHandler;
                 client.Ready += Ready;
-            } catch (Exception)
+            } catch (Exception e)
             {
+                Console.WriteLine(e);
                 throw;
             }
         }
@@ -52,6 +54,10 @@ namespace LostArkBot.Bot
 
         private async Task RegisterCommands()
         {
+            //for deleting commands, make sure to put it on release
+            //List<ApplicationCommandProperties> applicationCommandProperties = new();
+            //await client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
+
             try
             {
 #if DEBUG

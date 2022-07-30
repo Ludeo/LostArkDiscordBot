@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 {
     public class CleanMessagesModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
-        [SlashCommand("clean", "Delete bot DMs (14 day limit)")]
+        [SlashCommand("clean", "Delete messages in channel (Admin) or DMs")]
         public async Task CleanMessages([Summary("number", "Number of messages to delete")] int numberOfMessages = 1)
         {
 
