@@ -37,6 +37,7 @@ namespace LostArkBot.Src.Bot.FileObjects
             HomeLfgInitialization();
             ButtonsInitialization();
             EventImagesInitialization();
+            JsonParsers.InitializeAllFiles();
             MenuModelsInitialization();
         }
 
