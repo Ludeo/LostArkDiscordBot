@@ -34,6 +34,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 { "Uncommon", "[2;32m" }
         };
 
+        private readonly List<Tuple<int, string>> thumbnails = new()
+        {
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.Wei, "https://lostarkcodex.com/icons/card_legend_01_0.webp"),
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.Seria, "https://lostarkcodex.com/icons/card_rare_02_1.webp"),
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.Sian, "https://lostarkcodex.com/icons/card_rare_06_2.webp"),
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.Mokamoka, "https://lostarkcodex.com/icons/card_epic_00_7.webp"),
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.Madnick, "https://lostarkcodex.com/icons/card_epic_01_7.webp"),
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.Kaysarr, "https://lostarkcodex.com/icons/card_epic_03_6.webp"),
+                new Tuple<int, string>((int)WanderingMerchantItemsEnum.LegendaryRapport, "https://lostarkcodex.com/icons/use_5_167.webp")
+        };
+
         [SlashCommand("merchant", "Connects to lostmerchants and starts posting merchant locations when available")]
         public async Task Merchant()
         {
@@ -85,11 +96,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 await UpdateMerchantGroupHandler(merchantGroupObj);
             });
-
         }
 
         private async Task UpdateMerchantGroupHandler(object merchantGroupObj, bool triggeredManually = false)
         {
+            List<Merchant> jsonMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+
             List<Merchant> activeMerchants;
             if (!triggeredManually)
             {
@@ -99,17 +111,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             else
             {
                 List<MerchantGroup> merchantGroups = JsonSerializer.Deserialize<List<MerchantGroup>>(merchantGroupObj.ToString());
-                activeMerchants = new List<Merchant>();
-                merchantGroups.ForEach(mg =>
-                {
-                    activeMerchants.Add(mg.ActiveMerchants.First());
-                });
-            }
+                activeMerchants = merchantGroups.Select(x => x.ActiveMerchants.First()).ToList();
 
-            List<Merchant> recordedMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+                Program.MerchantMessages = new();
+                jsonMerchants = new();
 
-            if (recordedMerchants.Count == 0)
-            {
                 SocketTextChannel textChannel = Program.MerchantChannel;
                 List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
                 await textChannel.DeleteMessagesAsync(messages);
@@ -117,42 +123,16 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             foreach (Merchant merchant in activeMerchants)
             {
-                if (recordedMerchants.Find(x => x.Id == merchant.Id) != null)
+                Merchant jsonStored = jsonMerchants.Find(x => x.Id == merchant.Id);
+                if (jsonStored != null)
                 {
                     continue;
                 }
-                else
-                {
-                    recordedMerchants.Add(merchant);
-                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Adding merchant: {merchant.Name}");
 
-                }
-                string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
+                await LogService.Log(LogSeverity.Debug, GetType().Name, $"Adding merchant: {merchant.Name}");
+
                 int notableCard = -1;
                 int notableRapport = -1;
-
-                Rarity highestRarity = merchant.Card.Rarity;
-
-                if (merchant.Rapport.Rarity > highestRarity)
-                {
-                    highestRarity = merchant.Rapport.Rarity;
-                }
-
-                Color embedColor = Color.Green;
-
-                if (highestRarity == Rarity.Legendary)
-                {
-                    embedColor = Color.Gold;
-                }
-                else if (highestRarity == Rarity.Epic)
-                {
-                    embedColor = Color.Purple;
-                }
-                else if (highestRarity == Rarity.Rare)
-                {
-                    embedColor = Color.Blue;
-                }
-
                 string rolePing = "";
 
                 if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Wei))
@@ -200,49 +180,25 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 DateTimeOffset now = DateTimeOffset.Now;
                 DateTimeOffset expiryDate = new(now.Year, now.Month, now.Day, now.Hour, 55, 0, now.Offset);
 
-                EmbedBuilder embedBuilder = new()
-                {
-                    Title = merchantInfo[merchant.Name].Region + " - " + merchant.Zone,
-                    Description = $"Expires <t:{expiryDate.ToUnixTimeSeconds()}:R>",
-                    ThumbnailUrl = "https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg",
-                    Color = embedColor,
-                };
+                Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.New).Build();
 
-                embedBuilder.AddField(new EmbedFieldBuilder()
-                {
-                    Name = ":black_joker: Card",
-                    Value = "```ansi\n" + ansiColors[merchant.Card.Rarity.ToString()] + merchant.Card.Name + "```",
-                    IsInline = true,
-                });
-
-                embedBuilder.AddField(new EmbedFieldBuilder()
-                {
-                    Name = ":gift: Rapport",
-                    Value = "```ansi\n" + ansiColors[merchant.Rapport.Rarity.ToString()] + merchant.Rapport.Name + "```",
-                    IsInline = true,
-                });
-
-                embedBuilder.WithFooter(new EmbedFooterBuilder()
-                {
-                    Text = $"Votes: {merchant.Votes}",
-                });
-
-                Embed embed = embedBuilder.Build();
                 IUserMessage message = await merchantChannel.SendMessageAsync(text: rolePing, embed: embed);
+
                 Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
+                jsonMerchants.Add(merchant);
 
                 if (notableCard != -1 || notableRapport != -1)
                 {
-                    await GetUserSubsriptions(notableCard, notableRapport, embedBuilder, merchant.Id, expiryDate.ToUnixTimeSeconds());
+                    await GetUserSubsriptions(notableCard, notableRapport, merchant, expiryDate);
                 }
             }
 
-            if (triggeredManually && (recordedMerchants.Count != activeMerchants.Count))
+            if (triggeredManually && (jsonMerchants.Count != activeMerchants.Count))
             {
-                await LogService.Log(LogSeverity.Warning, GetType().Name, $"Number of merchants doesn't match. Merchant group: {activeMerchants.Count}, stored JSON: {recordedMerchants.Count}");
+                await LogService.Log(LogSeverity.Warning, GetType().Name, $"Number of merchants doesn't match. Merchant group: {activeMerchants.Count}, stored JSON: {jsonMerchants.Count}");
             }
 
-            await JsonParsers.WriteActiveMerchantsAsync(recordedMerchants);
+            await JsonParsers.WriteActiveMerchantsAsync(jsonMerchants);
         }
 
         private void OnUpdateVotes()
@@ -273,39 +229,23 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     {
                         await message.DeleteAsync();
                         Program.MerchantMessages.Remove(merchantMessage);
-                        return;
+                        activeMerchants.Remove(activeMerchants.Find(x => x.Id == vote.Id));
+                        await LogService.Log(LogSeverity.Info, GetType().Name, $"Removed merchant with id {vote.Id}: {vote.Votes} votes");
+                        continue;
                     }
-
-                    EmbedBuilder newEmbed = new()
+                    else
                     {
-                        Title = oldEmbed.Title,
-                        Description = oldEmbed.Description,
-                        ThumbnailUrl = oldEmbed.Thumbnail.Value.Url,
-                        Color = oldEmbed.Color,
-                        Footer = new EmbedFooterBuilder()
-                        {
-                            Text = $"Votes: {vote.Votes}"
-                        }
-                    };
+                        EmbedBuilder newEmbed = oldEmbed.ToEmbedBuilder();
+                        newEmbed.WithFooter($"Votes: {vote.Votes}");
 
-                    foreach (EmbedField embedField in oldEmbed.Fields)
-                    {
-                        newEmbed.AddField(new EmbedFieldBuilder()
-                        {
-                            Name = embedField.Name,
-                            Value = embedField.Value,
-                            IsInline = embedField.Inline,
-                        });
+                        await message.ModifyAsync(x => x.Embed = newEmbed.Build());
                     }
-
-                    await message.ModifyAsync(x => x.Embed = newEmbed.Build());
-
 
                     Merchant merchant = activeMerchants.Find(x => x.Id == vote.Id);
                     if (merchant == null)
                     {
                         await LogService.Log(LogSeverity.Warning, GetType().Name, $"Could not find active merchant with id {vote.Id}, This should no not happen normally");
-                        return;
+                        continue;
                     }
 
                     merchant.Votes = vote.Votes;
@@ -315,11 +255,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             });
         }
 
-        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, EmbedBuilder embedBuilder, string merchantId, double expiryDate)
+        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, Merchant merchant, DateTimeOffset expiryDate)
         {
             string url = "https://lostmerchants.com/";
             ButtonBuilder linkButton = new ButtonBuilder().WithLabel("Site").WithStyle(ButtonStyle.Link).WithUrl(url);
-            ButtonBuilder refreshButton = new ButtonBuilder().WithCustomId($"refresh:{merchantId},{expiryDate}").WithEmote(new Emoji("\U0001F504")).WithStyle(ButtonStyle.Primary);
+            ButtonBuilder refreshButton = new ButtonBuilder().WithCustomId($"refresh:{merchant.Id},{expiryDate.ToUnixTimeSeconds()}").WithEmote(new Emoji("\U0001F504")).WithStyle(ButtonStyle.Primary);
             MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).WithButton(refreshButton).WithButton(linkButton).Build();
 
             List<UserSubscription> allSubscriptions = await JsonParsers.GetMerchantSubsFromJsonAsync();
@@ -351,24 +291,30 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
             await LogService.Log(LogSeverity.Debug, this.GetType().Name, logMsg);
 
+            Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.Subscription).Build();
+
             filteredSubscriptions.ForEach(async sub =>
             {
                 SocketGuildUser serverUser = Context.Guild.GetUser(sub.UserId);
 
                 if (serverUser == null)
                 {
-                    await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Server user with Id:{sub.UserId} not found");
+                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user with Id:{sub.UserId} not found");
                     return;
                 }
 
                 try
                 {
-                    await serverUser.SendMessageAsync(embed: embedBuilder.Build(), components: component);
-                    await LogService.Log(LogSeverity.Info, this.GetType().Name, $"DM sent to {serverUser.Username}");
+                    await serverUser.SendMessageAsync(embed: embed, components: component);
+                    await LogService.Log(LogSeverity.Info, GetType().Name, $"DM sent to {serverUser.Username}");
                 }
-                catch (HttpException exception)
+                catch (HttpException e)
                 {
-                    await LogService.Log(LogSeverity.Error, this.GetType().Name, "User cannot receive DMs", exception);
+                    await LogService.Log(LogSeverity.Error, GetType().Name, "User cannot receive DMs", e);
+                }
+                catch (Exception e)
+                {
+                    await LogService.Log(LogSeverity.Error, GetType().Name, "Unknown error", e);
                 }
             });
 
@@ -405,6 +351,91 @@ namespace LostArkBot.Src.Bot.SlashCommands
         private async Task OnConnectionExceptionAsync(Exception exception)
         {
             await OnConnectionClosedAsync(exception);
+        }
+
+        public EmbedBuilder CreateMerchantEmbed(Merchant merchant, DateTimeOffset expiryDate, int notableCard, int notableRapport, MerchantEmbedTypeEnum type)
+        {
+
+            if (type == MerchantEmbedTypeEnum.Debug)
+            {
+                merchantInfo = new() {
+                    { "Test Merchant", new MerchantInfo()
+                        {
+                            Region="Test Region"
+                        }
+                    }
+                };
+            }
+
+            EmbedBuilder embedBuilder = new();
+
+            string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
+
+            embedBuilder.WithTitle(merchantInfo[merchant.Name].Region + " - " + merchant.Zone);
+            embedBuilder.WithDescription($"Expires <t:{expiryDate.ToUnixTimeSeconds()}:R>");
+
+            if (type == MerchantEmbedTypeEnum.New)
+            {
+                Rarity highestRarity = merchant.Card.Rarity;
+
+                if (merchant.Rapport.Rarity > highestRarity)
+                {
+                    highestRarity = merchant.Rapport.Rarity;
+                }
+
+                Color embedColor = Color.Green;
+
+                if (highestRarity == Rarity.Legendary)
+                {
+                    embedColor = Color.Gold;
+                }
+                else if (highestRarity == Rarity.Epic)
+                {
+                    embedColor = Color.Purple;
+                }
+                else if (highestRarity == Rarity.Rare)
+                {
+                    embedColor = Color.Blue;
+                }
+
+                embedBuilder.WithThumbnailUrl("https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg");
+                embedBuilder.WithColor(embedColor);
+            }
+
+            if (type == MerchantEmbedTypeEnum.Subscription || type == MerchantEmbedTypeEnum.Debug)
+            {
+                if (notableCard != -1)
+                {
+                    embedBuilder.WithThumbnailUrl(thumbnails.Find(x => x.Item1 == notableCard).Item2);
+                }
+                else
+                {
+                    embedBuilder.WithThumbnailUrl(thumbnails.Find(x => x.Item1 == notableRapport).Item2);
+                }
+
+                embedBuilder.WithColor(Color.Green);
+                embedBuilder.WithImageUrl("https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg");
+            }
+
+            EmbedFieldBuilder cardField = new()
+            {
+                Name = ":black_joker: Card",
+                Value = "```ansi\n" + ansiColors[merchant.Card.Rarity.ToString()] + merchant.Card.Name + "```",
+                IsInline = true,
+            };
+
+            EmbedFieldBuilder rapportField = new()
+            {
+                Name = ":gift: Rapport",
+                Value = "```ansi\n" + ansiColors[merchant.Rapport.Rarity.ToString()] + merchant.Rapport.Name + "```",
+                IsInline = true,
+            };
+
+            embedBuilder.AddField(cardField);
+            embedBuilder.AddField(rapportField);
+            embedBuilder.WithFooter($"Votes: {merchant.Votes}");
+
+            return embedBuilder;
         }
     }
 }

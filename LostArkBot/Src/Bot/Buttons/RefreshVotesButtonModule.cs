@@ -55,7 +55,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
             await Context.Interaction.Message.ModifyAsync(x =>
             {
-                x.Embed = embed.ToEmbedBuilder().WithDescription("**Expired**").WithColor(Color.Red).WithFooter(text: "").Build();
+                x.Embed = embed.ToEmbedBuilder().WithDescription("**Expired or removed**").WithColor(Color.Red).Build();
                 // TODO: fix
                 //ButtonComponent button = component.Components.ToList().Find(x => x.CustomId.Contains("refresh")) as ButtonComponent;
                 //button = button.ToBuilder().WithDisabled(true).Build();
