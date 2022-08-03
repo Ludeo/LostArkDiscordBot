@@ -146,6 +146,11 @@ namespace LostArkBot.Src.Bot.FileObjects
                 { "Death's Hold Island", "https://assets.maxroll.gg/wordpress/Islands-island_deaths_hold.jpg" },
                 { "Tranquil Isle", "https://assets.maxroll.gg/wordpress/Islands-island_tranquil.jpg" },
                 { "Slime Island", "https://assets.maxroll.gg/wordpress/Islands-island_drumbeat.jpg" },
+
+                //Challenge
+                { "All 3 Guardians", "https://assets.maxroll.gg/wp-content/assets/img/raids/Urnil2.jpg" },
+                { "Both Abysses", "https://assets.maxroll.gg/wordpress/Abyss_Dungeon_Article_2.jpg" },
+
             };
         }
 
@@ -764,6 +769,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                     new MenuBuilderOption(challengeNames.ChallengeGuardian[0], challengeNames.ChallengeGuardian[0]),
                     new MenuBuilderOption(challengeNames.ChallengeGuardian[1], challengeNames.ChallengeGuardian[1]),
                     new MenuBuilderOption(challengeNames.ChallengeGuardian[2], challengeNames.ChallengeGuardian[2]),
+                    new MenuBuilderOption("All 3 Guardians", "All 3 Guardians"),
                 },
                 Title = "Challenge Guardian",
                 Description = "Select the Challenge Guardian Raid you want to do",
@@ -794,6 +800,7 @@ namespace LostArkBot.Src.Bot.FileObjects
                 {
                     new MenuBuilderOption(challengeNames.ChallengeAbyss[0], challengeNames.ChallengeAbyss[0]),
                     new MenuBuilderOption(challengeNames.ChallengeAbyss[1], challengeNames.ChallengeAbyss[1]),
+                    new MenuBuilderOption("Both Abysses", "Both Abysses"),
                 },
                 Title = "Challenge Abyss",
                 Description = "Select the Challenge Abyss Dungeon you want to do",

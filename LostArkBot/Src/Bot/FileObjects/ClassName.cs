@@ -6,6 +6,7 @@ namespace LostArkBot.Src.Bot.FileObjects
     {
         [Hide]
         Default,
+        Arcanist,
         Artillerist, 
         Bard,
         Berserker,
