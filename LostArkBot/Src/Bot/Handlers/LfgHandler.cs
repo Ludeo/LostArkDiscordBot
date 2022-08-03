@@ -88,13 +88,7 @@ namespace LostArkBot.Src.Bot.Handlers
                 IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message);
                 await threadChannel.ModifyAsync(x => x.AutoArchiveDuration = ThreadArchiveDuration.OneWeek);
 
-                ComponentBuilder components = new ComponentBuilder().WithButton(Program.StaticObjects.JoinButton)
-                                                                .WithButton(Program.StaticObjects.LeaveButton)
-                                                                .WithButton(Program.StaticObjects.KickButton)
-                                                                .WithButton(Program.StaticObjects.DeleteButton)
-                                                                .WithButton(Program.StaticObjects.StartButton);
-
-                await threadChannel.SendMessageAsync(text: "\uFEFF \uFEFF ", components: components.Build());
+                await threadChannel.SendMessageAsync(text: "\uFEFF \uFEFF ", components: componentBuilder.Build());
             }
             else
             {
