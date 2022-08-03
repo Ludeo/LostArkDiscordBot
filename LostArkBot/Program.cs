@@ -26,7 +26,7 @@ namespace LostArkBot
 
         public static StaticObjects StaticObjects { get; } = new StaticObjects();
 
-        public static SocketTextChannel MerchantChannel { get; private set; }
+        public static SocketTextChannel MerchantChannel { get; set; }
 
         public static List<MerchantMessage> MerchantMessages { get; set; } = new();
 
@@ -50,15 +50,13 @@ namespace LostArkBot
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
 
-            Config config = Config.Default;
+            string token = Config.Default.Token;
 
-            if (string.IsNullOrEmpty(config.Token))
+            if (string.IsNullOrEmpty(token))
             {
                 await LogService.Log(LogSeverity.Critical, "Setup", "The bot token is not available in the config.json file. Add it and restart the bot.");
                 Environment.Exit(0);
             }
-
-            string token = config.Token;
 
             await Client.LoginAsync(TokenType.Bot, token);
             await Client.StartAsync();
@@ -94,6 +92,12 @@ namespace LostArkBot
 
             await scheduler.ScheduleJob(merchantJob, merchantTrigger);
             Client.Ready -= InitializeScheduledTask;
+        }
+
+        public static void ReinitializeScheduledTasks()
+        {
+            Client.Ready -= InitializeScheduledTask;
+            Client.Ready += InitializeScheduledTask;
         }
 
         private static DiscordSocketConfig BuildDiscordSocketConfig()

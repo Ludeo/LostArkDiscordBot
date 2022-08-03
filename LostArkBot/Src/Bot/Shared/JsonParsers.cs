@@ -27,6 +27,11 @@ namespace LostArkBot.Src.Bot.Shared
             return JsonSerializer.Deserialize<Config>(File.ReadAllText(FileConfigurations.ConfigJson));
         }
 
+        public static async Task WriteConfigAsync(Config values)
+        {
+            await File.WriteAllTextAsync(FileConfigurations.ConfigJson, JsonSerializer.Serialize(values));
+        }
+
         public static async Task InitializeAllFiles()
         {
             if (!File.Exists(FileConfigurations.CharactersJson))
@@ -124,6 +129,5 @@ namespace LostArkBot.Src.Bot.Shared
         {
             await File.WriteAllTextAsync(FileConfigurations.ActiveMerchantsJson, JsonSerializer.Serialize(values));
         }
-
     }
 }

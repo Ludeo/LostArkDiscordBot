@@ -23,7 +23,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
     public class MerchantModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         private HubConnection hubConnection;
-        private readonly SocketTextChannel merchantChannel = Program.MerchantChannel;
         private Dictionary<string, MerchantInfo> merchantInfo;
         private readonly Dictionary<string, string> ansiColors = new()
         {
@@ -182,7 +181,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.New).Build();
 
-                IUserMessage message = await merchantChannel.SendMessageAsync(text: rolePing, embed: embed);
+                IUserMessage message = await Program.MerchantChannel.SendMessageAsync(text: rolePing, embed: embed);
 
                 Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
                 jsonMerchants.Add(merchant);
@@ -222,7 +221,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     }
 
                     merchantVotes.Add(vote);
-                    IUserMessage message = await merchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
+                    IUserMessage message = await Program.MerchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
                     IEmbed oldEmbed = message.Embeds.First();
 
                     if (vote.Votes <= -5)
