@@ -465,5 +465,31 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's <t:{unixSeconds}:R>");
         }
+
+        [SlashCommand("rename-thread", "Renames the thread of the LFG")]
+        public async Task RenameThread([Summary("name", "New name for the thread")] string name)
+        {
+            if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
+            {
+                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+
+                return;
+            }
+
+            SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
+            ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
+            IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
+            IUserMessage message = messageRaw as IUserMessage;
+            ulong authorId = message.Interaction.User.Id;
+
+            if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            {
+                await RespondAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
+                return;
+            }
+
+            await threadChannel.ModifyAsync(x => x.Name = name);
+            await RespondAsync(text: "Successfully renamed the name of the thread", ephemeral: true);
+        }
     }
 }
