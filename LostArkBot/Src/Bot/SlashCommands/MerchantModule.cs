@@ -181,9 +181,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.New).Build();
 
-                IUserMessage message = await Program.MerchantChannel.SendMessageAsync(text: rolePing, embed: embed);
+                if (merchant.Votes > -5)
+                {
+                    IUserMessage message = await Program.MerchantChannel.SendMessageAsync(text: rolePing, embed: embed);
+                    Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
+                }
 
-                Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
                 jsonMerchants.Add(merchant);
 
                 if (notableCard != -1 || notableRapport != -1)
@@ -226,10 +229,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                     if (vote.Votes <= -5)
                     {
-                        await message.DeleteAsync();
-                        Program.MerchantMessages.Remove(merchantMessage);
-                        activeMerchants.Remove(activeMerchants.Find(x => x.Id == vote.Id));
-                        await LogService.Log(LogSeverity.Info, GetType().Name, $"Removed merchant with id {vote.Id}: {vote.Votes} votes");
+                        if (message != null)
+                        {
+                            Program.MerchantMessages.Remove(merchantMessage);
+                            await message.DeleteAsync();
+                            await LogService.Log(LogSeverity.Info, GetType().Name, $"Deleted post for merchant with id {vote.Id}: {vote.Votes} votes");
+                        }
                         continue;
                     }
                     else
