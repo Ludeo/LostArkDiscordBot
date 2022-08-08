@@ -100,12 +100,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
         private async Task UpdateMerchantGroupHandler(object merchantGroupObj, bool triggeredManually = false)
         {
             List<Merchant> jsonMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+            SocketTextChannel textChannel = Program.MerchantChannel;
 
             List<Merchant> activeMerchants;
             if (!triggeredManually)
             {
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchantGroupObj.ToString());
                 activeMerchants = merchantGroup.ActiveMerchants;
+
+                if (jsonMerchants.Count == 0)
+                {
+                    List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
+                    await textChannel.DeleteMessagesAsync(messages);
+                }
             }
             else
             {
@@ -115,7 +122,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Program.MerchantMessages = new();
                 jsonMerchants = new();
 
-                SocketTextChannel textChannel = Program.MerchantChannel;
                 List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
                 await textChannel.DeleteMessagesAsync(messages);
             }
