@@ -114,12 +114,4 @@ namespace LostArkBot.Src.Bot.Shared
             return dtParsed;
         }
     }
-
-    public static class StringExtension
-    {
-        public static string ToTitleCase(this string str)
-        {
-            return new CultureInfo("en-US", false).TextInfo.ToTitleCase(str);
-        }
-    }
 }

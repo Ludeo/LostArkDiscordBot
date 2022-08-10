@@ -104,10 +104,9 @@ namespace LostArkBot
         {
             DiscordSocketConfig config = new()
             {
-                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages,
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers,
                 UseInteractionSnowflakeDate = false,
                 AlwaysDownloadUsers = true,
-                
             };
 
             return config;

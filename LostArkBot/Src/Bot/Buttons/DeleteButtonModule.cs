@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using System;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
@@ -36,11 +37,8 @@ namespace LostArkBot.Src.Bot.Buttons
                 return;
             }
 
-            if (threadChannel != null)
-            {
-                await threadChannel.DeleteAsync();
-            }
-            await lfgMessage.DeleteAsync();
+            MessageComponent followupComponent = new ComponentBuilder().WithButton(Program.StaticObjects.ConfirmDeleteButton).WithButton(Program.StaticObjects.CancelButton).Build();
+            await Context.Interaction.RespondAsync("Are you sure you want to delete this?", components: followupComponent, ephemeral: true);
 
             return;
         }

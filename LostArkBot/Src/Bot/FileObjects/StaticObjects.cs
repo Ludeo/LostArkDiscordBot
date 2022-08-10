@@ -13,6 +13,8 @@ namespace LostArkBot.Src.Bot.FileObjects
         public ButtonBuilder LeaveButton { get; private set; }
         public ButtonBuilder StartButton { get; private set; }
         public ButtonBuilder KickButton { get; private set; }
+        public ButtonBuilder ConfirmDeleteButton { get; private set; }
+        public ButtonBuilder CancelButton { get; private set; }
 
         public string GuardianIconUrl { get; } = "https://i.imgur.com/ZN7spLT.png";
         public string AbyssDungeonIconUrl { get; } = "https://i.imgur.com/cjYoBNw.png";
@@ -162,6 +164,8 @@ namespace LostArkBot.Src.Bot.FileObjects
             LeaveButton = new ButtonBuilder().WithCustomId("leavebutton").WithLabel("Leave").WithStyle(ButtonStyle.Danger);
             StartButton = new ButtonBuilder().WithCustomId("startbutton").WithLabel("Start").WithStyle(ButtonStyle.Secondary);
             KickButton = new ButtonBuilder().WithCustomId("kickbutton").WithLabel("Kick").WithStyle(ButtonStyle.Danger);
+            ConfirmDeleteButton = new ButtonBuilder().WithCustomId("confirmdeletebutton").WithLabel("Confirm").WithStyle(ButtonStyle.Danger);
+            CancelButton = new ButtonBuilder().WithCustomId("cancelbutton").WithLabel("Cancel").WithStyle(ButtonStyle.Secondary);
         }
 
         private void HomeLfgInitialization()
