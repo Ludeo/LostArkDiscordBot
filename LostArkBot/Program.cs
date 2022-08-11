@@ -23,6 +23,8 @@ namespace LostArkBot
 
         public static Random Random { get; } = new Random();
 
+        public static SocketGuild Guild { get; set; }
+
         public static List<GuildEmote> GuildEmotes { get; private set; }
 
         public static StaticObjects StaticObjects { get; } = new StaticObjects();
@@ -48,6 +50,7 @@ namespace LostArkBot
 
             Client.Log += LogService.LogHandler;
             commands.Log += LogService.LogHandler;
+            Client.Ready += InitializeGlobalVariables;
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
             Client.Ready += new MerchantModule().StartMerchantChannel;
@@ -67,16 +70,22 @@ namespace LostArkBot
             await Task.Delay(Timeout.Infinite);
         }
 
+        private static Task InitializeGlobalVariables()
+        {
+            Guild = Client.GetGuild(Config.Default.Server);
+            MerchantChannel = Guild.GetTextChannel(Config.Default.MerchantChannel);
+            return Task.CompletedTask;
+        }
+
         private static async Task InitializeEmotes()
         {
-            IReadOnlyCollection<GuildEmote> emotes = await Client.GetGuild(Config.Default.Server).GetEmotesAsync();
+            IReadOnlyCollection<GuildEmote> emotes = await Guild.GetEmotesAsync();
             GuildEmotes = new(emotes);
             Client.Ready -= InitializeEmotes;
         }
 
         private static async Task InitializeScheduledTask()
         {
-            MerchantChannel = Client.GetGuild(Config.Default.Server).GetTextChannel(Config.Default.MerchantChannel);
             StdSchedulerFactory stdSchedulerFactory = new();
             IScheduler scheduler = await stdSchedulerFactory.GetScheduler();
 

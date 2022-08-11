@@ -22,7 +22,7 @@ namespace LostArkBot.Src.Bot.QuartzJobs
             DateTimeOffset now = DateTimeOffset.Now;
             DateTimeOffset nextMerchantsTime = now.AddHours(1).AddMinutes(-26).AddSeconds(-now.Second);
 
-            await textChannel.SendMessageAsync($"Next merchants in: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
+            await textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
 
             await JsonParsers.WriteActiveMerchantsAsync(new List<Merchant>());
 

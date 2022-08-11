@@ -1,9 +1,9 @@
 ﻿using Discord;
-using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,13 +12,15 @@ namespace LostArkBot.Src.Bot.Handlers
 {
     public class ManageUserHandler
     {
+        private static readonly List<GuildEmote> emotes = Program.GuildEmotes;
+
         public static async Task ManageUserHandlerAsync(SocketMessageComponent component, ManageUserModel model)
         {
             string characterName = component.Data.Values.First();
             SocketThreadChannel threadChannel;
             ITextChannel channel;
             Embed originalEmbed;
-            SocketGuildUser user;
+            SocketGuildUser interactionUser;
             IUserMessage message;
 
             if (component.Channel.GetChannelType() == ChannelType.PublicThread)
@@ -27,12 +29,12 @@ namespace LostArkBot.Src.Bot.Handlers
                 channel = threadChannel.ParentChannel as ITextChannel;
                 message = await channel.GetMessageAsync(threadChannel.Id) as IUserMessage;
                 originalEmbed = message.Embeds.First() as Embed;
-                user = await channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+                interactionUser = await channel.GetUserAsync(component.User.Id) as SocketGuildUser;
             }
             else
             {
-                user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
-                threadChannel = user.Guild.GetChannel((ulong)component.Message.Reference.MessageId) as SocketThreadChannel;
+                interactionUser = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+                threadChannel = interactionUser.Guild.GetChannel((ulong)component.Message.Reference.MessageId) as SocketThreadChannel;
                 channel = component.Channel as ITextChannel;
                 message = await channel.GetMessageAsync((ulong)component.Message.Reference.MessageId) as IUserMessage;
                 originalEmbed = message.Embeds.First() as Embed;
@@ -49,10 +51,12 @@ namespace LostArkBot.Src.Bot.Handlers
                 },
                 Color = originalEmbed.Color.Value,
             };
+
             if (originalEmbed.Thumbnail != null)
             {
                 newEmbed.ThumbnailUrl = originalEmbed.Thumbnail.Value.Url;
             }
+
             if (originalEmbed.Image != null)
             {
                 newEmbed.ImageUrl = originalEmbed.Image.Value.Url;
@@ -60,63 +64,110 @@ namespace LostArkBot.Src.Bot.Handlers
 
             bool characterAdded = false;
 
-            string title = originalEmbed.Title;
-            string title1 = title.Split("(")[1];
-            string title2 = title1.Split(")")[0];
-            int playerNumberJoined = int.Parse(title2.Split("/")[0]);
-            string playerNumberMax = title2.Split("/")[1];
+            (string title, string playerCounter) = originalEmbed.Title.Split(new char[] { '(', ')' });
+            (int playerNumberJoined, int playerNumberMax) = Array.ConvertAll(playerCounter.Split("/"), int.Parse);
 
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
 
-
-            foreach (EmbedField field in originalEmbed.Fields)
+            EmbedField msgField = originalEmbed.Fields.FirstOrDefault(field => field.Name == "Custom Message");
+            if (msgField.Name != null)
             {
-                if (field.Name == "Custom Message" || field.Name == "Time")
-                {
-                    newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
-                    continue;
-                }
+                newEmbed.AddField(new EmbedFieldBuilder().WithName(msgField.Name).WithValue(msgField.Value).WithIsInline(msgField.Inline));
+            }
+            EmbedField timeField = originalEmbed.Fields.FirstOrDefault(field => field.Name == "Time");
+            if (timeField.Name != null)
+            {
+                newEmbed.AddField(new EmbedFieldBuilder().WithName(timeField.Name).WithValue(timeField.Value).WithIsInline(timeField.Inline));
+            }
 
-                if (model.Action == ManageAction.Join)
+            IEnumerable<EmbedField> embedFields = originalEmbed.Fields.Where(field => field.Name != "Custom Message" && field.Name != "Time");
+
+            if (model.Action == ManageAction.Join)
+            {
+                await component.DeferAsync();
+
+                foreach (EmbedField field in embedFields)
                 {
                     if (field.Value.Contains(component.User.Mention))
                     {
                         if (component.Data.Values.First() == "Default")
                         {
-                            newEmbed.AddField(field.Name, $"{component.User.Mention}\n{user.DisplayName}", true);
-
+                            newEmbed.AddField(await GetCharacterFieldAsync(null, component));
                             characterAdded = true;
                         }
                         else
                         {
-                            Character character = characterList.Find(x => x.CharacterName == characterName);
-
-                            List<GuildEmote> emotes = Program.GuildEmotes;
-                            GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
-
-                            newEmbed.AddField(
-                                                field.Name,
-                                                $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
-                                                + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
-                                                true);
-
+                            Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+                            GuildEmote emote = emotes.Find(x => x.Name.ToLower() == character.ClassName.ToLower());
+                            newEmbed.AddField(await GetCharacterFieldAsync(character, component));
                             characterAdded = true;
                         }
+
+                        await component.ModifyOriginalResponseAsync(msg =>
+                        {
+                            msg.Content = $"You changed character for **{title.Trim()}** event to {characterName}";
+                            msg.Components = new ComponentBuilder().Build();
+                        });
                     }
                     else
                     {
-                        newEmbed.AddField(new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline));
+                        newEmbed.AddField(CopyField(field));
                     }
                 }
-                else if (model.Action == ManageAction.Kick)
+
+                if (characterAdded == false)
                 {
-                    if (field.Value.Split("\n")[1] == characterName)
+                    if (playerNumberJoined == playerNumberMax)
+                    {
+                        await component.ModifyOriginalResponseAsync(msg =>
+                        {
+                            msg.Content = "This lobby is already full";
+                            msg.Components = new ComponentBuilder().Build();
+                        });
+                        return;
+                    }
+
+
+                    if (characterName == "Default")
+                    {
+                        newEmbed.AddField(await GetCharacterFieldAsync(null, component));
+                    }
+                    else
+                    {
+                        Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+                        newEmbed.AddField(await GetCharacterFieldAsync(character, component));
+                    }
+
+                    playerNumberJoined++;
+                    await threadChannel.AddUserAsync(interactionUser);
+                    await component.ModifyOriginalResponseAsync(msg =>
+                    {
+                        msg.Content = $"You joined the **{title.Trim()}** event with {characterName}";
+                        msg.Components = new ComponentBuilder().Build();
+                    });
+                }
+            }
+
+            else if (model.Action == ManageAction.Kick)
+            {
+                await component.DeferAsync();
+
+                foreach (EmbedField field in embedFields)
+                {
+                    if (field.Name.ToLower().Trim() == characterName.ToLower())
                     {
                         string mention = field.Value.Split("\n")[0];
                         ulong discordId = ulong.Parse(mention.Replace("<", "").Replace(">", "").Replace("!", "").Replace("@", ""));
-                        IUser userToKick = await component.Channel.GetUserAsync(discordId);
-                        await threadChannel.RemoveUserAsync(userToKick as IGuildUser);
+                        IGuildUser userToKick = (IGuildUser)await component.Channel.GetUserAsync(discordId);
+                        await threadChannel.RemoveUserAsync(userToKick);
                         playerNumberJoined--;
+
+                        await component.ModifyOriginalResponseAsync(msg =>
+                        {
+                            msg.Content = $"Sucesfully kicked {characterName}";
+                            msg.Components = new ComponentBuilder().Build();
+                        });
+                        break;
                     }
                     else
                     {
@@ -125,49 +176,54 @@ namespace LostArkBot.Src.Bot.Handlers
                 }
             }
 
-            if (characterAdded == false && model.Action == ManageAction.Join)
-            {
-                if (playerNumberJoined == int.Parse(playerNumberMax))
-                {
-                    await component.RespondAsync(text: "This lobby is already full", ephemeral: true);
-
-                    return;
-                }
-
-                if (characterName == "Default")
-                {
-                    newEmbed.AddField($"{user.DisplayName} has joined", $"{component.User.Mention}\n{user.DisplayName}", true);
-                }
-                else
-                {
-                    Character character = characterList.Find(x => x.CharacterName == characterName);
-
-                    List<GuildEmote> emotes = Program.GuildEmotes;
-                    GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
-
-                    newEmbed.AddField(
-                                        $"{user.DisplayName} has joined",
-                                        $"{component.User.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
-                                            + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
-                                        true);
-                }
-
-                playerNumberJoined++;
-                await threadChannel.AddUserAsync(user);
-            }
-
-            newEmbed.Title = $"{title.Split("(")[0]}({playerNumberJoined}/{playerNumberMax})";
+            newEmbed.Title = $"{title.Trim()} ({playerNumberJoined}/{playerNumberMax})";
 
             await message.ModifyAsync(x => x.Embed = newEmbed.Build());
+            return;
+        }
 
-            try
+        private static async Task<EmbedFieldBuilder> GetCharacterFieldAsync(Character character, SocketMessageComponent component)
+        {
+            SocketGuildUser interactionUser;
+
+            if (component.Channel.GetChannelType() == ChannelType.PublicThread)
             {
-                await component.RespondAsync();
+                ITextChannel channel = ((SocketThreadChannel)component.Channel).ParentChannel as ITextChannel;
+                interactionUser = await channel.GetUserAsync(component.User.Id) as SocketGuildUser;
             }
-            catch (HttpException exception)
+            else
             {
-                await LogService.Log(LogSeverity.Info, typeof(ManageUserHandler).Name, exception.Message);
+                interactionUser = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
             }
+
+            EmbedFieldBuilder embedField = new();
+            if (character != null)
+            {
+                GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
+                embedField.WithName(interactionUser.DisplayName);
+                embedField.WithValue(
+                    $"{component.User.Mention}\n" +
+                    $"{character.CharacterName}\n" +
+                    $"{character.ItemLevel}\n" +
+                    $"<:{emote.Name}:{emote.Id}> {character.ClassName}"
+                );
+                embedField.WithIsInline(true);
+            }
+            else
+            {
+                embedField.WithName($"{interactionUser.DisplayName}");
+                embedField.WithValue(
+                    $"{component.User.Mention}\n" +
+                    $"No character"
+                );
+                embedField.WithIsInline(true);
+            }
+            return embedField;
+        }
+
+        private static EmbedFieldBuilder CopyField(EmbedField field)
+        {
+            return new EmbedFieldBuilder().WithName(field.Name).WithValue(field.Value).WithIsInline(field.Inline);
         }
     }
 }

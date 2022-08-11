@@ -17,13 +17,14 @@ namespace LostArkBot.Src.Bot.Buttons
             SocketThreadChannel threadChannel;
             string userMention = Context.User.Mention;
 
-            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+            if (Context.Channel.GetChannelType() == ChannelType.PublicThread)
             {
                 threadChannel = Context.Channel as SocketThreadChannel;
                 ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
                 IMessage message = await textChannel.GetMessageAsync(threadChannel.Id);
                 originalEmbed = message.Embeds.First() as Embed;
-            } else
+            }
+            else
             {
                 threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as SocketThreadChannel;
                 originalEmbed = Context.Interaction.Message.Embeds.First();
@@ -66,7 +67,6 @@ namespace LostArkBot.Src.Bot.Buttons
 
             if (userLeft)
             {
-
                 string title = originalEmbed.Title;
                 string title1 = title.Split("(")[1];
                 string title2 = title1.Split(")")[0];
@@ -74,7 +74,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 string playerNumberMax = title2.Split("/")[1];
                 newEmbed.Title = $"{title.Split("(")[0]}({int.Parse(playerNumberJoined) - 1}/{playerNumberMax})";
 
-                if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+                if (Context.Channel.GetChannelType() == ChannelType.PublicThread)
                 {
                     ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
                     IUserMessage message = await textChannel.GetMessageAsync(threadChannel.Id) as IUserMessage;
@@ -83,18 +83,21 @@ namespace LostArkBot.Src.Bot.Buttons
                     try
                     {
                         await RespondAsync();
-                    } catch(HttpException exception)
-                    {
-                        await LogService.Log(LogSeverity.Info, this.GetType().Name, exception.Message);
                     }
-                    
-                } else
+                    catch (HttpException exception)
+                    {
+                        await LogService.Log(LogSeverity.Info, GetType().Name, exception.Message);
+                    }
+
+                }
+                else
                 {
                     await Context.Interaction.UpdateAsync(x => x.Embed = newEmbed.Build());
                 }
 
                 await threadChannel.RemoveUserAsync(Context.User as IGuildUser);
-            } else
+            }
+            else
             {
                 await RespondAsync(text: "You are not part of this event", ephemeral: true);
             }
