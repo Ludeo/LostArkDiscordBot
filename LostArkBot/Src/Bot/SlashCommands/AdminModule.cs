@@ -115,5 +115,23 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await RespondAsync(text: $"Winner out of {guildMembers.Count} guild members: {winner.Mention}\n**Congratulations!!!!!!!!!!!!!**");
             await Context.Channel.SendMessageAsync(text: $"<@&{roleId}>");
         }
+
+        [SlashCommand("set-as-merchant-channel", "Select THIS channel to post merchant items")]
+        public async Task SetMerchantChannel()
+        {
+            if (Context.User.Id != Config.Default.Admin)
+            {
+                await RespondAsync(text: "You don't have permission to execute this command", ephemeral: true);
+                return;
+            }
+
+            Config config = Config.Default;
+            config.MerchantChannel = Context.Channel.Id;
+            await JsonParsers.WriteConfigAsync(config);
+
+            Program.ReinitializeScheduledTasks();
+
+            await RespondAsync(text: $"Channel {Program.MerchantChannel.Name} is now a merchant channel");
+        }
     }
 }

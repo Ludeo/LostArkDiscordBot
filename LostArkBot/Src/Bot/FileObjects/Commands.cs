@@ -12,7 +12,6 @@ namespace LostArkBot.Src.Bot.FileObjects
         Help,
         Lfg,
         Localtime,
-        Merchant,
         Meta,
         ServerStatus,
         Static,

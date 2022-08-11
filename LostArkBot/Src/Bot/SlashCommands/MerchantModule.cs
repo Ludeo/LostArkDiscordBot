@@ -16,7 +16,8 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LostArkBot.Src.Bot.Models.Enums;
-using System.Net.Http;
+using Discord.Rest;
+using System.Threading;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
@@ -44,8 +45,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 new Tuple<int, string>((int)WanderingMerchantItemsEnum.LegendaryRapport, "https://lostarkcodex.com/icons/use_5_167.webp")
         };
 
-        [SlashCommand("merchant", "Connects to lostmerchants and starts posting merchant locations when available")]
-        public async Task Merchant()
+        private readonly int voteThreshold = -5;
+
+        [SlashCommand("reconnect-merchant", "Re-connects to lostmerchants and starts posting merchant locations when available")]
+        public async Task ReconnectMerchantChannel()
         {
             if (Context.User.Id != Config.Default.Admin)
             {
@@ -53,13 +56,24 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            await RespondAsync(text: "merchants activated", ephemeral: true);
+            if (Config.Default.MerchantChannel == 0 || Program.MerchantChannel == null)
+            {
+                await RespondAsync(text: "Merchant channel not set. Use /set-as-merchant-channel first", ephemeral: true);
+                return;
+            }
 
-            //HttpResponseMessage response = await new HttpClient().GetAsync("https://lostmerchants.com/data/merchants.json");
-            //HttpContent content = response.Content;
-            //string merchantInfoString = await content.ReadAsStringAsync();
-            //merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
+            if (Context.Channel.Id != Config.Default.MerchantChannel)
+            {
+                await RespondAsync(text: "This is not the merchant channel", ephemeral: true);
+                return;
+            }
 
+            await StartMerchantChannel();
+            await RespondAsync("Sucess", ephemeral: true);
+        }
+
+        public async Task StartMerchantChannel()
+        {
             string merchantInfoString = new WebClient().DownloadString("https://lostmerchants.com/data/merchants.json");
             merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
@@ -86,7 +100,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
             hubConnection.Closed -= OnConnectionClosedAsync;
             hubConnection.Closed += OnConnectionClosedAsync;
 
+            SocketTextChannel textChannel = Program.MerchantChannel;
+            List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
+
+            await textChannel.DeleteMessagesAsync(messages);
+            DateTimeOffset now = DateTimeOffset.Now;
+            DateTimeOffset nextMerchantsTime = now.AddHours(1).AddMinutes(-26).AddSeconds(-now.Second);
+
             await StartConnectionAsync();
+            RestUserMessage msg = await Program.MerchantChannel.SendMessageAsync(text: "Merchant channel activated\nThis message will delete itself");
+            Thread.Sleep(5 * 1000);
+            await msg.DeleteAsync();
+
+            await textChannel.SendMessageAsync($"Next merchants in: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
         }
 
         private void OnUpdateMerchantGroup()
@@ -187,13 +213,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.New).Build();
 
-                if (merchant.Votes > -5)
+                jsonMerchants.Add(merchant);
+
+                if (merchant.Votes <= voteThreshold)
                 {
-                    IUserMessage message = await Program.MerchantChannel.SendMessageAsync(text: rolePing, embed: embed);
-                    Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
+                    Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, null, true));
+                    return;
                 }
 
-                jsonMerchants.Add(merchant);
+                IUserMessage message = await Program.MerchantChannel.SendMessageAsync(text: rolePing, embed: embed);
+                Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
+
 
                 if (notableCard != -1 || notableRapport != -1)
                 {
@@ -213,12 +243,53 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
-                List<MerchantVote> merchantVotes = new();
+                bool merchantsUpdated = false;
                 List<Merchant> activeMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+                List<MerchantVote> positiveVotes = new();
+                List<MerchantVote> negativeVotes = new();
 
                 foreach (object obj in votes)
                 {
                     MerchantVote vote = JsonSerializer.Deserialize<MerchantVote>(obj.ToString());
+                    if (vote.Votes <= voteThreshold)
+                    {
+                        negativeVotes.Add(vote);
+                    }
+                    else
+                    {
+                        positiveVotes.Add(vote);
+                    }
+                }
+
+                foreach (MerchantVote vote in negativeVotes)
+                {
+                    MerchantMessage merchantMessage = Program.MerchantMessages.Find(x => x.MerchantId == vote.Id);
+                    if (merchantMessage == null)
+                    {
+                        await LogService.Log(LogSeverity.Debug, GetType().Name, "Could not find merchant message to modify. Triggering merchant update.");
+                        object merchantGroupObj = await hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
+
+                        await UpdateMerchantGroupHandler(merchantGroupObj, true);
+                        merchantsUpdated = true;
+                        return;
+                    }
+
+                    merchantMessage.IsDeleted = true;
+                    merchantMessage.MessageId = null;
+                    IUserMessage message = await Program.MerchantChannel.GetMessageAsync((ulong)merchantMessage.MessageId) as IUserMessage;
+                    await message.DeleteAsync();
+                    await LogService.Log(LogSeverity.Info, GetType().Name, $"Deleted post for merchant with id {vote.Id}: {vote.Votes} votes");
+                    Merchant merchant = activeMerchants.Find(x => x.Id == vote.Id);
+                    merchant.Votes = vote.Votes;
+                }
+
+                if (merchantsUpdated)
+                {
+                    return;
+                }
+
+                foreach (MerchantVote vote in positiveVotes)
+                {
                     MerchantMessage merchantMessage = Program.MerchantMessages.Find(x => x.MerchantId == vote.Id);
                     if (merchantMessage == null)
                     {
@@ -229,27 +300,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                         return;
                     }
 
-                    merchantVotes.Add(vote);
-                    IUserMessage message = await Program.MerchantChannel.GetMessageAsync(merchantMessage.MessageId) as IUserMessage;
+                    IUserMessage message = await Program.MerchantChannel.GetMessageAsync((ulong)merchantMessage.MessageId) as IUserMessage;
                     IEmbed oldEmbed = message.Embeds.First();
 
-                    if (vote.Votes <= -5)
-                    {
-                        if (message != null)
-                        {
-                            Program.MerchantMessages.Remove(merchantMessage);
-                            await message.DeleteAsync();
-                            await LogService.Log(LogSeverity.Info, GetType().Name, $"Deleted post for merchant with id {vote.Id}: {vote.Votes} votes");
-                        }
-                        continue;
-                    }
-                    else
-                    {
-                        EmbedBuilder newEmbed = oldEmbed.ToEmbedBuilder();
-                        newEmbed.WithFooter($"Votes: {vote.Votes}");
+                    EmbedBuilder newEmbed = oldEmbed.ToEmbedBuilder();
+                    newEmbed.WithFooter($"Votes: {vote.Votes}");
 
-                        await message.ModifyAsync(x => x.Embed = newEmbed.Build());
-                    }
+                    await message.ModifyAsync(x => x.Embed = newEmbed.Build());
 
                     Merchant merchant = activeMerchants.Find(x => x.Id == vote.Id);
                     if (merchant == null)
@@ -286,20 +343,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return Task.CompletedTask;
             }
 
-            string logMsg = $"Found {filteredSubscriptions.Count} players subscribed to ";
-            if (notableCard != -1)
-            {
-                logMsg += (WanderingMerchantItemsEnum)notableCard;
-            }
-            if (notableRapport != -1)
-            {
-                if (notableCard != -1)
-                {
-                    logMsg += " and ";
-                }
-                logMsg += (WanderingMerchantItemsEnum)notableRapport;
-            }
-            await LogService.Log(LogSeverity.Debug, this.GetType().Name, logMsg);
+            await LogService.Log(LogSeverity.Debug, GetType().Name, GetNotableLogMsg(filteredSubscriptions.Count, notableCard, notableRapport));
 
             Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.Subscription).Build();
 
@@ -309,8 +353,20 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 if (serverUser == null)
                 {
-                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user with Id:{sub.UserId} not found");
-                    return;
+                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user with Id:{sub.UserId} not found with GetUser - trying with GetUserAsync");
+                    ITextChannel interactionChannel = (ITextChannel)Context.Channel;
+                    IGuildUser playerUser = await interactionChannel.Guild.GetUserAsync(sub.UserId);
+                    serverUser = (SocketGuildUser)playerUser;
+
+                    if (serverUser == null)
+                    {
+                        await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user not found with GetUserAsync");
+                        return;
+                    }
+                    else
+                    {
+                        await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user found with GetUserAsync");
+                    }
                 }
 
                 try
@@ -324,7 +380,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
                 catch (Exception e)
                 {
-                    await LogService.Log(LogSeverity.Error, GetType().Name, "Unknown error", e);
+                    await LogService.Log(LogSeverity.Error, GetType().Name, "Error with SendMessageAsync", e);
                 }
             });
 
@@ -347,20 +403,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 await OnConnectionExceptionAsync(exception);
             }
-        }
-
-        private async Task OnConnectionClosedAsync(Exception exception)
-        {
-            string errorMsg = exception != null ? exception.Message : "Connection error 'Merchants'";
-
-            await LogService.Log(LogSeverity.Error, this.GetType().Name, errorMsg);
-            await Task.Delay(2000);
-            await StartConnectionAsync();
-        }
-
-        private async Task OnConnectionExceptionAsync(Exception exception)
-        {
-            await OnConnectionClosedAsync(exception);
         }
 
         public EmbedBuilder CreateMerchantEmbed(Merchant merchant, DateTimeOffset expiryDate, int notableCard, int notableRapport, MerchantEmbedTypeEnum type)
@@ -446,6 +488,38 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.WithFooter($"Votes: {merchant.Votes}");
 
             return embedBuilder;
+        }
+
+        private async Task OnConnectionClosedAsync(Exception exception)
+        {
+            string errorMsg = exception != null ? exception.Message : "Connection error 'Merchants'";
+
+            await LogService.Log(LogSeverity.Error, this.GetType().Name, errorMsg);
+            await Task.Delay(2000);
+            await StartConnectionAsync();
+        }
+
+        private async Task OnConnectionExceptionAsync(Exception exception)
+        {
+            await OnConnectionClosedAsync(exception);
+        }
+
+        private static string GetNotableLogMsg(int filteredSubscriptionsCount, int notableCard, int notableRapport)
+        {
+            string logMsg = $"Found {filteredSubscriptionsCount} players subscribed to ";
+            if (notableCard != -1)
+            {
+                logMsg += (WanderingMerchantItemsEnum)notableCard;
+            }
+            if (notableRapport != -1)
+            {
+                if (notableCard != -1)
+                {
+                    logMsg += " and ";
+                }
+                logMsg += (WanderingMerchantItemsEnum)notableRapport;
+            }
+            return logMsg;
         }
     }
 }

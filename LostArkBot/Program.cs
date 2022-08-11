@@ -13,6 +13,7 @@ using Quartz;
 using LostArkBot.Src.Bot.QuartzJobs;
 using LostArkBot.Src.Bot.Shared;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
+using LostArkBot.Src.Bot.SlashCommands;
 
 namespace LostArkBot
 {
@@ -49,6 +50,7 @@ namespace LostArkBot
             commands.Log += LogService.LogHandler;
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
+            Client.Ready += new MerchantModule().StartMerchantChannel;
 
             string token = Config.Default.Token;
 

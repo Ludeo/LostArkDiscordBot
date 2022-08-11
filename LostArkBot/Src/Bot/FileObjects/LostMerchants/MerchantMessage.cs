@@ -4,12 +4,16 @@
     {
         public string MerchantId { get; set; }
 
-        public ulong MessageId { get; set; }
+        public ulong? MessageId { get; set; }
 
-        public MerchantMessage(string merchantId, ulong messageId)
+        public bool IsDeleted { get; set; }
+
+
+        public MerchantMessage(string merchantId, ulong? messageId, bool isDeleted = false)
         {
             MerchantId = merchantId;
             MessageId = messageId;
+            IsDeleted = isDeleted;
         }
     }
 }
