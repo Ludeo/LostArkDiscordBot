@@ -444,9 +444,9 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuPlaceholder = "Select Argos Phase",
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
-                    new MenuBuilderOption("Argos Phase 1", "Argos Phase 1", "Item Level: 1370"),
-                    new MenuBuilderOption("Argos Phase 2", "Argos Phase 2", "Item Level: 1385"),
-                    new MenuBuilderOption("Argos Phase 3", "Argos Phase 3", "Item Level: 1400"),
+                    new MenuBuilderOption("Argos P3", "Argos P3", "Item Level: 1400"),
+                    new MenuBuilderOption("Argos Split Carry", "Argos Split Carry", "Item Level: 1430"),
+                    new MenuBuilderOption("Argos Bus", "Argos Bus", "Item Level: 1370"),
                 },
                 Title = "Argos",
                 Description = "Select the Argos Phase you want to do",
@@ -616,11 +616,9 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
                     new MenuBuilderOption("Valtan Full [Normal]", "Valtan Full [Normal]", "Item Level: 1415"),
-                    new MenuBuilderOption("Valtan Gate 1 [Normal]", "Valtan Gate 1 [Normal]", "Item Level: 1415"),
-                    new MenuBuilderOption("Valtan Gate 2 [Normal]", "Valtan Gate 2 [Normal]", "Item Level: 1415"),
                     new MenuBuilderOption("Valtan Full [Hard]", "Valtan Full [Hard]", "Item Level: 1445"),
-                    new MenuBuilderOption("Valtan Gate 1 [Hard]", "Valtan Gate 1 [Hard]", "Item Level: 1445"),
-                    new MenuBuilderOption("Valtan Gate 2 [Hard]", "Valtan Gate 2 [Hard]", "Item Level: 1415"),
+                    new MenuBuilderOption("Valtan Bus [Normal]", "Valtan Bus [Normal]", "Item Level: 1415"),
+                    new MenuBuilderOption("Valtan Bus [Hard]", "Valtan Bus [Hard]", "Item Level: 1445"),
                 },
                 Title = "Valtan",
                 Description = "Select the Valtan Gate and Difficulty you want to do",
@@ -637,13 +635,9 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
                     new MenuBuilderOption("Vykas Full [Normal]", "Vykas Full [Normal]", "Item Level: 1430"),
-                    new MenuBuilderOption("Vykas Gate 1 [Normal]", "Vykas Gate 1 [Normal]", "Item Level: 1430"),
-                    new MenuBuilderOption("Vykas Gate 2 [Normal]", "Vykas Gate 2 [Normal]", "Item Level: 1430"),
-                    new MenuBuilderOption("Vykas Gate 3 [Normal]", "Vykas Gate 3 [Normal]", "Item Level: 1430"),
                     new MenuBuilderOption("Vykas Full [Hard]", "Vykas Full [Hard]", "Item Level: 1460"),
-                    new MenuBuilderOption("Vykas Gate 1 [Hard]", "Vykas Gate 1 [Hard]", "Item Level: 1460"),
-                    new MenuBuilderOption("Vykas Gate 2 [Hard]", "Vykas Gate 2 [Hard]", "Item Level: 1460"),
-                    new MenuBuilderOption("Vykas Gate 3 [Hard]", "Vykas Gate 3 [Hard]", "Item Level: 1460"),
+                    new MenuBuilderOption("Vykas Bus [Normal]", "Vykas Bus [Normal]", "Item Level: 1430"),
+                    new MenuBuilderOption("Vykas Bus [Hard]", "Vykas Bus [Hard]", "Item Level: 1460"),
                 },
                 Title = "Vykas",
                 Description = "Select the Vykas Gate and Difficulty you want to do",
