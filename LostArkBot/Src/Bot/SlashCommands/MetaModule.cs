@@ -20,7 +20,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("register", "Registers the currently logged in character")]
         public async Task Register([Summary("twitch-name", "Your twitch name")] string twitchName)
         {
-            await DeferAsync(ephemeral: true);
+            await DeferAsync();
 
             string updateUrl = "https://lostark-lookup.herokuapp.com/api/refresh?twitchUsername=" + twitchName;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(updateUrl);
@@ -39,13 +39,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    await FollowupAsync(text: "This user is currently not online or doesn't have the twitch extension enabled");
+                    IMessage message = await FollowupAsync("auto-delete");
+                    await message.DeleteAsync();
+                    await FollowupAsync(text: "This user is currently not online or doesn't have the twitch extension enabled", ephemeral: true) ;
 
                     return;
                 }
                 else if (response.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    await FollowupAsync(text: "This twitch user doesn't exist");
+                    IMessage message = await FollowupAsync("auto-delete");
+                    await message.DeleteAsync();
+                    await FollowupAsync(text: "This twitch user doesn't exist", ephemeral: true);
 
                     return;
                 }
@@ -57,7 +61,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (characterCheck != null)
             {
-                await FollowupAsync(text: characterCheck.CharacterName + " is already registered. You can update it with **/update**");
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: characterCheck.CharacterName + " is already registered. You can update it with **/characters update**");
 
                 return;
             }
@@ -83,7 +89,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(responseString) || responseString == "[]")
             {
-                await FollowupAsync(text: character.CharacterName + " does not exist. Login with the character and enable the twitch extension");
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: character.CharacterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
 
                 return;
             }
@@ -156,7 +164,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("update", "Updates the profile of the currently logged in character")]
         public async Task Update([Summary("twitch-name", "Your twitch name")] string twitchName)
         {
-            await DeferAsync(ephemeral: true);
+            await DeferAsync();
+
             string updateUrl = "https://lostark-lookup.herokuapp.com/api/refresh?twitchUsername=" + twitchName;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(updateUrl);
@@ -176,13 +185,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    await FollowupAsync(text: "This user is currently not online or doesn't have the twitch extension enabled");
+                    IMessage message = await FollowupAsync("auto-delete");
+                    await message.DeleteAsync();
+                    await FollowupAsync(text: "This user is currently not online or doesn't have the twitch extension enabled", ephemeral: true);
 
                     return;
                 }
                 else if (response.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    await FollowupAsync(text: "This twitch user doesn't exist");
+                    IMessage message = await FollowupAsync("auto-delete");
+                    await message.DeleteAsync();
+                    await FollowupAsync(text: "This twitch user doesn't exist", ephemeral: true);
 
                     return;
                 }
@@ -197,14 +210,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (oldCharacter is null)
             {
-                await FollowupAsync(text: metaGameRefresh.CharacterName + " is not registered yet. You can register it with /register");
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: metaGameRefresh.CharacterName + " doesn't exist. You can add it with **/characters add**");
 
                 return;
             }
 
             if (oldCharacter.DiscordUserId != Context.User.Id)
             {
-                await FollowupAsync(text: metaGameRefresh.CharacterName + " does not belong to you");
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: metaGameRefresh.CharacterName + " does not belong to you", ephemeral: true);
 
                 return;
             }
@@ -221,7 +238,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(responseString) || responseString == "[]")
             {
-                await FollowupAsync(text: oldCharacter.CharacterName + " does not exist. Login with the character and enable the twitch extension");
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: oldCharacter.CharacterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
 
                 return;
             }
@@ -306,12 +325,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 embedBuilder.AddField("Custom Message", newCharacter.CustomProfileMessage);
             }
+
             await FollowupAsync(text: $"{newCharacter.CharacterName} got successfully updated", embed: embedBuilder.Build());
         }
 
         [SlashCommand("profile", "Shows a picture of the metagame profile of the given character")]
         public async Task Profile([Summary("character-name", "Name of the character you want to see the profile from")] string characterName)
         {
+            await DeferAsync();
+
             string amazonBaseLink = "https://cdn.lostark.games.aws.dev/";
 
             List<Dictionary<string, Engraving>> engravingListDict = await JsonParsers.GetEngravingsFromJsonAsync();
@@ -355,7 +377,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(responseString) || responseString == "[]")
             {
-                await RespondAsync(text: characterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: characterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
 
                 return;
             }
@@ -523,8 +547,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
             engravings.RemoveAll(x => x.Value < 5);
             List<Engraving> sortedEngravings = engravings.OrderByDescending(x => x.Value).ToList();
 
-            await RespondAsync("Processing..");
-
             await ProfileScreenShot.MakeProfileScreenshot(sortedEngravings, armorPieces, accessories, metaGameCharacter, metaGameCharacterJson, characterName);
 
             string path = Environment.CurrentDirectory + "/image.png";
@@ -542,11 +564,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 new FileAttachment(path)
             };
 
-            await ModifyOriginalResponseAsync(x => {
-                x.Embed = embed.Build();
-                x.Attachments = files;
-                x.Content = null;
-            });
+            await FollowupWithFilesAsync(embed: embed.Build(), attachments: files);
         }
     }
 }

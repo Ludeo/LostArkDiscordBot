@@ -11,6 +11,8 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("kickbutton")]
         public async Task Kick()
         {
+            await DeferAsync(ephemeral: true);
+
             IMessage message;
             SocketGuild guild;
 
@@ -27,9 +29,11 @@ namespace LostArkBot.Src.Bot.Buttons
                 guild = Context.Guild;
             }
 
-            if (Context.User.Id != message.Interaction.User.Id && !guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            ulong authorId = ulong.Parse(message.Embeds.First().Author.Value.Name.Split("\n")[1]);
+
+            if (Context.User.Id != authorId && !guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
-                await RespondAsync(ephemeral: true, text: "You don't have permissions to kick users from the event!");
+                await FollowupAsync(ephemeral: true, text: "You don't have permissions to kick users from the event!");
                 return;
             }
 
@@ -39,7 +43,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 || (originalEmbed.Fields.Length == 1 && (originalEmbed.Fields.First().Name == "Custom Message" || originalEmbed.Fields.First().Name == "Time"))
                 || (originalEmbed.Fields.Length == 2 && originalEmbed.Fields.Any(x => x.Name == "Custom Message") && originalEmbed.Fields.Any(x => x.Name == "Time")))
             {
-                await RespondAsync(text: "There is nobody to kick", ephemeral: true);
+                await FollowupAsync(text: "There is nobody to kick", ephemeral: true);
                 return;
             }
 
@@ -65,7 +69,7 @@ namespace LostArkBot.Src.Bot.Buttons
 
             }
 
-            await RespondAsync(components: new ComponentBuilder().WithSelectMenu(menu).Build(), ephemeral: true);
+            await FollowupAsync(text: "Select the Player you want to kick from the lfg", components: new ComponentBuilder().WithSelectMenu(menu).Build(), ephemeral: true);
             return;
         }
     }

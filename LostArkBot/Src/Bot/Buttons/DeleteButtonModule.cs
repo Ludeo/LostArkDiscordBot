@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
@@ -11,12 +11,13 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("deletebutton")]
         public async Task Delete()
         {
-            SocketThreadChannel threadChannel;
+            await DeferAsync(ephemeral: true);
+
             IMessage lfgMessage;
 
             if (Context.Channel.GetChannelType() == ChannelType.PublicThread)
             {
-                threadChannel = Context.Channel as SocketThreadChannel;
+                SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
                 ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
                 lfgMessage = await channel.GetMessageAsync(threadChannel.Id);
             }
@@ -28,17 +29,18 @@ namespace LostArkBot.Src.Bot.Buttons
             else
             {
                 lfgMessage = Context.Interaction.Message;
-                threadChannel = Context.Guild.GetChannel(lfgMessage.Id) as SocketThreadChannel;
             }
 
-            if (Context.User.Id != lfgMessage.Interaction.User.Id && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            ulong authorId = ulong.Parse(lfgMessage.Embeds.First().Author.Value.Name.Split("\n")[1]);
+
+            if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
-                await RespondAsync(ephemeral: true, text: "You don't have permissions to delete this event!");
+                await FollowupAsync(text: "You don't have permissions to delete this event!", ephemeral: true);
                 return;
             }
 
             MessageComponent followupComponent = new ComponentBuilder().WithButton(Program.StaticObjects.ConfirmDeleteButton).WithButton(Program.StaticObjects.CancelButton).Build();
-            await Context.Interaction.RespondAsync("Are you sure you want to delete this?", components: followupComponent, ephemeral: true);
+            await FollowupAsync("Are you sure you want to delete this?", components: followupComponent, ephemeral: true);
 
             return;
         }

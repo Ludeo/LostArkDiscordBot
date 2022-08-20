@@ -10,15 +10,13 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("cancelbutton")]
         public async Task Cancel()
         {
-            await Context.Interaction.DeferAsync();
+            await DeferAsync();
 
-            await Context.Interaction.ModifyOriginalResponseAsync(msg =>
+            await ModifyOriginalResponseAsync(msg =>
             {
                 msg.Content = "Interaction canceled";
                 msg.Components = new ComponentBuilder().Build();
             });
-
-            return;
         }
     }
 }

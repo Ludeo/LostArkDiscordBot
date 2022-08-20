@@ -13,6 +13,8 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("joinbutton")]
         public async Task Join()
         {
+            await DeferAsync(ephemeral: true);
+
             SelectMenuBuilder joinMenu = new SelectMenuBuilder().WithCustomId("join").WithPlaceholder("Select Character");
             ulong userId = Context.User.Id;
 
@@ -31,7 +33,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 joinMenu.AddOption(character.CharacterName, character.CharacterName, $"{character.ClassName}, {character.ItemLevel}", emote);
             }
 
-            await RespondAsync(text: "Select your character from the menu", components: new ComponentBuilder().WithSelectMenu(joinMenu).Build(), ephemeral: true);    
+            await FollowupAsync(text: "Select your character from the menu", components: new ComponentBuilder().WithSelectMenu(joinMenu).Build(), ephemeral: true);    
         }
     }
 }

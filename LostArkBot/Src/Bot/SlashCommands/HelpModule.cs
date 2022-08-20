@@ -14,6 +14,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("help", "Displays help for all the commands")]
         public async Task Help([Summary("command-name", "Name of the command you want help for")] Commands commandSpecific = Commands.Default)
         {
+            await DeferAsync(ephemeral: true);
+
 #if DEBUG
             IReadOnlyCollection<SocketApplicationCommand> commandCollection = await Context.Guild.GetApplicationCommandsAsync();
 #else
@@ -68,7 +70,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
             }
 
-            await RespondAsync(embed: embed.Build(), ephemeral: true);
+            await FollowupAsync(embed: embed.Build(), ephemeral: true);
         }
     }
 }

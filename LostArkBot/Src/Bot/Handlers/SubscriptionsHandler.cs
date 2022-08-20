@@ -1,5 +1,4 @@
-﻿using Discord.Net;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Models.Enums;
 using LostArkBot.Src.Bot.SlashCommands;
@@ -8,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 
 namespace LostArkBot.Src.Bot.Handlers
 {
     public class SubscriptionsHandler
     {
-
         public static async Task Update(SocketMessageComponent component)
         {
             List<WanderingMerchantItemsEnum> newSubscribedItems = component.Data.Values.Select(x =>
@@ -47,8 +46,9 @@ namespace LostArkBot.Src.Bot.Handlers
             await JsonParsers.WriteMerchantsAsync(allUserSubs);
 
             string activeSubs = await SubscriptionsModule.GetActiveSubscriptionsStringAsync(user);
-            await component.RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
-
+            IMessage message = await component.FollowupAsync("auto-delete");
+            await message.DeleteAsync();
+            await component.FollowupAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
         }
     }
 }

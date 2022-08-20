@@ -17,11 +17,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("name", "Name for the Static Group")] string name,
             [Summary("character-name", "Name of your character")] string characterName)
         {
+            await DeferAsync();
+
             List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (staticGroups.Any(x => x.Name == name))
             {
-                await RespondAsync(text: "A static group with this name exists already.", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: "A static group with this name exists already.", ephemeral: true);
                 return;
             }
 
@@ -29,7 +33,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
-                await RespondAsync(text: "This character does not exist. Register it with **/register** before you create a static group", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: "This character does not exist. Register it with **/register** before you create a static group", ephemeral: true);
                 return;
             }
 
@@ -46,17 +52,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
             staticGroups.Add(staticGroup);
             await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
-            await RespondAsync(text: name + " got successfully registered");
+            await FollowupAsync(text: name + " got successfully registered");
         }
 
         [SlashCommand("delete", "Deletes a Static Group")]
         public async Task Delete([Summary("name", "Name of the Static Group")] string name)
         {
+            await DeferAsync(ephemeral: true);
+
             List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
-                await RespondAsync(text: "There is no static group with this name", ephemeral: true);
+                await FollowupAsync(text: "There is no static group with this name", ephemeral: true);
                 return;
             }
 
@@ -64,7 +72,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (Context.User.Id != staticGroup.LeaderId)
             {
-                await RespondAsync(text: "You are not the leader of the group and therefore can't delete it", ephemeral: true);
+                await FollowupAsync(text: "You are not the leader of the group and therefore can't delete it", ephemeral: true);
                 return;
             }
 
@@ -72,7 +80,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
-            await RespondAsync(text: name + " got successfully deleted", ephemeral: true);
+            await FollowupAsync(text: name + " got successfully deleted", ephemeral: true);
         }
 
         [SlashCommand("adduser", "Adds a user to a static group")]
@@ -80,11 +88,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("character-name", "Name of the character that you want to add")] string characterName,
             [Summary("group-name", "Name of the static group")] string name)
         {
+            await DeferAsync(ephemeral: true);
+
             List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
-                await RespondAsync(text: "This static group does not exist", ephemeral: true);
+                await FollowupAsync(text: "This static group does not exist", ephemeral: true);
                 return;
             }
 
@@ -92,13 +102,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (Context.User.Id != staticGroup.LeaderId)
             {
-                await RespondAsync(text: "You are not the leader of this static group and therefore can't add a user to it", ephemeral: true);
+                await FollowupAsync(text: "You are not the leader of this static group and therefore can't add a user to it", ephemeral: true);
                 return;
             }
 
             if (staticGroup.Players.Count == 8)
             {
-                await RespondAsync(text: "This static group has 8 players already", ephemeral: true);
+                await FollowupAsync(text: "This static group has 8 players already", ephemeral: true);
                 return;
             }
 
@@ -106,7 +116,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
-                await RespondAsync(text: "This character does not exist", ephemeral: true);
+                await FollowupAsync(text: "This character does not exist", ephemeral: true);
                 return;
             }
 
@@ -116,7 +126,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
-            await RespondAsync(text: characterName + " got succesfully added to the static group", ephemeral: true);
+            await FollowupAsync(text: characterName + " got succesfully added to the static group", ephemeral: true);
         }
 
         [SlashCommand("removeuser", "Removes a user from a static group")]
@@ -124,11 +134,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("character-name", "Name of the character that you want to remove")] string characterName,
             [Summary("group-name", "Name of the static group")] string name)
         {
+            await DeferAsync(ephemeral: true);
+
             List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
-                await RespondAsync(text: "This static group does not exist", ephemeral: true);
+                await FollowupAsync(text: "This static group does not exist", ephemeral: true);
                 return;
             }
 
@@ -136,7 +148,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (Context.User.Id != staticGroup.LeaderId)
             {
-                await RespondAsync(text: "You are not the leader of this static group and therefore can't remove a user from it", ephemeral: true);
+                await FollowupAsync(text: "You are not the leader of this static group and therefore can't remove a user from it", ephemeral: true);
                 return;
             }
 
@@ -144,7 +156,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
-                await RespondAsync(text: "This character does not exist", ephemeral: true);
+                await FollowupAsync(text: "This character does not exist", ephemeral: true);
                 return;
             }
 
@@ -154,12 +166,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await JsonParsers.WriteStaticGroupsAsync(staticGroups);
 
-            await RespondAsync(text: characterName + " got succesfully removed from the static group", ephemeral: true);
+            await FollowupAsync(text: characterName + " got succesfully removed from the static group", ephemeral: true);
         }
 
         [SlashCommand("list", "Displays all static groups")]
         public async Task List()
         {
+            await DeferAsync();
+
             List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             EmbedBuilder embed = new()
@@ -173,17 +187,21 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.Description += $"{staticGroup.Name} (Leader: {Context.Guild.GetUser(staticGroup.LeaderId).DisplayName})\n\n";
             }
 
-            await RespondAsync(embed: embed.Build());
+            await FollowupAsync(embed: embed.Build());
         }
 
         [SlashCommand("view", "View members of a specific static group")]
         public async Task View([Summary("group-name", "Name of the static group")] string name)
         {
+            await DeferAsync();
+
             List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
             if (!staticGroups.Any(x => x.Name == name))
             {
-                await RespondAsync(text: "There is no static group with this name", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: "There is no static group with this name", ephemeral: true);
                 return;
             }
 
@@ -200,7 +218,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.Description += player + "\n";
             }
 
-            await RespondAsync(embed: embed.Build());
+            await FollowupAsync(embed: embed.Build());
         }
     }
 }

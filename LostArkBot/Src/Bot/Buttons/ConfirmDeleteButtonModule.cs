@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
@@ -12,7 +10,7 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("confirmdeletebutton")]
         public async Task ConfirmDelete()
         {
-            await Context.Interaction.DeferAsync();
+            await DeferAsync();
 
             SocketThreadChannel threadChannel;
             IMessage lfgMessage;
@@ -41,13 +39,16 @@ namespace LostArkBot.Src.Bot.Buttons
             }
             await lfgMessage.DeleteAsync();
 
-            await Context.Interaction.ModifyOriginalResponseAsync(msg =>
+            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
+            {
+                return;
+            }
+
+            await ModifyOriginalResponseAsync(msg =>
             {
                 msg.Content = "Message deleted";
                 msg.Components = new ComponentBuilder().Build();
             });
-
-            return;
         }
     }
 }

@@ -11,6 +11,8 @@ namespace LostArkBot.Src.Bot.Handlers
     {
         public static async Task MenuHandler(SocketMessageComponent component)
         {
+            await component.DeferAsync();
+
             List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
             List<ManageUserModel> manageUserModels = Program.StaticObjects.ManageUserModels;
 

@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Net;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,6 +11,8 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("leavebutton")]
         public async Task Leave()
         {
+            await DeferAsync();
+
             Embed originalEmbed;
             SocketThreadChannel threadChannel;
             string userMention = Context.User.Mention;
@@ -79,27 +79,17 @@ namespace LostArkBot.Src.Bot.Buttons
                     ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
                     IUserMessage message = await textChannel.GetMessageAsync(threadChannel.Id) as IUserMessage;
                     await message.ModifyAsync(x => x.Embed = newEmbed.Build());
-
-                    try
-                    {
-                        await RespondAsync();
-                    }
-                    catch (HttpException exception)
-                    {
-                        await LogService.Log(LogSeverity.Info, GetType().Name, exception.Message);
-                    }
-
                 }
                 else
                 {
-                    await Context.Interaction.UpdateAsync(x => x.Embed = newEmbed.Build());
+                    await ModifyOriginalResponseAsync(x => x.Embed = newEmbed.Build());
                 }
 
                 await threadChannel.RemoveUserAsync(Context.User as IGuildUser);
             }
             else
             {
-                await RespondAsync(text: "You are not part of this event", ephemeral: true);
+                await FollowupAsync(text: "You are not part of this event", ephemeral: true);
             }
         }
     }

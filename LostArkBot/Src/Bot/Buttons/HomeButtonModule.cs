@@ -11,6 +11,8 @@ namespace LostArkBot.Src.Bot.Buttons
         [ComponentInteraction("homebutton")]
         public async Task Home()
         {
+            await DeferAsync();
+
             EmbedBuilder embed = new()
             {
                 Title = "Creating a LFG Event",
@@ -31,7 +33,7 @@ namespace LostArkBot.Src.Bot.Buttons
                 embed.Timestamp = Context.Interaction.Message.Embeds.First().Timestamp.Value;
             }
 
-            await Context.Interaction.UpdateAsync(x =>
+            await ModifyOriginalResponseAsync(x =>
             {
                 x.Embed = embed.Build();
                 x.Components = new ComponentBuilder().WithSelectMenu(Program.StaticObjects.HomeLfg).WithButton(Program.StaticObjects.DeleteButton).Build();

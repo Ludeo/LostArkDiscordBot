@@ -16,25 +16,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("list", "List of active merchant subscriptions")]
         public async Task Subscriptions()
         {
+            await DeferAsync(ephemeral: true);
             SocketUser user = Context.User;
             string activeSubs = await GetActiveSubscriptionsStringAsync(user);
-            await RespondAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
+            await FollowupAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
         }
 
         [SlashCommand("update", "Update subscription to selected merchant items")]
         public async Task Update()
         {
+            await DeferAsync();
             SocketUser user = Context.User;
             await UpdateMenuBuilder(user);
-            await RespondAsync("auto-delete");
-            await DeleteOriginalResponseAsync();
+            IMessage message = await FollowupAsync("auto-delete");
+            await message.DeleteAsync();
         }
 
         public static async Task UpdateMenuBuilder(SocketUser user)
         {
             SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("update").WithPlaceholder("Update subscription");
             UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
-
 
             foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
             {

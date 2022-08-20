@@ -21,20 +21,22 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("time", "Time of the LFG, must be server time and must have format: DD/MM hh:mm")] string time = "",
             [Summary("static-group", "Name of the static group")] string staticGroup = "")
         {
+            await DeferAsync(ephemeral: true);
+
             if (!string.IsNullOrEmpty(staticGroup))
             {
                 List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
 
                 if (!staticGroups.Any(x => x.Name == staticGroup))
                 {
-                    await RespondAsync(text: "The given static group doesn't exist", ephemeral: true);
+                    await FollowupAsync(text: "The given static group doesn't exist", ephemeral: true);
                     return;
                 }
             }
 
             if (Context.Channel.GetChannelType() == ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command can only be used in a text channel", ephemeral: true);
+                await FollowupAsync(text: "This command can only be used in a text channel", ephemeral: true);
                 return;
             }
 
@@ -70,15 +72,30 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
             }
 
-            await RespondAsync(text: staticGroup, embed: embed.Build(), components: component.Build());
+            await FollowupAsync(text: staticGroup, embed: embed.Build(), components: component.Build(), ephemeral: true);
         }
 
         [SlashCommand("adduser", "Adds a user to the lfg")]
         public async Task AddUser([Summary("character-name", "Name of the character that you want to add")] string characterName)
         {
+            await DeferAsync(ephemeral: true);
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                return;
+            }
+
+            SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
+            ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
+            IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
+            IUserMessage message = messageRaw as IUserMessage;
+
+            ulong authorId = ulong.Parse(messageRaw.Embeds.First().Author.Value.Name.Split("\n")[1]);
+
+            if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            {
+                await FollowupAsync(text: "You don't have permissions to delete this event!", ephemeral: true);
                 return;
             }
 
@@ -86,23 +103,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!characters.Any(x => x.CharacterName == characterName))
             {
-                await RespondAsync(text: "This character does not exist", ephemeral: true);
+                await FollowupAsync(text: "This character does not exist", ephemeral: true);
                 return;
             }
 
             Character character = characters.Find(x => x.CharacterName == characterName);
-
-            SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
-            ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
-            IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
-            IUserMessage message = messageRaw as IUserMessage;
-
             Embed originalEmbed = message.Embeds.First() as Embed;
             SocketGuildUser user = Context.Guild.GetUser(character.DiscordUserId);
 
             if (originalEmbed.Fields.Any(x => x.Value.Contains(user.Mention)))
             {
-                await RespondAsync(text: "This user is already part of the LFG", ephemeral: true);
+                await FollowupAsync(text: "This user is already part of the LFG", ephemeral: true);
                 return;
             }
 
@@ -141,16 +152,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await message.ModifyAsync(x => x.Embed = embed.Build());
             await threadChannel.AddUserAsync(user);
-            await RespondAsync(text: characterName + " got successfully added to the LFG", ephemeral: true);
+            await FollowupAsync(text: characterName + " got successfully added to the LFG", ephemeral: true);
         }
 
         [SlashCommand("calendar", "Download the event as .ics file for calendar import")]
         public async Task Calendar(
             [Summary("duration", "The duration of the event in hours")] int duration = 2)
         {
+            await DeferAsync(ephemeral: true);
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
@@ -173,7 +186,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(time))
             {
-                await RespondAsync(text: "This lfg doesn't have a time set", ephemeral: true);
+                await FollowupAsync(text: "This lfg doesn't have a time set", ephemeral: true);
             }
 
             long unixSeconds = long.Parse(time.Replace("<t:", "").Replace(":F>", ""));
@@ -188,16 +201,20 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 + "\nSUMMARY:" + summary + "\nEND:VEVENT\nEND:VCALENDAR";
 
             await File.WriteAllTextAsync("DateExport.ics", icsString);
-            await RespondWithFileAsync(fileStream: File.OpenRead(FileConfigurations.DateExportFile), fileName: FileConfigurations.DateExportFile, ephemeral: true);
+            await FollowupWithFileAsync(fileStream: File.OpenRead(FileConfigurations.DateExportFile), fileName: FileConfigurations.DateExportFile, ephemeral: true);
             File.Delete(FileConfigurations.DateExportFile);
         }
 
         [SlashCommand("controls", "Posts the buttons of the lfg")]
         public async Task Controls()
         {
+            await DeferAsync();
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command can only be executed in the thread channel of the lfg", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: "This command can only be executed in the thread channel of the lfg", ephemeral: true);
                 return;
             }
 
@@ -207,15 +224,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
                                                                 .WithButton(Program.StaticObjects.DeleteButton)
                                                                 .WithButton(Program.StaticObjects.StartButton);
 
-            await RespondAsync(components: components.Build());
+            await FollowupAsync(components: components.Build());
         }
 
         [SlashCommand("editmessage", "Edits the message of the LFG")]
         public async Task EditMessage([Summary("custom-message", "New custom message for the event")] string customMessage)
         {
+            await DeferAsync(ephemeral: true);
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
@@ -224,11 +243,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
             IUserMessage message = messageRaw as IUserMessage;
-            ulong authorId = message.Interaction.User.Id;
+            ulong authorId = ulong.Parse(message.Embeds.First().Author.Value.Name.Split("\n")[1]);
 
             if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
-                await RespondAsync(text: "Only the Author of the Event can change the custom message", ephemeral: true);
+                await FollowupAsync(text: "Only the Author of the Event can change the custom message", ephemeral: true);
 
                 return;
             }
@@ -267,15 +286,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             await message.ModifyAsync(x => x.Embed = newEmbed.Build());
-            await RespondAsync(text: "Custom Message updated", ephemeral: true);
+            await FollowupAsync(text: "Custom Message updated", ephemeral: true);
         }
 
         [SlashCommand("edittime", "Edits the time of the LFG")]
         public async Task EditTime([Summary("time", "New time of the LFG, must be server time and must have format: DD/MM hh:mm")] string time)
         {
+            await DeferAsync();
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
@@ -284,11 +307,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
             ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
             IUserMessage message = messageRaw as IUserMessage;
-            ulong authorId = message.Interaction.User.Id;
+            ulong authorId = ulong.Parse(message.Embeds.First().Author.Value.Name.Split("\n")[1]);
 
             if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
-                await RespondAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await FollowupAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
                 return;
             }
 
@@ -331,20 +356,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 await message.ModifyAsync(x => x.Embed = newEmbed.Build());
                 await Context.Channel.SendMessageAsync(text: "@everyone");
-                await RespondAsync(text: $"Time updated to: <t:{newDateTime.ToUnixTimeSeconds()}:F>");
+                await FollowupAsync(text: $"Time updated to: <t:{newDateTime.ToUnixTimeSeconds()}:F>");
 
                 return;
             }
 
-            await RespondAsync(text: "Wrong time format: Use dd/MM HH:mm", ephemeral: true);
+            IMessage deleteMessage2 = await FollowupAsync("auto-delete");
+            await deleteMessage2.DeleteAsync();
+            await FollowupAsync(text: "Wrong time format: Use dd/MM HH:mm", ephemeral: true);
         }
 
         [SlashCommand("roll", "Rolls a number for every player of the LFG")]
         public async Task Roll()
         {
+            await DeferAsync();
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
@@ -424,15 +455,19 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.Description += $"\nThe Winner of the Rolls is {highestNumberUser} with a roll of {highestNumber}";
             }
 
-            await RespondAsync(embed: embed.Build());
+            await FollowupAsync(embed: embed.Build());
         }
 
         [SlashCommand("when", "Shows the time of the lfg if set")]
         public async Task When()
         {
+            await DeferAsync();
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
@@ -455,6 +490,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (string.IsNullOrEmpty(timeField.Name))
             {
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
                 await RespondAsync(text: "This event doesn't have a time set", ephemeral: true);
 
                 return;
@@ -463,15 +500,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
             string time = timeField.Value.Split("\n")[0];
             long unixSeconds = long.Parse(time.Replace("<t:", "").Replace(":F>", ""));
 
-            await RespondAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's <t:{unixSeconds}:R>");
+            await FollowupAsync($"The event starts at <t:{unixSeconds}:F>\n\nThat's <t:{unixSeconds}:R>");
         }
 
         [SlashCommand("rename-thread", "Renames the thread of the LFG")]
         public async Task RenameThread([Summary("name", "New name for the thread")] string name)
         {
+            await DeferAsync(ephemeral: true);
+
             if (Context.Channel.GetChannelType() != ChannelType.PublicThread)
             {
-                await RespondAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
+                await FollowupAsync(text: "This command is only available in the thread of the lfg event", ephemeral: true);
 
                 return;
             }
@@ -480,16 +519,16 @@ namespace LostArkBot.Src.Bot.SlashCommands
             ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
             IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
             IUserMessage message = messageRaw as IUserMessage;
-            ulong authorId = message.Interaction.User.Id;
+            ulong authorId = ulong.Parse(message.Embeds.First().Author.Value.Name.Split("\n")[1]);
 
             if (Context.User.Id != authorId && !Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
             {
-                await RespondAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
+                await FollowupAsync(text: "Only the Author of the Event can change the time", ephemeral: true);
                 return;
             }
 
             await threadChannel.ModifyAsync(x => x.Name = name);
-            await RespondAsync(text: "Successfully renamed the name of the thread", ephemeral: true);
+            await FollowupAsync(text: "Successfully renamed the name of the thread", ephemeral: true);
         }
     }
 }

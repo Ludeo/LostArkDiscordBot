@@ -98,25 +98,19 @@ namespace LostArkBot.Src.Bot.FileObjects
                 { "Oreha Preveza [Hard]", "https://i.imgur.com/IgVX7pu.jpg" },
 
                 //Argos
-                { "Argos Phase 1", "https://i.imgur.com/dHak5ox.jpg" },
-                { "Argos Phase 2", "https://i.imgur.com/dHak5ox.jpg" },
-                { "Argos Phase 3", "https://i.imgur.com/dHak5ox.jpg" },
+                { "Argos Bus", "https://i.imgur.com/dHak5ox.jpg" },
+                { "Argos Split Carry", "https://i.imgur.com/dHak5ox.jpg" },
+                { "Argos P3", "https://i.imgur.com/dHak5ox.jpg" },
 
                 //Valtan
-                { "Valtan Gate 1 [Normal]", "https://i.imgur.com/lWGHAxj.png" },
-                { "Valtan Gate 2 [Normal]", "https://i.imgur.com/lWGHAxj.png" },
-                { "Valtan Gate 1 [Hard]", "https://i.imgur.com/lWGHAxj.png" },
-                { "Valtan Gate 2 [Hard]", "https://i.imgur.com/lWGHAxj.png" },
+                { "Valtan Bus [Normal]", "https://i.imgur.com/lWGHAxj.png" },
+                { "Valtan Bus [Hard]", "https://i.imgur.com/lWGHAxj.png" },
                 { "Valtan Full [Normal]", "https://i.imgur.com/lWGHAxj.png" },
                 { "Valtan Full [Hard]", "https://i.imgur.com/lWGHAxj.png" },
 
                 //Vykas
-                { "Vykas Gate 1 [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
-                { "Vykas Gate 2 [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
-                { "Vykas Gate 3 [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
-                { "Vykas Gate 1 [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
-                { "Vykas Gate 2 [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
-                { "Vykas Gate 3 [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Bus [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
+                { "Vykas Bus [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
                 { "Vykas Full [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
                 { "Vykas Full [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
 
@@ -142,7 +136,6 @@ namespace LostArkBot.Src.Bot.FileObjects
                 { "Coop Battle", "https://i.imgur.com/tvvlWbS.jpg" },
 
                 //Guild Siege
-                { "Guild Siege", "https://i.imgur.com/tvvlWbS.jpg" },
                 { "Snowpang Island", "https://assets.maxroll.gg/wordpress/Islands-island_snowpang_2.jpg" },
                 { "Naruni Island", "https://assets.maxroll.gg/wordpress/Islands-island_naruni.jpg" },
                 { "Death's Hold Island", "https://assets.maxroll.gg/wordpress/Islands-island_deaths_hold.jpg" },

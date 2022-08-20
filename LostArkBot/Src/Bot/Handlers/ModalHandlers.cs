@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Interactions;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
@@ -14,6 +13,8 @@ namespace LostArkBot.Src.Bot.Handlers
     {
         public static async Task ModalHandler(SocketModal modal)
         {
+            await modal.DeferAsync();
+
             if (modal.Data.CustomId[..3] == "eng")
             {
                 IEnumerable<string> nonEmptyEngravings = modal.Data.Components.ToList().FindAll(x => x.Value.Trim() != "").Select(x => x.Value.ToTitleCase());
@@ -23,7 +24,9 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 if (character == null)
                 {
-                    await modal.RespondAsync($"No character named {character.CharacterName} was found", ephemeral: true);
+                    IMessage message = await modal.FollowupAsync("auto-delete");
+                    await message.DeleteAsync();
+                    await modal.FollowupAsync($"No character named {character.CharacterName} was found", ephemeral: true);
                     return;
                 }
 
@@ -35,7 +38,7 @@ namespace LostArkBot.Src.Bot.Handlers
                     return user;
                 });
 
-                await modal.RespondAsync(embed: embedBuilder.Build());
+                await modal.FollowupAsync(embed: embedBuilder.Build());
             }
         }
     }

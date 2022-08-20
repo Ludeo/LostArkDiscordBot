@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
@@ -17,9 +16,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("edit-challenge-guardian", "Edits the list of current challenge guardians")]
         public async Task EditChallengeGuardian([Summary("name", "Name of the guardian")] string guardianName)
         {
+            await DeferAsync(ephemeral: true);
+
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages || Context.Guild.Id != Config.Default.Server)
             {
-                await RespondAsync(text: "You don't have permission to execute this command", ephemeral: true);
+                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
                 return;
             }
 
@@ -39,13 +40,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 new MenuBuilderOption(challengeNames.ChallengeGuardian[0], challengeNames.ChallengeGuardian[0]),
                 new MenuBuilderOption(challengeNames.ChallengeGuardian[1], challengeNames.ChallengeGuardian[1]),
                 new MenuBuilderOption(challengeNames.ChallengeGuardian[2], challengeNames.ChallengeGuardian[2]),
+                new MenuBuilderOption("All 3 Guardians", "All 3 Guardians"),
             };
 
             lfgModels.Remove(oldModel);
             lfgModels.Add(newModel);
             Program.StaticObjects.LfgModels = lfgModels;
 
-            await RespondAsync(text: "Challenge Guardians updated!", ephemeral: true);
+            await FollowupAsync(text: "Challenge Guardians updated!", ephemeral: true);
         }
 
         [SlashCommand("edit-challenge-abyss", "Edits the list of current challenge abyss dungeons")]
@@ -53,9 +55,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("first", "Name of the first abyss dungeon")] string firstAbyssName,
             [Summary("second", "Name of the second abyss dungeon")] string secondAbyssName)
         {
+            await DeferAsync(ephemeral: true);
+
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages || Context.Guild.Id != Config.Default.Server)
             {
-                await RespondAsync(text: "You don't have permission to execute this command", ephemeral: true);
+                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
                 return;
             }
 
@@ -78,21 +82,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 new MenuBuilderOption(challengeNames.ChallengeAbyss[0], challengeNames.ChallengeAbyss[0]),
                 new MenuBuilderOption(challengeNames.ChallengeAbyss[1], challengeNames.ChallengeAbyss[1]),
+                new MenuBuilderOption("Both Abysses", "Both Abysses"),
             };
 
             lfgModels.Remove(oldModel);
             lfgModels.Add(newModel);
             Program.StaticObjects.LfgModels = lfgModels;
 
-            await RespondAsync(text: "Challenge Abyss updated!", ephemeral: true);
+            await FollowupAsync(text: "Challenge Abyss updated!", ephemeral: true);
         }
 
         [SlashCommand("pick-random-member", "Randomly picks one of the guildmates")]
         public async Task PickRandomMember()
         {
+            await FollowupAsync();
+
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages || Context.Guild.Id != Config.Default.Server)
             {
-                await RespondAsync(text: "You don't have permission to execute this command", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
                 return;
             }
 
@@ -112,16 +121,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             IGuildUser winner = guildMembers[Program.Random.Next(guildMembers.Count)];
 
-            await RespondAsync(text: $"Winner out of {guildMembers.Count} guild members: {winner.Mention}\n**Congratulations!!!!!!!!!!!!!**");
+            await FollowupAsync(text: $"Winner out of {guildMembers.Count} guild members: {winner.Mention}\n**Congratulations!!!!!!!!!!!!!**");
             await Context.Channel.SendMessageAsync(text: $"<@&{roleId}>");
         }
 
         [SlashCommand("set-as-merchant-channel", "Select THIS channel to post merchant items")]
         public async Task SetMerchantChannel()
         {
+            await DeferAsync(ephemeral: true);
+
             if (Context.User.Id != Config.Default.Admin)
             {
-                await RespondAsync(text: "You don't have permission to execute this command", ephemeral: true);
+                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
                 return;
             }
 
@@ -131,7 +142,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             Program.ReinitializeScheduledTasks();
 
-            await RespondAsync(text: $"Channel {Program.MerchantChannel.Name} is now a merchant channel");
+            await FollowupAsync(text: $"Channel {Program.MerchantChannel.Name} is now a merchant channel", ephemeral: true);
         }
     }
 }

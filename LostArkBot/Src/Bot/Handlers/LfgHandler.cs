@@ -30,7 +30,7 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 embed.Title = $"{model.Title} {component.Data.Values.First()} (0/{model.Players})";
                 embed.Author = new EmbedAuthorBuilder()
-                             .WithName($"Party Leader: {user.DisplayName}")
+                             .WithName($"Party Leader: {user.DisplayName}\n{user.Id}")
                              .WithIconUrl(user.GetAvatarUrl());
                 embed.Description = "Waiting for players to join...";
                 embed.ImageUrl = Program.StaticObjects.EventImages[component.Data.Values.First()];
@@ -85,9 +85,17 @@ namespace LostArkBot.Src.Bot.Handlers
                 .WithButton(Program.StaticObjects.DeleteButton)
                 .WithButton(Program.StaticObjects.StartButton);
 
-                IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: component.Message);
-                await threadChannel.ModifyAsync(x => x.AutoArchiveDuration = ThreadArchiveDuration.OneWeek);
+                await component.ModifyOriginalResponseAsync(x =>
+                {
+                    x.Content = "LFG successfully created";
+                    x.Components = new ComponentBuilder().Build();
+                    x.Embeds = null;
+                });
 
+                IMessage endMessage = await component.FollowupAsync(embed: embed.Build(), components: componentBuilder.Build());
+
+                IThreadChannel threadChannel = await textChannel.CreateThreadAsync(name: component.Data.Values.First(), message: endMessage);
+                await threadChannel.ModifyAsync(x => x.AutoArchiveDuration = ThreadArchiveDuration.OneWeek);
                 await threadChannel.SendMessageAsync(text: "\uFEFF \uFEFF ", components: componentBuilder.Build());
             }
             else
@@ -112,15 +120,15 @@ namespace LostArkBot.Src.Bot.Handlers
                     menuBuilder.AddOption(new SelectMenuOptionBuilder().WithLabel(option.Label).WithValue(option.Value).WithDescription(option.Description));
                 }
 
-                componentBuilder.WithSelectMenu(menuBuilder).WithButton(Program.StaticObjects.HomeButton).WithButton(Program.StaticObjects.DeleteButton);
-            }
+                componentBuilder.WithSelectMenu(menuBuilder).WithButton(Program.StaticObjects.HomeButton);
 
-            await component.UpdateAsync(x =>
-            {
-                x.Embed = embed.Build();
-                x.Components = componentBuilder.Build();
-                x.Content = model.IsEnd ? string.Empty : component.Message.Content;
-            });
+                await component.ModifyOriginalResponseAsync(x =>
+                {
+                    x.Embed = embed.Build();
+                    x.Components = componentBuilder.Build();
+                    x.Content = model.IsEnd ? string.Empty : component.Message.Content;
+                });
+            }
         }
     }
 }

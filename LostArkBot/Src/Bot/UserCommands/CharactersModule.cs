@@ -13,13 +13,15 @@ namespace LostArkBot.Src.Bot.UserCommands
         [UserCommand("characters")]
         public async Task AccountUserCommand(IUser user)
         {
+            await DeferAsync(ephemeral: true);
+
             ulong userId = user.Id;
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)
             {
-                await RespondAsync(text: "This user doesn't have any characters registered", ephemeral: true);
+                await FollowupAsync(text: "This user doesn't have any characters registered", ephemeral: true);
 
                 return;
             }
@@ -46,7 +48,7 @@ namespace LostArkBot.Src.Bot.UserCommands
                 });
             }
 
-            await RespondAsync(embed: embed.Build(), ephemeral: true);
+            await FollowupAsync(embed: embed.Build(), ephemeral: true);
         }
     }
 }

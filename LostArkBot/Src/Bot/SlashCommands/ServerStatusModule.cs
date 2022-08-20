@@ -14,6 +14,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("serverstatus", "Shows the current status of the Wei server")]
         public async Task ServerStatus()
         {
+            await DeferAsync();
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://lastarkapi-m2.herokuapp.com/server/Wei");
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream receiveStream = response.GetResponseStream();
@@ -47,7 +49,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.Color = Color.DarkRed;
             }
 
-            await RespondAsync(embed: embed.Build());
+            await FollowupAsync(embed: embed.Build());
         }
     }
 }

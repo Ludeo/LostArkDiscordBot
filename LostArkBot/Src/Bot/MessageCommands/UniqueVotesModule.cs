@@ -57,7 +57,7 @@ namespace LostArkBot.Src.Bot.MessageCommands
                 allUserString = $"{uniqueUsers.Count} unique users reacted to this message:\n{allUserString}";
             }
 
-            await FollowupAsync(text: allUserString);
+            await FollowupAsync(text: allUserString, ephemeral: true);
         }
     }
 }

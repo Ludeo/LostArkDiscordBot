@@ -50,26 +50,28 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("reconnect-merchant", "Re-connects to lostmerchants and starts posting merchant locations when available")]
         public async Task ReconnectMerchantChannel()
         {
+            await DeferAsync(ephemeral: true);
+
             if (Context.User.Id != Config.Default.Admin)
             {
-                await RespondAsync(text: "You don't have permission to use this command", ephemeral: true);
+                await FollowupAsync(text: "You don't have permission to use this command", ephemeral: true);
                 return;
             }
 
             if (Config.Default.MerchantChannel == 0 || textChannel == null)
             {
-                await RespondAsync(text: "Merchant channel not set. Use /set-as-merchant-channel first", ephemeral: true);
+                await FollowupAsync(text: "Merchant channel not set. Use /set-as-merchant-channel first", ephemeral: true);
                 return;
             }
 
             if (Context.Channel.Id != Config.Default.MerchantChannel)
             {
-                await RespondAsync(text: "This is not the merchant channel", ephemeral: true);
+                await FollowupAsync(text: "This is not the merchant channel", ephemeral: true);
                 return;
             }
 
             await StartMerchantChannel();
-            await RespondAsync("Sucess", ephemeral: true);
+            await FollowupAsync("Sucess", ephemeral: true);
         }
 
         public async Task StartMerchantChannel()

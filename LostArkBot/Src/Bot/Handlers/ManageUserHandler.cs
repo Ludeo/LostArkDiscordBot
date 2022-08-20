@@ -84,8 +84,6 @@ namespace LostArkBot.Src.Bot.Handlers
 
             if (model.Action == ManageAction.Join)
             {
-                await component.DeferAsync();
-
                 foreach (EmbedField field in embedFields)
                 {
                     if (field.Value.Contains(component.User.Mention))
@@ -150,8 +148,6 @@ namespace LostArkBot.Src.Bot.Handlers
 
             else if (model.Action == ManageAction.Kick)
             {
-                await component.DeferAsync();
-
                 foreach (EmbedField field in embedFields)
                 {
                     if (field.Name.ToLower().Trim() == characterName.ToLower())

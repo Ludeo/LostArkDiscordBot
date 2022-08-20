@@ -10,6 +10,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("localtime", "Shows the given server time in your local time")]
         public async Task LocalTime([Summary("server-time", "Server time, Format: HH:mm (24h)")] string serverTime)
         {
+            await DeferAsync();
+
             int hour = int.Parse(serverTime[..2]);
             int minute = int.Parse(serverTime.Substring(3, 2));
 
@@ -23,7 +25,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             string formatedServerTime = dateTimeOffset.ToString("HH:mm");
 
-            await RespondAsync(text: $"Server time: {formatedServerTime}\nLocal time: <t:{dateTimeOffset.ToUnixTimeSeconds()}:t>\n<t:{dateTimeOffset.ToUnixTimeSeconds()}:R>");
+            await FollowupAsync(text: $"Server time: {formatedServerTime}\nLocal time: <t:{dateTimeOffset.ToUnixTimeSeconds()}:t>\n<t:{dateTimeOffset.ToUnixTimeSeconds()}:R>");
         }
     }
 }

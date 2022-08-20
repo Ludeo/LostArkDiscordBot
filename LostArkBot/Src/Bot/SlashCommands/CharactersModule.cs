@@ -17,13 +17,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("list", "Shows all of your registered characters")]
         public async Task List()
         {
+            await DeferAsync(ephemeral: true);
+
             ulong userId = Context.User.Id;
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
 
             if (characters.Count == 0)
             {
-                await RespondAsync(text: "You don't have any characters registered. You can register a character with **/register**", ephemeral: true);
+                await FollowupAsync(text: "You don't have any characters added. You can add a character with **/characters add**", ephemeral: true);
 
                 return;
             }
@@ -50,7 +52,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 });
             }
 
-            await RespondAsync(embed: embed.Build(), ephemeral: true);
+            await FollowupAsync(embed: embed.Build(), ephemeral: true);
         }
 
         [SlashCommand("add", "Adds a new character to your character list")]
@@ -68,13 +70,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("profile-picture", "Link for a profile picture")] string profilePicture = "",
             [Summary("custom-profile-message", "Custom message for your profile")] string customMessage = "")
         {
+            await DeferAsync();
+
             characterName = characterName.ToTitleCase();
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character oldCharacter = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
 
             if (oldCharacter is not null)
             {
-                await RespondAsync(text: $"{characterName} is already added. You can update it with **/update**", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: $"{characterName} exists already. You can update it with **/characters update**", ephemeral: true);
                 return;
             }
 
@@ -128,7 +134,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embedBuilder.AddField("Custom Message", customMessage);
             }
 
-            await RespondAsync(text: $"{characterName} got successfully registered", embed: embedBuilder.Build());
+            await FollowupAsync(text: $"{characterName} got successfully registered", embed: embedBuilder.Build());
         }
 
         [SlashCommand("update", "Updates the given character")]
@@ -146,6 +152,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
             [Summary("profile-picture", "Link for a profile picture")] string profilePicture = "",
             [Summary("custom-profile-message", "Custom message for your profile")] string customMessage = "")
         {
+            await DeferAsync();
+
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             ulong discordUserId = Context.User.Id;
             characterName = characterName.ToTitleCase();
@@ -157,14 +165,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 if (oldCharacter.DiscordUserId != discordUserId)
                 {
-                    await RespondAsync(text: $"You don't have permissions to update {characterName}", ephemeral: true);
+                    IMessage message = await FollowupAsync("auto-delete");
+                    await message.DeleteAsync();
+                    await FollowupAsync(text: $"You don't have permissions to update {characterName}", ephemeral: true);
 
                     return;
                 }
             }
             else
             {
-                await RespondAsync(text: $"{characterName} is not registered. You can register it with **/register**", ephemeral: true);
+                IMessage message = await FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await FollowupAsync(text: $"{characterName} doesn't exist. You can add it with **/characters add**", ephemeral: true);
 
                 return;
             }
@@ -253,19 +265,21 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embedBuilder.AddField("Custom Message", newCharacter.CustomProfileMessage);
             }
 
-            await RespondAsync(text: $"{characterName} got successfully updated", embed: embedBuilder.Build());
+            await FollowupAsync(text: $"{characterName} got successfully updated", embed: embedBuilder.Build());
         }
 
         [SlashCommand("remove", "Removes the given character from your character list")]
         public async Task Remove([Summary("character-name", "Name of the character you want to remove")] string characterName)
         {
+            await DeferAsync(ephemeral: true);
+
             ulong userId = Context.User.Id;
             List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             Character character = characterList.Find(x => x.DiscordUserId == userId && x.CharacterName == characterName);
 
             if (character is null)
             {
-                await RespondAsync(text: $"{characterName} is not registered or it doesn't belong to you", ephemeral: true);
+                await FollowupAsync(text: $"{characterName} doesn't exist or it doesn't belong to you", ephemeral: true);
 
                 return;
             }
@@ -274,18 +288,25 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             await JsonParsers.WriteCharactersAsync(characterList);
 
-            await RespondAsync(text: $"{characterName} has been successfully deleted", ephemeral: true);
+            await FollowupAsync(text: $"{characterName} has been successfully deleted", ephemeral: true);
         }
 
         [SlashCommand("profile", "Shows the profile of the given character")]
         public async Task Profile([Summary("character-name", "Name of the character")] string characterName)
         {
+            await DeferAsync();
+
             EmbedBuilder embedBuilder = await CreateEmbedAsync(characterName, (character) =>
             {
                 return Context.Guild.GetUser(character.DiscordUserId);
             });
 
-            await RespondAsync(embed: embedBuilder.Build());
+            if(embedBuilder is null)
+            {
+                return;
+            }
+
+            await FollowupAsync(embed: embedBuilder.Build());
         }
 
         public async Task<EmbedBuilder> CreateEmbedAsync(string characterName, Func<Character, SocketGuildUser> getUser)
@@ -296,7 +317,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (character is null)
             {
-                await RespondAsync(text: $"{characterName} is not registered. You can register a character with **/register**", ephemeral: true);
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await FollowupAsync(text: $"{characterName} doesn't exist. You can add it with **/characters add**", ephemeral: true);
                 return null;
             }
 
@@ -336,10 +359,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public async Task Engravings([Summary("character-name", "Name of the character")] string characterName)
         {
             characterName = characterName.ToTitleCase();
-
-            var chars = await JsonParsers.GetCharactersFromJsonAsync();
-
-            var selectedChar = chars.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+            List<Character> chars = await JsonParsers.GetCharactersFromJsonAsync();
+            Character selectedChar = chars.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
 
             if (selectedChar == null)
             {
@@ -347,28 +368,28 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            var engString = Utils.ParseEngravings(selectedChar.Engravings);
+            string engString = Utils.ParseEngravings(selectedChar.Engravings);
             List<string> splitEngravings = engString.Split(",").ToList();
 
-            var input1 = new TextInputBuilder().WithCustomId("eng1").WithLabel("Engraving 1").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
-            var input2 = new TextInputBuilder().WithCustomId("eng2").WithLabel("Engraving 2").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
-            var input3 = new TextInputBuilder().WithCustomId("eng3").WithLabel("Engraving 3").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
-            var input4 = new TextInputBuilder().WithCustomId("eng4").WithLabel("Engraving 4").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
-            var input5 = new TextInputBuilder().WithCustomId("eng5").WithLabel("Engraving 5").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            TextInputBuilder input1 = new TextInputBuilder().WithCustomId("eng1").WithLabel("Engraving 1").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            TextInputBuilder input2 = new TextInputBuilder().WithCustomId("eng2").WithLabel("Engraving 2").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            TextInputBuilder input3 = new TextInputBuilder().WithCustomId("eng3").WithLabel("Engraving 3").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            TextInputBuilder input4 = new TextInputBuilder().WithCustomId("eng4").WithLabel("Engraving 4").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
+            TextInputBuilder input5 = new TextInputBuilder().WithCustomId("eng5").WithLabel("Engraving 5").WithPlaceholder("e.g. Grudge 3").WithRequired(false).WithMaxLength(100);
 
-            var inputBuilders = new List<TextInputBuilder>() { input1, input2, input3, input4, input5 };
+            List<TextInputBuilder> inputBuilders = new() { input1, input2, input3, input4, input5 };
 
             for (int i = 0; i < splitEngravings.Count; i++)
             {
-                var eng = splitEngravings[i];
-                var input = inputBuilders.Find(x => x.CustomId[3..] == (i + 1).ToString());
+                string eng = splitEngravings[i];
+                TextInputBuilder input = inputBuilders.Find(x => x.CustomId[3..] == (i + 1).ToString());
                 input = input.WithValue(eng);
             }
 
             List<IMessageComponent> inputs = new();
             inputBuilders.ForEach(inp => inputs.Add(inp.Build()));
 
-            var modal = new ModalBuilder()
+            Modal modal = new ModalBuilder()
                 .WithCustomId($"eng:{characterName}")
                 .WithTitle($"{characterName}'s Engravings")
                 .AddTextInput(inputBuilders[0])

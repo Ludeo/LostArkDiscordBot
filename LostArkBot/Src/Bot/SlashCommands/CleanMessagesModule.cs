@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
         [SlashCommand("clean", "Delete messages in channel (Admin) or DMs")]
         public async Task CleanMessages([Summary("number", "Number of messages to delete")] int numberOfMessages = 1)
         {
+            await DeferAsync(ephemeral: true);
 
             if (Context.Interaction.Channel.GetChannelType() != ChannelType.DM)
             {
                 if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
                 {
-                    await RespondAsync("This command can only be used outside of DMs by admins", ephemeral: true);
+                    await FollowupAsync("This command can only be used outside of DMs by admins", ephemeral: true);
                     return;
                 }
             }
@@ -32,7 +34,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 await RespondAsync("Nothing found to delete.", ephemeral: true);
                 return;
             }
-
 
             if (newerMessages.ToList().Count != 0)
             {
@@ -52,7 +53,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    await LogService.Log(LogSeverity.Error, GetType().Name, e.ToString());
                 }
             }
 
@@ -66,12 +67,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        await LogService.Log(LogSeverity.Error, GetType().Name, e.ToString());
                     }
                 });
             }
 
-            await RespondAsync("Messages deleted", ephemeral: true);
+            await FollowupAsync("Messages deleted", ephemeral: true);
         }
     }
 }
