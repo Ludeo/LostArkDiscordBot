@@ -14,6 +14,7 @@ using LostArkBot.Src.Bot.QuartzJobs;
 using LostArkBot.Src.Bot.Shared;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using LostArkBot.Src.Bot.SlashCommands;
+using LostArkBot.databasemodels;
 
 namespace LostArkBot
 {
@@ -127,6 +128,7 @@ namespace LostArkBot
                                                        .AddSingleton(new DiscordSocketClient(BuildDiscordSocketConfig()))
                                                        .AddSingleton<InteractionService>()
                                                        .AddSingleton<CommandHandlingService>()
+                                                       .AddSingleton(new LostArkBotContext())
                                                        .BuildServiceProvider();
     }
 }
