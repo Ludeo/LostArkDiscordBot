@@ -1,8 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects.LostMerchants;
-using LostArkBot.Src.Bot.Shared;
+using LostArkBot.databasemodels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +11,13 @@ namespace LostArkBot.Src.Bot.Buttons
 {
     public class RefreshVotesButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public RefreshVotesButtonModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
         [ComponentInteraction("refresh:*,*")]
         public async Task RefreshVotes(string merchantId, long expiryDateUnix)
         {
@@ -26,10 +32,10 @@ namespace LostArkBot.Src.Bot.Buttons
                 return;
             }
 
-            List<Merchant> activeMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+            List<ActiveMerchant> activeMerchants = dbcontext.ActiveMerchants.ToList();
             var merchantToRefresh = activeMerchants.Find(merchant =>
             {
-                return merchant.Id == merchantId;
+                return merchant.MerchantId == merchantId;
             });
 
             if (merchantToRefresh == null)

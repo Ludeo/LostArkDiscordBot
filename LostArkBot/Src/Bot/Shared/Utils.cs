@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Discord;
+using Discord.WebSocket;
+using LostArkBot.databasemodels;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -112,6 +115,48 @@ namespace LostArkBot.Src.Bot.Shared
             }
 
             return dtParsed;
+        }
+
+        public static EmbedBuilder CreateProfileEmbed(string characterName, LostArkBotContext dbcontext, Func<Character, SocketGuildUser> getUser)
+        {
+            characterName = characterName.ToTitleCase();
+            Character character = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).FirstOrDefault();
+
+            if (character is null)
+            {
+                return null;
+            }
+
+            EmbedBuilder embedBuilder = new()
+            {
+                Title = $"Profile of {characterName}",
+                ThumbnailUrl = character.ProfilePicture == string.Empty
+                    ? getUser(character).GetAvatarUrl()
+                    : character.ProfilePicture,
+                Color = new Color(222, 73, 227),
+            };
+
+            embedBuilder.AddField("Item Level", character.ItemLevel, true);
+            embedBuilder.AddField("Class", character.ClassName, true);
+
+            string[] engravings = character.Engravings.Split(",");
+            string engraving = "\u200b";
+
+            foreach (string x in engravings)
+            {
+                engraving += x + "\n";
+            }
+
+            embedBuilder.AddField("Engravings", engraving, true);
+            embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
+            embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
+
+            if (character.CustomProfileMessage != string.Empty)
+            {
+                embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
+            }
+
+            return embedBuilder;
         }
     }
 }

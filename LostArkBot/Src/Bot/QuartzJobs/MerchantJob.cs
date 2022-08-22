@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
 using LostArkBot.Src.Bot.Shared;
 using Quartz;
@@ -12,6 +13,13 @@ namespace LostArkBot.Src.Bot.QuartzJobs
 {
     public class MerchantJob : IJob
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public MerchantJob(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
         public async Task Execute(IJobExecutionContext context)
         {
             await LogService.Log(LogSeverity.Info, GetType().Name, "Executing Quartz job");
@@ -24,7 +32,8 @@ namespace LostArkBot.Src.Bot.QuartzJobs
 
             await textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
 
-            await JsonParsers.WriteActiveMerchantsAsync(new List<Merchant>());
+            dbcontext.ActiveMerchants.RemoveRange(dbcontext.ActiveMerchants);
+            await dbcontext.SaveChangesAsync();
 
             Program.MerchantMessages = new List<MerchantMessage>();
         }

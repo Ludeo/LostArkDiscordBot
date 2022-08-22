@@ -1,9 +1,11 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Shared;
-using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,14 +16,20 @@ namespace LostArkBot.Src.Bot.SlashCommands
     [Group("characters", "Commands to manage your characters")]
     public class CharactersModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public CharactersModule(LostArkBotContext context)
+        {
+            dbcontext = context;
+        }
+
         [SlashCommand("list", "Shows all of your registered characters")]
         public async Task List()
         {
             await DeferAsync(ephemeral: true);
 
             ulong userId = Context.User.Id;
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-            List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
+            List<Character> characters = dbcontext.Characters.Where(x => x.User.DiscordUserId == userId).ToList();
 
             if (characters.Count == 0)
             {
@@ -73,8 +81,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await DeferAsync();
 
             characterName = characterName.ToTitleCase();
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-            Character oldCharacter = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+            Character oldCharacter = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).FirstOrDefault();
 
             if (oldCharacter is not null)
             {
@@ -84,9 +91,20 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
+            User user = dbcontext.Users.Where(x => x.DiscordUserId == Context.User.Id).FirstOrDefault();
+
+            if (user is null)
+            {
+                EntityEntry<User> userEntry = dbcontext.Users.Add(new User { 
+                    DiscordUserId = Context.User.Id,
+                });
+
+                await dbcontext.SaveChangesAsync();
+                user = userEntry.Entity;
+            }
+
             Character newCharacter = new()
             {
-                DiscordUserId = Context.User.Id,
                 CharacterName = characterName,
                 ClassName = className.ToString(),
                 ItemLevel = itemLevel,
@@ -99,6 +117,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 Exp = exp,
                 CustomProfileMessage = customMessage,
                 ProfilePicture = profilePicture,
+                UserId = user.Id,
             };
 
             if (!string.IsNullOrEmpty(newCharacter.Engravings))
@@ -106,13 +125,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 newCharacter.Engravings = Utils.ParseEngravings(engravings);
             }
 
-            characterList.Add(newCharacter);
-            await JsonParsers.WriteCharactersAsync(characterList);
+            dbcontext.Characters.Add(newCharacter);
+            await dbcontext.SaveChangesAsync();
 
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {characterName}",
-                ThumbnailUrl = profilePicture == string.Empty ? Context.Guild.GetUser(newCharacter.DiscordUserId).GetAvatarUrl() : profilePicture,
+                ThumbnailUrl = profilePicture == string.Empty ? Context.Guild.GetUser(Context.User.Id).GetAvatarUrl() : profilePicture,
                 Color = new Color(222, 73, 227),
             };
 
@@ -154,16 +173,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync();
 
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
             ulong discordUserId = Context.User.Id;
             characterName = characterName.ToTitleCase();
 
-            Character oldCharacter = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
-            Character newCharacter = oldCharacter;
+            Character character = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).Include(x => x.User).FirstOrDefault();
 
-            if (oldCharacter is not null)
+            if (character is not null)
             {
-                if (oldCharacter.DiscordUserId != discordUserId)
+                if (character.User.DiscordUserId != discordUserId)
                 {
                     IMessage message = await FollowupAsync("auto-delete");
                     await message.DeleteAsync();
@@ -183,86 +200,85 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (className is not ClassName.Default)
             {
-                newCharacter.ClassName = className.ToString();
+                character.ClassName = className.ToString();
             }
 
             if (itemLevel is not 0)
             {
-                newCharacter.ItemLevel = itemLevel;
+                character.ItemLevel = itemLevel;
             }
 
             if (!string.IsNullOrEmpty(engravings))
             {
-                newCharacter.Engravings = Utils.ParseEngravings(engravings);
+                character.Engravings = Utils.ParseEngravings(engravings);
             }
 
             if (crit is not -1)
             {
-                newCharacter.Crit = crit;
+                character.Crit = crit;
             }
 
             if (spec is not -1)
             {
-                newCharacter.Spec = spec;
+                character.Spec = spec;
             }
 
             if (dom is not -1)
             {
-                newCharacter.Dom = dom;
+                character.Dom = dom;
             }
 
             if (swift is not -1)
             {
-                newCharacter.Swift = swift;
+                character.Swift = swift;
             }
 
             if (end is not -1)
             {
-                newCharacter.End = end;
+                character.End = end;
             }
 
             if (exp is not -1)
             {
-                newCharacter.Exp = exp;
+                character.Exp = exp;
             }
 
             if (!string.IsNullOrEmpty(profilePicture))
             {
-                newCharacter.ProfilePicture = profilePicture;
+                character.ProfilePicture = profilePicture;
             }
 
             if (!string.IsNullOrEmpty(customMessage))
             {
-                newCharacter.CustomProfileMessage = customMessage;
+                character.CustomProfileMessage = customMessage;
             }
 
-            characterList.Add(newCharacter);
-            characterList.Remove(oldCharacter);
-            await JsonParsers.WriteCharactersAsync(characterList);
+            dbcontext.Characters.Update(character);
+            await dbcontext.SaveChangesAsync();
 
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {characterName}",
-                ThumbnailUrl = profilePicture == string.Empty ? Context.Guild.GetUser(newCharacter.DiscordUserId).GetAvatarUrl() : profilePicture,
+                ThumbnailUrl = profilePicture == string.Empty ? Context.Guild.GetUser(character.User.DiscordUserId).GetAvatarUrl() : profilePicture,
                 Color = new Color(222, 73, 227),
             };
 
-            embedBuilder.AddField("Item Level", newCharacter.ItemLevel, true);
-            embedBuilder.AddField("Class", newCharacter.ClassName, true);
+            embedBuilder.AddField("Item Level", character.ItemLevel, true);
+            embedBuilder.AddField("Class", character.ClassName, true);
 
             string engravingsString = "\u200b";
-            foreach (string x in newCharacter.Engravings.Split(","))
+            foreach (string x in character.Engravings.Split(","))
             {
                 engravingsString += x + "\n";
             }
 
             embedBuilder.AddField("Engravings", engravingsString, true);
-            embedBuilder.AddField("Stats", $"Crit: {newCharacter.Crit}\nSpec: {newCharacter.Spec}\nDom: {newCharacter.Dom}", true);
-            embedBuilder.AddField("\u200b", $"Swift: {newCharacter.Swift}\nEnd: {newCharacter.End}\nExp: {newCharacter.Exp}", true);
+            embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
+            embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
 
-            if (newCharacter.CustomProfileMessage != string.Empty)
+            if (character.CustomProfileMessage != string.Empty)
             {
-                embedBuilder.AddField("Custom Message", newCharacter.CustomProfileMessage);
+                embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
             }
 
             await FollowupAsync(text: $"{characterName} got successfully updated", embed: embedBuilder.Build());
@@ -274,8 +290,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await DeferAsync(ephemeral: true);
 
             ulong userId = Context.User.Id;
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-            Character character = characterList.Find(x => x.DiscordUserId == userId && x.CharacterName == characterName);
+            Character character = dbcontext.Characters.Where(x => x.User.DiscordUserId == userId && x.CharacterName == characterName).FirstOrDefault();
 
             if (character is null)
             {
@@ -284,9 +299,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            characterList.Remove(character);
-
-            await JsonParsers.WriteCharactersAsync(characterList);
+            dbcontext.Characters.Remove(character);
+            await dbcontext.SaveChangesAsync();
 
             await FollowupAsync(text: $"{characterName} has been successfully deleted", ephemeral: true);
         }
@@ -296,71 +310,27 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync();
 
-            EmbedBuilder embedBuilder = await CreateEmbedAsync(characterName, (character) =>
+            EmbedBuilder embedBuilder = Utils.CreateProfileEmbed(characterName, dbcontext, (character) =>
             {
-                return Context.Guild.GetUser(character.DiscordUserId);
+                return Context.Guild.GetUser(character.User.DiscordUserId);
             });
 
             if(embedBuilder is null)
             {
+                IMessage deleteMessage = await FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await FollowupAsync(text: $"{characterName} doesn't exist. You can add it with **/characters add**", ephemeral: true);
                 return;
             }
 
             await FollowupAsync(embed: embedBuilder.Build());
         }
 
-        public async Task<EmbedBuilder> CreateEmbedAsync(string characterName, Func<Character, SocketGuildUser> getUser)
-        {
-            characterName = characterName.ToTitleCase();
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-            Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
-
-            if (character is null)
-            {
-                IMessage deleteMessage = await FollowupAsync("auto-delete");
-                await deleteMessage.DeleteAsync();
-                await FollowupAsync(text: $"{characterName} doesn't exist. You can add it with **/characters add**", ephemeral: true);
-                return null;
-            }
-
-            EmbedBuilder embedBuilder = new()
-            {
-                Title = $"Profile of {characterName}",
-                ThumbnailUrl = character.ProfilePicture == string.Empty
-                    ? getUser(character).GetAvatarUrl()
-                    : character.ProfilePicture,
-                Color = new Color(222, 73, 227),
-            };
-
-            embedBuilder.AddField("Item Level", character.ItemLevel, true);
-            embedBuilder.AddField("Class", character.ClassName, true);
-
-            string[] engravings = character.Engravings.Split(",");
-            string engraving = "\u200b";
-
-            foreach (string x in engravings)
-            {
-                engraving += x + "\n";
-            }
-
-            embedBuilder.AddField("Engravings", engraving, true);
-            embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
-            embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
-
-            if (character.CustomProfileMessage != string.Empty)
-            {
-                embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
-            }
-
-            return embedBuilder;
-        }
-
         [SlashCommand("engravings", "Edits the engravings of the given character")]
         public async Task Engravings([Summary("character-name", "Name of the character")] string characterName)
         {
             characterName = characterName.ToTitleCase();
-            List<Character> chars = await JsonParsers.GetCharactersFromJsonAsync();
-            Character selectedChar = chars.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+            Character selectedChar = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).FirstOrDefault();
 
             if (selectedChar == null)
             {

@@ -7,7 +7,8 @@ using LostArkBot.Src.Bot.FileObjects;
 using Discord.Interactions;
 using LostArkBot.Src.Bot.Handlers;
 using LostArkBot.Src.Bot.Shared;
-using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using LostArkBot.databasemodels;
 
 namespace LostArkBot.Bot
 {
@@ -30,8 +31,8 @@ namespace LostArkBot.Bot
             {
                 await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
                 client.InteractionCreated += InteractionCreated;
-                client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
-                client.ModalSubmitted += ModalHandlers.ModalHandler;
+                client.SelectMenuExecuted += new MenuHandlerClass(services.GetRequiredService<LostArkBotContext>()).MenuHandler;
+                client.ModalSubmitted += new ModalHandlers(services.GetRequiredService<LostArkBotContext>()).ModalHandler;
                 client.Ready += Ready;
             } catch (Exception e)
             {

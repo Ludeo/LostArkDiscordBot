@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Shared;
@@ -14,7 +15,7 @@ namespace LostArkBot.Src.Bot.Handlers
     {
         private static readonly List<GuildEmote> emotes = Program.GuildEmotes;
 
-        public static async Task ManageUserHandlerAsync(SocketMessageComponent component, ManageUserModel model)
+        public static async Task ManageUserHandlerAsync(SocketMessageComponent component, ManageUserModel model, LostArkBotContext dbcontext)
         {
             string characterName = component.Data.Values.First();
             SocketThreadChannel threadChannel;
@@ -67,8 +68,6 @@ namespace LostArkBot.Src.Bot.Handlers
             (string title, string playerCounter) = originalEmbed.Title.Split(new char[] { '(', ')' });
             (int playerNumberJoined, int playerNumberMax) = Array.ConvertAll(playerCounter.Split("/"), int.Parse);
 
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-
             EmbedField msgField = originalEmbed.Fields.FirstOrDefault(field => field.Name == "Custom Message");
             if (msgField.Name != null)
             {
@@ -95,7 +94,7 @@ namespace LostArkBot.Src.Bot.Handlers
                         }
                         else
                         {
-                            Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+                            Character character = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).FirstOrDefault();
                             GuildEmote emote = emotes.Find(x => x.Name.ToLower() == character.ClassName.ToLower());
                             newEmbed.AddField(await GetCharacterFieldAsync(character, component));
                             characterAdded = true;
@@ -125,14 +124,13 @@ namespace LostArkBot.Src.Bot.Handlers
                         return;
                     }
 
-
                     if (characterName == "Default")
                     {
                         newEmbed.AddField(await GetCharacterFieldAsync(null, component));
                     }
                     else
                     {
-                        Character character = characterList.Find(x => x.CharacterName.ToLower() == characterName.ToLower());
+                        Character character = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).FirstOrDefault();
                         newEmbed.AddField(await GetCharacterFieldAsync(character, component));
                     }
 

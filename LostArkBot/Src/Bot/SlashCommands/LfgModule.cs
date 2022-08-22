@@ -1,20 +1,28 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Shared;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
     [Group("lfg", "Create a LFG or manage it")]
     public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public LfgModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
         [SlashCommand("create", "Creates an LFG event")]
         public async Task Create(
             [Summary("custom-message", "Custom Message that will be displayed in the LFG")] string customMessage = "",
@@ -25,7 +33,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (!string.IsNullOrEmpty(staticGroup))
             {
-                List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
+                List<StaticGroup> staticGroups = dbcontext.StaticGroups.ToList();
 
                 if (!staticGroups.Any(x => x.Name == staticGroup))
                 {
@@ -99,19 +107,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
+            Character character = dbcontext.Characters.Include(x => x.User).Where(x => x.CharacterName == characterName).FirstOrDefault();
 
-            if (!characters.Any(x => x.CharacterName == characterName))
+            if (character is null)
             {
                 await FollowupAsync(text: "This character does not exist", ephemeral: true);
                 return;
             }
-
-            Character character = characters.Find(x => x.CharacterName == characterName);
+            
             Embed originalEmbed = message.Embeds.First() as Embed;
-            SocketGuildUser user = Context.Guild.GetUser(character.DiscordUserId);
+            SocketGuildUser guildUser = Context.Guild.GetUser(character.User.DiscordUserId);
 
-            if (originalEmbed.Fields.Any(x => x.Value.Contains(user.Mention)))
+            if (originalEmbed.Fields.Any(x => x.Value.Contains(guildUser.Mention)))
             {
                 await FollowupAsync(text: "This user is already part of the LFG", ephemeral: true);
                 return;
@@ -145,13 +152,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.AddField(field.Name, field.Value, field.Inline);
             }
 
-            embed.AddField(user.DisplayName + " has joined",
-                                    $"{user.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
+            embed.AddField(guildUser.DisplayName + " has joined",
+                                    $"{guildUser.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
                                     + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
                                     true);
 
             await message.ModifyAsync(x => x.Embed = embed.Build());
-            await threadChannel.AddUserAsync(user);
+            await threadChannel.AddUserAsync(guildUser);
             await FollowupAsync(text: characterName + " got successfully added to the LFG", ephemeral: true);
         }
 

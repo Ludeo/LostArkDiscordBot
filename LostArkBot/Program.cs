@@ -54,7 +54,7 @@ namespace LostArkBot
             Client.Ready += InitializeGlobalVariables;
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
-            Client.Ready += new MerchantModule().StartMerchantChannel;
+            Client.Ready += new MerchantModule(services.GetRequiredService<LostArkBotContext>()).StartMerchantChannel;
 
             string token = Config.Default.Token;
 
@@ -125,10 +125,10 @@ namespace LostArkBot
         }
 
         private static ServiceProvider ConfigureServices() => new ServiceCollection()
+                                                       .AddSingleton(new LostArkBotContext())
                                                        .AddSingleton(new DiscordSocketClient(BuildDiscordSocketConfig()))
                                                        .AddSingleton<InteractionService>()
                                                        .AddSingleton<CommandHandlingService>()
-                                                       .AddSingleton(new LostArkBotContext())
                                                        .BuildServiceProvider();
     }
 }

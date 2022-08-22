@@ -7,7 +7,7 @@ namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 {
     public class ProfileScreenShot
     {
-        public static async Task<bool> MakeProfileScreenshot(List<Engraving> sortedEngravings, List<ArmorPiece> armorPieces, List<Accessory> accessories, MetaGameCharacter metaGameCharacter, MetaGameCharacterJson metaGameCharacterJson, string characterName)
+        public static async Task<bool> MakeProfileScreenshot(List<MetaEngraving> sortedEngravings, List<ArmorPiece> armorPieces, List<Accessory> accessories, MetaGameCharacter metaGameCharacter, MetaGameCharacterJson metaGameCharacterJson, string characterName)
         {
             string smokeImage = "https://lostark.meta-game.gg/smoke-bg.jpg";
             string classPreview = $"https://cdn.lostark.games.aws.dev/EFUI_IconAtlas/PC/{metaGameCharacter.ClassName.ToLower()}.png";
@@ -29,7 +29,7 @@ namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 
             string engravingString = string.Empty;
 
-            foreach (Engraving engraving in sortedEngravings)
+            foreach (MetaEngraving engraving in sortedEngravings)
             {
                 engravingString += $@"<div class=""engraving"" style=""display: flex; padding: 3px 3px;"" style=""display: flex;"">
                         <div class=""eng-img"" style=""height: 30px; width: 30px; margin-right: 10px;"">

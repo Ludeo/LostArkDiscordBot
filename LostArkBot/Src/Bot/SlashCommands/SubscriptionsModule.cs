@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.Models;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.Models.Enums;
 using LostArkBot.Src.Bot.Shared;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.SlashCommands
@@ -13,12 +15,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
     [Group("subscriptions", "Mange your merchant subscriptions")]
     public class SubscriptionsModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        private static LostArkBotContext dbcontext;
+
+        public SubscriptionsModule(LostArkBotContext _dbcontext)
+        {
+            dbcontext = _dbcontext;
+        }
+
         [SlashCommand("list", "List of active merchant subscriptions")]
         public async Task Subscriptions()
         {
             await DeferAsync(ephemeral: true);
-            SocketUser user = Context.User;
-            string activeSubs = await GetActiveSubscriptionsStringAsync(user);
+            string activeSubs = await GetActiveSubscriptionsStringAsync(Context.User.Id);
             await FollowupAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
         }
 
@@ -26,8 +34,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public async Task Update()
         {
             await DeferAsync();
-            SocketUser user = Context.User;
-            await UpdateMenuBuilder(user);
+            await UpdateMenuBuilder(Context.User);
             IMessage message = await FollowupAsync("auto-delete");
             await message.DeleteAsync();
         }
@@ -35,16 +42,16 @@ namespace LostArkBot.Src.Bot.SlashCommands
         public static async Task UpdateMenuBuilder(SocketUser user)
         {
             SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("update").WithPlaceholder("Update subscription");
-            UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
+            List<int> userSub = await GetSubscriptionForUserAsync(user.Id);
 
             foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
             {
-                if (!userSub.SubscribedItems.Contains((int)value))
+                if (!userSub.Contains((int)value))
                 {
                     menu = AddToMenu(menu, value, false);
                 }
 
-                if (userSub.SubscribedItems.Contains((int)value))
+                if (userSub.Contains((int)value))
                 {
                     menu = AddToMenu(menu, value, true);
                 }
@@ -52,23 +59,25 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             menu.WithMaxValues(menu.Options.Count);
 
-            string activeSubs = await GetActiveSubscriptionsStringAsync(user);
+            string activeSubs = await GetActiveSubscriptionsStringAsync(user.Id);
             await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, false, menu);
         }
 
-        private static async Task<UserSubscription> GetSubscriptionForUserAsync(ulong userId)
+        private static async Task<List<int>> GetSubscriptionForUserAsync(ulong userId)
         {
-            List<UserSubscription> merchantSubs = await JsonParsers.GetMerchantSubsFromJsonAsync();
-            UserSubscription userSub = merchantSubs.Find(sub =>
-            {
-                return sub.UserId == userId;
-            });
+            User user = dbcontext.Users.Where(x => x.DiscordUserId == userId).FirstOrDefault();
 
-            if (userSub == null)
+            if (user is null)
             {
-                UserSubscription newSub = new(userId, new List<int>());
-                return newSub;
+                EntityEntry<User> userEntry = dbcontext.Users.Add(new User
+                {
+                    DiscordUserId = userId,
+                });
+
+                await dbcontext.SaveChangesAsync();
             }
+
+            List<int> userSub = dbcontext.Subscriptions.Where(x => x.User.DiscordUserId == userId).Select(x => x.ItemId).ToList();
 
             return userSub;
         }
@@ -112,15 +121,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await user.SendMessageAsync(text: text, components: menuComponent);
         }
 
-        public static async Task<string> GetActiveSubscriptionsStringAsync(SocketUser user)
+        public static async Task<string> GetActiveSubscriptionsStringAsync(ulong userId)
         {
-            UserSubscription userSub = await GetSubscriptionForUserAsync(user.Id);
+            List<int> userSub = await GetSubscriptionForUserAsync(userId);
 
             string activeSubs = "";
 
             foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
             {
-                if (userSub.SubscribedItems.Contains((int)value))
+                if (userSub.Contains((int)value))
                 {
                     if (activeSubs != "")
                     {

@@ -140,6 +140,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             config.MerchantChannel = Context.Channel.Id;
             await JsonParsers.WriteConfigAsync(config);
 
+            Program.MerchantChannel = Context.Channel as SocketTextChannel;
             Program.ReinitializeScheduledTasks();
 
             await FollowupAsync(text: $"Channel {Program.MerchantChannel.Name} is now a merchant channel", ephemeral: true);

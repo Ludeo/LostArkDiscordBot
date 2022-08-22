@@ -1,23 +1,28 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Shared;
+using LostArkBot.databasemodels;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.UserCommands
 {
     public class CharactersModule : InteractionModuleBase<SocketInteractionContext<SocketUserCommand>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public CharactersModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
         [UserCommand("characters")]
         public async Task AccountUserCommand(IUser user)
         {
             await DeferAsync(ephemeral: true);
 
-            ulong userId = user.Id;
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-            List<Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
+            List<Character> characters = dbcontext.Characters.Where(x => x.User.DiscordUserId == user.Id).ToList();
 
             if (characters.Count == 0)
             {

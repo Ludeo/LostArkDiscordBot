@@ -4,7 +4,6 @@ using Discord.Net;
 using Discord.WebSocket;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.FileObjects.LostMerchants;
-using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Shared;
 using LostArkBot.Src.Bot.FileObjects.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -18,6 +17,7 @@ using System.Threading.Tasks;
 using LostArkBot.Src.Bot.Models.Enums;
 using Discord.Rest;
 using System.Threading;
+using LostArkBot.databasemodels;
 
 namespace LostArkBot.Src.Bot.SlashCommands
 {
@@ -46,6 +46,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 new Tuple<int, string>((int)WanderingMerchantItemsEnum.Kaysarr, "https://lostarkcodex.com/icons/card_epic_03_6.webp"),
                 new Tuple<int, string>((int)WanderingMerchantItemsEnum.LegendaryRapport, "https://lostarkcodex.com/icons/use_5_167.webp")
         };
+
+        private readonly LostArkBotContext dbcontext;
+
+        public MerchantModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
 
         [SlashCommand("reconnect-merchant", "Re-connects to lostmerchants and starts posting merchant locations when available")]
         public async Task ReconnectMerchantChannel()
@@ -144,15 +151,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
         private async Task UpdateMerchantGroupHandler(object merchantGroupObj, bool triggeredManually)
         {
-            List<Merchant> jsonMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
-            List<Merchant> activeMerchants;
+            List<ActiveMerchant> dbMerchants = dbcontext.ActiveMerchants.ToList();
+            List<ActiveMerchant> activeMerchants;
 
             if (!triggeredManually)
             {
                 MerchantGroup merchantGroup = JsonSerializer.Deserialize<MerchantGroup>(merchantGroupObj.ToString());
                 activeMerchants = merchantGroup.ActiveMerchants;
 
-                if (jsonMerchants.Count == 0)
+                if (dbMerchants.Count == 0)
                 {
                     List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
                     await textChannel.DeleteMessagesAsync(messages);
@@ -164,16 +171,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 activeMerchants = merchantGroups.Select(x => x.ActiveMerchants.First()).ToList();
 
                 Program.MerchantMessages = new();
-                jsonMerchants = new();
+                dbMerchants = new();
 
                 List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
                 await textChannel.DeleteMessagesAsync(messages);
             }
 
-            foreach (Merchant merchant in activeMerchants)
+            foreach (ActiveMerchant merchant in activeMerchants)
             {
-                Merchant jsonStored = jsonMerchants.Find(x => x.Id == merchant.Id);
-                if (jsonStored != null)
+                ActiveMerchant dbStored = dbMerchants.Find(x => x.MerchantId == merchant.MerchantId);
+
+                if (dbStored != null)
                 {
                     continue;
                 }
@@ -215,7 +223,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     notableCard = (int)WanderingMerchantItemsEnum.Kaysarr;
                 }
 
-                if (merchant.Rapport.Rarity == Rarity.Legendary)
+                if (Enum.Parse<Rarity>(merchant.Rapport.Rarity) == Rarity.Legendary)
                 {
                     rolePing += "<@&986032866053996554>";
                     notableRapport = (int)WanderingMerchantItemsEnum.LegendaryRapport;
@@ -231,37 +239,39 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                 Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.New).Build();
 
-                jsonMerchants.Add(merchant);
+                dbMerchants.Add(merchant);
 
                 if (merchant.Votes <= voteThreshold)
                 {
-                    Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, null, true));
+                    Program.MerchantMessages.Add(new MerchantMessage(merchant.MerchantId, null, true));
                     return;
                 }
 
                 IUserMessage message = await textChannel.SendMessageAsync(text: rolePing, embed: embed);
-                Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
+                Program.MerchantMessages.Add(new MerchantMessage(merchant.MerchantId, message.Id));
 
 
                 if (notableCard != -1 || notableRapport != -1)
                 {
                     await GetUserSubsriptions(notableCard, notableRapport, merchant, expiryDate);
                 }
+
+                dbcontext.ActiveMerchants.Update(merchant);
             }
 
-            if (triggeredManually && (jsonMerchants.Count != activeMerchants.Count))
+            if (triggeredManually && (dbMerchants.Count != activeMerchants.Count))
             {
-                await LogService.Log(LogSeverity.Warning, GetType().Name, $"Number of merchants doesn't match. Merchant group: {activeMerchants.Count}, stored JSON: {jsonMerchants.Count}");
+                await LogService.Log(LogSeverity.Warning, GetType().Name, $"Number of merchants doesn't match. Merchant group: {activeMerchants.Count}, stored JSON: {dbMerchants.Count}");
             }
 
-            await JsonParsers.WriteActiveMerchantsAsync(jsonMerchants);
+            await dbcontext.SaveChangesAsync();
         }
 
         private void OnUpdateVotes()
         {
             hubConnection.On<List<object>>("UpdateVotes", async (votes) =>
             {
-                List<Merchant> activeMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+                List<ActiveMerchant> activeMerchants = dbcontext.ActiveMerchants.ToList();
                 List<MerchantVote> positiveVotes = new();
                 List<MerchantVote> negativeVotes = new();
 
@@ -295,7 +305,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     IUserMessage message = await textChannel.GetMessageAsync((ulong)merchantMessage.MessageId) as IUserMessage;
                     await message.DeleteAsync();
                     await LogService.Log(LogSeverity.Info, GetType().Name, $"Deleted post for merchant with id {vote.Id}: {vote.Votes} votes");
-                    Merchant merchant = activeMerchants.Find(x => x.Id == vote.Id);
+                    ActiveMerchant merchant = activeMerchants.Find(x => x.MerchantId == vote.Id);
                     merchant.Votes = vote.Votes;
                 }
 
@@ -319,7 +329,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
                     await message.ModifyAsync(x => x.Embed = newEmbed.Build());
 
-                    Merchant merchant = activeMerchants.Find(x => x.Id == vote.Id);
+                    ActiveMerchant merchant = activeMerchants.Find(x => x.MerchantId == vote.Id);
                     if (merchant == null)
                     {
                         await LogService.Log(LogSeverity.Warning, GetType().Name, $"Could not find active merchant with id {vote.Id}, This should no not happen normally");
@@ -327,46 +337,44 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     }
 
                     merchant.Votes = vote.Votes;
+
+                    dbcontext.ActiveMerchants.Add(merchant);
                 }
 
-                await JsonParsers.WriteActiveMerchantsAsync(activeMerchants);
+                await dbcontext.SaveChangesAsync();
             });
         }
 
-        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, Merchant merchant, DateTimeOffset expiryDate)
+        private async Task<Task> GetUserSubsriptions(int notableCard, int notableRapport, ActiveMerchant merchant, DateTimeOffset expiryDate)
         {
             string url = "https://lostmerchants.com/";
             ButtonBuilder linkButton = new ButtonBuilder().WithLabel("Site").WithStyle(ButtonStyle.Link).WithUrl(url);
-            ButtonBuilder refreshButton = new ButtonBuilder().WithCustomId($"refresh:{merchant.Id},{expiryDate.ToUnixTimeSeconds()}").WithEmote(new Emoji("\U0001F504")).WithStyle(ButtonStyle.Primary);
+            ButtonBuilder refreshButton = new ButtonBuilder().WithCustomId($"refresh:{merchant.MerchantId},{expiryDate.ToUnixTimeSeconds()}").WithEmote(new Emoji("\U0001F504")).WithStyle(ButtonStyle.Primary);
             MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).WithButton(refreshButton).WithButton(linkButton).Build();
 
-            List<UserSubscription> allSubscriptions = await JsonParsers.GetMerchantSubsFromJsonAsync();
-            List<UserSubscription> filteredSubscriptions = allSubscriptions.FindAll(userSub =>
-            {
-                var card = userSub.SubscribedItems.Contains(notableCard);
-                var rapport = userSub.SubscribedItems.Contains(notableRapport);
+            List<Subscription> subscriptions = dbcontext.Subscriptions.Where(x => x.ItemId == notableCard || x.ItemId == notableRapport).ToList();
 
-                return card || rapport;
-            });
-
-            if (allSubscriptions.Count == 0 || filteredSubscriptions.Count == 0)
+            if (subscriptions.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            await LogService.Log(LogSeverity.Debug, GetType().Name, GetNotableLogMsg(filteredSubscriptions.Count, notableCard, notableRapport));
+            List<int> distinctUserIds = subscriptions.Select(x => x.UserId).Distinct().ToList();
+
+            await LogService.Log(LogSeverity.Debug, GetType().Name, GetNotableLogMsg(distinctUserIds.Count, notableCard, notableRapport));
 
             Embed embed = CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.Subscription).Build();
 
-            filteredSubscriptions.ForEach(async sub =>
+            distinctUserIds.ForEach(async subUser =>
             {
-                SocketGuildUser serverUser = Program.Guild.GetUser(sub.UserId);
+                User user = dbcontext.Users.Where(x => x.Id == subUser).FirstOrDefault();
+                SocketGuildUser serverUser = Program.Guild.GetUser(user.DiscordUserId);
 
                 if (serverUser == null)
                 {
-                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user with Id:{sub.UserId} not found with GetUser - trying with GetUserAsync");
+                    await LogService.Log(LogSeverity.Debug, GetType().Name, $"Server user with Id:{user.DiscordUserId} not found with GetUser - trying with GetUserAsync");
                     ITextChannel interactionChannel = (ITextChannel)Context.Channel;
-                    IGuildUser playerUser = await interactionChannel.Guild.GetUserAsync(sub.UserId);
+                    IGuildUser playerUser = await interactionChannel.Guild.GetUserAsync(user.DiscordUserId);
                     serverUser = (SocketGuildUser)playerUser;
 
                     if (serverUser == null)
@@ -416,7 +424,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
         }
 
-        public EmbedBuilder CreateMerchantEmbed(Merchant merchant, DateTimeOffset expiryDate, int notableCard, int notableRapport, MerchantEmbedTypeEnum type)
+        public EmbedBuilder CreateMerchantEmbed(ActiveMerchant merchant, DateTimeOffset expiryDate, int notableCard, int notableRapport, MerchantEmbedTypeEnum type)
         {
 
             if (type == MerchantEmbedTypeEnum.Debug)
@@ -439,11 +447,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             if (type == MerchantEmbedTypeEnum.New)
             {
-                Rarity highestRarity = merchant.Card.Rarity;
+                Rarity highestRarity = Enum.Parse<Rarity>(merchant.Card.Rarity);
 
-                if (merchant.Rapport.Rarity > highestRarity)
+                if (Enum.Parse<Rarity>(merchant.Rapport.Rarity) > highestRarity)
                 {
-                    highestRarity = merchant.Rapport.Rarity;
+                    highestRarity = Enum.Parse<Rarity>(merchant.Rapport.Rarity);
                 }
 
                 Color embedColor = Color.Green;

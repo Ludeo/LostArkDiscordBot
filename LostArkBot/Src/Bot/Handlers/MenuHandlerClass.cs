@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,14 @@ namespace LostArkBot.Src.Bot.Handlers
 {
     public class MenuHandlerClass
     {
-        public static async Task MenuHandler(SocketMessageComponent component)
+        private readonly LostArkBotContext dbcontext;
+
+        public MenuHandlerClass(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
+        public async Task MenuHandler(SocketMessageComponent component)
         {
             await component.DeferAsync();
 
@@ -25,15 +33,15 @@ namespace LostArkBot.Src.Bot.Handlers
                     resultModel = lfgModels.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.IsEnd == true);
                 }
 
-                await LfgHandler.LfgHandlerAsync(component, resultModel);
+                await LfgHandler.LfgHandlerAsync(component, resultModel, dbcontext);
             } else if(manageUserModels.Any(x => x.MenuId == component.Data.CustomId))
             {
                 ManageUserModel resultModel = manageUserModels.Find(x => x.MenuId == component.Data.CustomId);
 
-                await ManageUserHandler.ManageUserHandlerAsync(component, resultModel);
+                await ManageUserHandler.ManageUserHandlerAsync(component, resultModel, dbcontext);
             } else if (component.Data.CustomId == "update")
             {
-                await SubscriptionsHandler.Update(component);
+                await SubscriptionsHandler.Update(component, dbcontext);
             }
         }
     }

@@ -1,15 +1,22 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Shared;
+using LostArkBot.databasemodels;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LostArkBot.Src.Bot.Buttons
 {
     public class JoinButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public JoinButtonModule(LostArkBotContext context)
+        {
+            dbcontext = context;
+        }
+
         [ComponentInteraction("joinbutton")]
         public async Task Join()
         {
@@ -18,10 +25,8 @@ namespace LostArkBot.Src.Bot.Buttons
             SelectMenuBuilder joinMenu = new SelectMenuBuilder().WithCustomId("join").WithPlaceholder("Select Character");
             ulong userId = Context.User.Id;
 
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-
-            List <Character> characters = characterList.FindAll(x => x.DiscordUserId == userId);
-
+            List<Character> characters = dbcontext.Characters.Where(x => x.User.DiscordUserId == userId).ToList();
+            
             joinMenu.AddOption("Default", "Default", "Uses only your discord name, no additional informations");
 
             List<GuildEmote> emotes = Program.GuildEmotes;

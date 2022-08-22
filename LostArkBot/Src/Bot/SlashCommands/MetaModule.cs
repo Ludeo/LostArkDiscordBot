@@ -1,9 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.FileObjects.MetaGame;
-using LostArkBot.Src.Bot.Shared;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +18,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
     [Group("meta", "Commands for using the meta-game website for characters")]
     public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public MetaModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }   
+
         [SlashCommand("register", "Registers the currently logged in character")]
         public async Task Register([Summary("twitch-name", "Your twitch name")] string twitchName)
         {
@@ -56,8 +64,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             MetaGameRefresh metaGameRefresh = JsonSerializer.Deserialize<MetaGameRefresh>(responseString);
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
-            Character characterCheck = characterList.FirstOrDefault(x => x.CharacterName == metaGameRefresh.CharacterName);
+            Character characterCheck = dbcontext.Characters.Where(x => x.CharacterName == metaGameRefresh.CharacterName).FirstOrDefault();
 
             if (characterCheck != null)
             {
@@ -68,13 +75,26 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
+            User user = dbcontext.Users.Where(x => x.DiscordUserId == Context.User.Id).FirstOrDefault();
+
+            if(user is null)
+            {
+                EntityEntry<User> userEntry = dbcontext.Users.Add(new User
+                {
+                    DiscordUserId = Context.User.Id,
+                });
+
+                await dbcontext.SaveChangesAsync();
+                user = userEntry.Entity;
+            }
+
             Character character = new()
             {
                 CharacterName = metaGameRefresh.CharacterName,
                 CustomProfileMessage = "",
                 ProfilePicture = "",
                 Engravings = "",
-                DiscordUserId = Context.User.Id,
+                UserId = user.Id,
             };
 
             string queryUrl = "https://lostark-lookup.herokuapp.com/api/query?pcName=" + character.CharacterName;
@@ -139,14 +159,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             character.ItemLevel = (int)metaGameCharacter.ItemLevel;
             character.ClassName = metaGameCharacter.ClassName;
-            characterList.Add(character);
-
-            await JsonParsers.WriteCharactersAsync(characterList);
+            
+            dbcontext.Characters.Add(character);
+            await dbcontext.SaveChangesAsync();
 
             EmbedBuilder embedBuilder = new()
             {
                 Title = $"Profile of {character.CharacterName}",
-                ThumbnailUrl = Context.Guild.GetUser(character.DiscordUserId).GetAvatarUrl(),
+                ThumbnailUrl = Context.Guild.GetUser(character.User.DiscordUserId).GetAvatarUrl(),
                 Color = new Color(222, 73, 227),
             };
 
@@ -156,7 +176,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             embedBuilder.AddField("Engravings", "\u200b", true);
             embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
             embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
-            //embedBuilder.AddField("Custom Message", "\u200b");
+            embedBuilder.AddField("Custom Message", "\u200b");
 
             await FollowupAsync(text: character.CharacterName + " got successfully registered", embed: embedBuilder.Build());
         }
@@ -203,12 +223,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             MetaGameRefresh metaGameRefresh = JsonSerializer.Deserialize<MetaGameRefresh>(responseString);
 
-            List<Character> characterList = await JsonParsers.GetCharactersFromJsonAsync();
+            Character character = dbcontext.Characters.Where(x => x.CharacterName == metaGameRefresh.CharacterName).Include(x => x.User).FirstOrDefault();
 
-            Character oldCharacter = characterList.First(x => x.CharacterName == metaGameRefresh.CharacterName);
-            Character newCharacter = oldCharacter;
-
-            if (oldCharacter is null)
+            if (character is null)
             {
                 IMessage message = await FollowupAsync("auto-delete");
                 await message.DeleteAsync();
@@ -217,7 +234,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            if (oldCharacter.DiscordUserId != Context.User.Id)
+            if (character.User.DiscordUserId != Context.User.Id)
             {
                 IMessage message = await FollowupAsync("auto-delete");
                 await message.DeleteAsync();
@@ -240,7 +257,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 IMessage message = await FollowupAsync("auto-delete");
                 await message.DeleteAsync();
-                await FollowupAsync(text: oldCharacter.CharacterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
+                await FollowupAsync(text: character.CharacterName + " does not exist. Login with the character and enable the twitch extension", ephemeral: true);
 
                 return;
             }
@@ -262,54 +279,52 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 if (stat.Description == "Crit")
                 {
-                    newCharacter.Crit = int.Parse(stat.Value);
+                    character.Crit = int.Parse(stat.Value);
                 }
                 else if (stat.Description == "Specialization")
                 {
-                    newCharacter.Spec = int.Parse(stat.Value);
+                    character.Spec = int.Parse(stat.Value);
                 }
                 else if (stat.Description == "Domination")
                 {
-                    newCharacter.Dom = int.Parse(stat.Value);
+                    character.Dom = int.Parse(stat.Value);
                 }
                 else if (stat.Description == "Swiftness")
                 {
-                    newCharacter.Swift = int.Parse(stat.Value);
+                    character.Swift = int.Parse(stat.Value);
                 }
                 else if (stat.Description == "Endurance")
                 {
-                    newCharacter.End = int.Parse(stat.Value);
+                    character.End = int.Parse(stat.Value);
                 }
                 else if (stat.Description == "Expertise")
                 {
-                    newCharacter.Exp = int.Parse(stat.Value);
+                    character.Exp = int.Parse(stat.Value);
                 }
             }
 
-            newCharacter.ItemLevel = (int)metaGameCharacter.ItemLevel;
+            character.ItemLevel = (int)metaGameCharacter.ItemLevel;
 
-            characterList.Add(newCharacter);
-            characterList.Remove(oldCharacter);
-
-            await JsonParsers.WriteCharactersAsync(characterList);
+            dbcontext.Characters.Add(character);
+            await dbcontext.SaveChangesAsync();
 
             EmbedBuilder embedBuilder = new()
             {
-                Title = $"Profile of {newCharacter.CharacterName}",
-                ThumbnailUrl = newCharacter.ProfilePicture == string.Empty
-                    ? Context.Guild.GetUser(newCharacter.DiscordUserId).GetAvatarUrl()
-                    : newCharacter.ProfilePicture,
+                Title = $"Profile of {character.CharacterName}",
+                ThumbnailUrl = character.ProfilePicture == string.Empty
+                    ? Context.Guild.GetUser(character.User.DiscordUserId).GetAvatarUrl()
+                    : character.ProfilePicture,
                 Color = new Color(222, 73, 227),
             };
 
-            embedBuilder.AddField("Item Level", newCharacter.ItemLevel, true);
-            embedBuilder.AddField("Class", newCharacter.ClassName, true);
+            embedBuilder.AddField("Item Level", character.ItemLevel, true);
+            embedBuilder.AddField("Class", character.ClassName, true);
 
             string engraving = string.Empty;
 
-            if (!string.IsNullOrEmpty(newCharacter.Engravings))
+            if (!string.IsNullOrEmpty(character.Engravings))
             {
-                string[] engravings = newCharacter.Engravings.Split(",");
+                string[] engravings = character.Engravings.Split(",");
 
                 foreach (string x in engravings)
                 {
@@ -318,15 +333,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
             }
 
             embedBuilder.AddField("Engravings", engraving == string.Empty ? "\u200b" : engraving, true);
-            embedBuilder.AddField("Stats", $"Crit: {newCharacter.Crit}\nSpec: {newCharacter.Spec}\nDom: {newCharacter.Dom}", true);
-            embedBuilder.AddField("\u200b", $"Swift: {newCharacter.Swift}\nEnd: {newCharacter.End}\nExp: {newCharacter.Exp}", true);
+            embedBuilder.AddField("Stats", $"Crit: {character.Crit}\nSpec: {character.Spec}\nDom: {character.Dom}", true);
+            embedBuilder.AddField("\u200b", $"Swift: {character.Swift}\nEnd: {character.End}\nExp: {character.Exp}", true);
 
-            if (newCharacter.CustomProfileMessage != string.Empty)
+            if (character.CustomProfileMessage != string.Empty)
             {
-                embedBuilder.AddField("Custom Message", newCharacter.CustomProfileMessage);
+                embedBuilder.AddField("Custom Message", character.CustomProfileMessage);
             }
 
-            await FollowupAsync(text: $"{newCharacter.CharacterName} got successfully updated", embed: embedBuilder.Build());
+            await FollowupAsync(text: $"{character.CharacterName} got successfully updated", embed: embedBuilder.Build());
         }
 
         [SlashCommand("profile", "Shows a picture of the metagame profile of the given character")]
@@ -335,14 +350,10 @@ namespace LostArkBot.Src.Bot.SlashCommands
             await DeferAsync();
 
             string amazonBaseLink = "https://cdn.lostark.games.aws.dev/";
+            List<Engraving> engravings = dbcontext.Engravings.ToList();
 
-            List<Dictionary<string, Engraving>> engravingListDict = await JsonParsers.GetEngravingsFromJsonAsync();
-            Dictionary<string, Engraving> engravingDict = engravingListDict.First();
-            List<Engraving> engravings = new();
-
-            foreach (string key in engravingDict.Keys)
+            foreach (Engraving engraving in engravings)
             {
-                Engraving engraving = engravingDict[key];
                 string[] icon = engraving.Icon.Split("_");
 
                 if (icon.Length > 0 && !string.IsNullOrEmpty(icon[0]))
@@ -360,8 +371,6 @@ namespace LostArkBot.Src.Bot.SlashCommands
                         engraving.Icon = amazonBaseLink + "EFUI_IconAtlas/" + icon[0] + "/" + engraving.Icon + ".png";
                     }
                 }
-
-                engravings.Add(engraving);
             }
 
             string queryUrl = "https://lostark-lookup.herokuapp.com/api/query?pcName=" + characterName;
@@ -505,6 +514,8 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 }
             }
 
+            List<MetaEngraving> engravingWithValues = new();
+
             foreach (Accessory accessory in accessories)
             {
                 if (!string.IsNullOrEmpty(accessory.Engraving1))
@@ -513,10 +524,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     string engravingName = engravingString[1..engravingString.IndexOf("]")];
                     int engravingValue = int.Parse(engravingString.Split("+")[1]);
 
-                    Engraving engraving = engravings.First(x => x.Name == engravingName);
-                    engravings.Remove(engraving);
+                    MetaEngraving engraving = (MetaEngraving) engravings.First(x => x.Name == engravingName);
                     engraving.Value += engravingValue;
-                    engravings.Add(engraving);
+                    engravingWithValues.Add(engraving);
                 }
 
                 if (!string.IsNullOrEmpty(accessory.Engraving2))
@@ -525,10 +535,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     string engravingName = engravingString[1..engravingString.IndexOf("]")];
                     int engravingValue = int.Parse(engravingString.Split("+")[1]);
 
-                    Engraving engraving = engravings.First(x => x.Name == engravingName);
-                    engravings.Remove(engraving);
+                    MetaEngraving engraving = (MetaEngraving)engravings.First(x => x.Name == engravingName);
                     engraving.Value += engravingValue;
-                    engravings.Add(engraving);
+                    engravingWithValues.Add(engraving);
                 }
 
                 if (!string.IsNullOrEmpty(accessory.BadEngraving))
@@ -537,15 +546,14 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     string engravingName = engravingString[1..engravingString.IndexOf("]")];
                     int engravingValue = int.Parse(engravingString.Split("+")[1]);
 
-                    Engraving engraving = engravings.First(x => x.Name == engravingName);
-                    engravings.Remove(engraving);
+                    MetaEngraving engraving = (MetaEngraving)engravings.First(x => x.Name == engravingName);
                     engraving.Value += engravingValue;
-                    engravings.Add(engraving);
+                    engravingWithValues.Add(engraving);
                 }
             }
 
-            engravings.RemoveAll(x => x.Value < 5);
-            List<Engraving> sortedEngravings = engravings.OrderByDescending(x => x.Value).ToList();
+            engravingWithValues.RemoveAll(x => x.Value < 5);
+            List<MetaEngraving> sortedEngravings = engravingWithValues.OrderByDescending(x => x.Value).ToList();
 
             await ProfileScreenShot.MakeProfileScreenshot(sortedEngravings, armorPieces, accessories, metaGameCharacter, metaGameCharacterJson, characterName);
 

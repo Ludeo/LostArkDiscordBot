@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Shared;
+using LostArkBot.databasemodels;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +12,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
     [Group("static", "Manage or view static groups")]
     public class StaticModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public StaticModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
         [SlashCommand("create", "Creates a Static Group")]
         public async Task Create(
             [Summary("name", "Name for the Static Group")] string name,
@@ -19,9 +26,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync();
 
-            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
-
-            if (staticGroups.Any(x => x.Name == name))
+            if (dbcontext.StaticGroups.Where(x => x.Name == name).FirstOrDefault() is not null)
             {
                 IMessage message = await FollowupAsync("auto-delete");
                 await message.DeleteAsync();
@@ -29,9 +34,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
+            Character character = dbcontext.Characters.Where(x => x.CharacterName == characterName).Include(x => x.User).FirstOrDefault();
 
-            if (!characters.Any(x => x.CharacterName == characterName))
+            if (character is null)
             {
                 IMessage message = await FollowupAsync("auto-delete");
                 await message.DeleteAsync();
@@ -42,15 +47,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
             StaticGroup staticGroup = new()
             {
                 Name = name,
-                LeaderId = Context.User.Id,
-                Players = new()
-                {
-                    characterName,
-                },
+                LeaderId = character.User.Id,
             };
 
-            staticGroups.Add(staticGroup);
-            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
+            staticGroup.Characters.Add(character);
+            dbcontext.StaticGroups.Add(staticGroup);
+            await dbcontext.SaveChangesAsync();
 
             await FollowupAsync(text: name + " got successfully registered");
         }
@@ -60,25 +62,22 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync(ephemeral: true);
 
-            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
+            StaticGroup staticGroup = dbcontext.StaticGroups.Where(x => x.Name == name).Include(x => x.Leader).FirstOrDefault();
 
-            if (!staticGroups.Any(x => x.Name == name))
+            if (staticGroup is null)
             {
                 await FollowupAsync(text: "There is no static group with this name", ephemeral: true);
                 return;
             }
 
-            StaticGroup staticGroup = staticGroups.Find(x => x.Name == name);
-
-            if (Context.User.Id != staticGroup.LeaderId)
+            if (Context.User.Id != staticGroup.Leader.DiscordUserId)
             {
                 await FollowupAsync(text: "You are not the leader of the group and therefore can't delete it", ephemeral: true);
                 return;
             }
 
-            staticGroups.Remove(staticGroup);
-
-            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
+            dbcontext.StaticGroups.Remove(staticGroup);
+            await dbcontext.SaveChangesAsync();
 
             await FollowupAsync(text: name + " got successfully deleted", ephemeral: true);
         }
@@ -90,41 +89,37 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync(ephemeral: true);
 
-            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
+            StaticGroup staticGroup = dbcontext.StaticGroups.Where(x => x.Name == name).Include(x => x.Characters).Include(x => x.Leader).FirstOrDefault();
 
-            if (!staticGroups.Any(x => x.Name == name))
+            if (staticGroup is null)
             {
                 await FollowupAsync(text: "This static group does not exist", ephemeral: true);
                 return;
             }
 
-            StaticGroup staticGroup = staticGroups.Find(x => x.Name == name);
-
-            if (Context.User.Id != staticGroup.LeaderId)
+            if (Context.User.Id != staticGroup.Leader.DiscordUserId)
             {
                 await FollowupAsync(text: "You are not the leader of this static group and therefore can't add a user to it", ephemeral: true);
                 return;
             }
 
-            if (staticGroup.Players.Count == 8)
+            if (staticGroup.Characters.Count == 8)
             {
                 await FollowupAsync(text: "This static group has 8 players already", ephemeral: true);
                 return;
             }
 
-            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
+            Character character = dbcontext.Characters.Where(x => x.CharacterName == characterName).FirstOrDefault();
 
-            if (!characters.Any(x => x.CharacterName == characterName))
+            if (character is null)
             {
                 await FollowupAsync(text: "This character does not exist", ephemeral: true);
                 return;
             }
 
-            staticGroups.Remove(staticGroup);
-            staticGroup.Players.Add(characterName);
-            staticGroups.Add(staticGroup);
-
-            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
+            staticGroup.Characters.Add(character);
+            dbcontext.StaticGroups.Update(staticGroup);
+            await dbcontext.SaveChangesAsync();
 
             await FollowupAsync(text: characterName + " got succesfully added to the static group", ephemeral: true);
         }
@@ -136,35 +131,31 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync(ephemeral: true);
 
-            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
+            StaticGroup staticGroup = dbcontext.StaticGroups.Where(x => x.Name == name).Include(x => x.Leader).FirstOrDefault();
 
-            if (!staticGroups.Any(x => x.Name == name))
+            if (staticGroup is null)
             {
                 await FollowupAsync(text: "This static group does not exist", ephemeral: true);
                 return;
             }
 
-            StaticGroup staticGroup = staticGroups.Find(x => x.Name == name);
-
-            if (Context.User.Id != staticGroup.LeaderId)
+            if (Context.User.Id != staticGroup.Leader.DiscordUserId)
             {
                 await FollowupAsync(text: "You are not the leader of this static group and therefore can't remove a user from it", ephemeral: true);
                 return;
             }
 
-            List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
+            Character character = dbcontext.Characters.Where(x => x.CharacterName == characterName).FirstOrDefault();
 
-            if (!characters.Any(x => x.CharacterName == characterName))
+            if (character is null)
             {
                 await FollowupAsync(text: "This character does not exist", ephemeral: true);
                 return;
             }
 
-            staticGroups.Remove(staticGroup);
-            staticGroup.Players.Remove(characterName);
-            staticGroups.Add(staticGroup);
-
-            await JsonParsers.WriteStaticGroupsAsync(staticGroups);
+            staticGroup.Characters.Remove(character);
+            dbcontext.StaticGroups.Update(staticGroup);
+            await dbcontext.SaveChangesAsync();
 
             await FollowupAsync(text: characterName + " got succesfully removed from the static group", ephemeral: true);
         }
@@ -174,7 +165,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync();
 
-            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
+            List<StaticGroup> staticGroups = dbcontext.StaticGroups.Include(x => x.Leader).ToList();
 
             EmbedBuilder embed = new()
             {
@@ -184,7 +175,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             foreach (StaticGroup staticGroup in staticGroups)
             {
-                embed.Description += $"{staticGroup.Name} (Leader: {Context.Guild.GetUser(staticGroup.LeaderId).DisplayName})\n\n";
+                embed.Description += $"{staticGroup.Name} (Leader: {Context.Guild.GetUser(staticGroup.Leader.DiscordUserId).DisplayName})\n\n";
             }
 
             await FollowupAsync(embed: embed.Build());
@@ -195,9 +186,9 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync();
 
-            List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
+            StaticGroup staticGroup = dbcontext.StaticGroups.Where(x => x.Name == name).Include(x => x.Characters).FirstOrDefault();
 
-            if (!staticGroups.Any(x => x.Name == name))
+            if (staticGroup is null)
             {
                 IMessage message = await FollowupAsync("auto-delete");
                 await message.DeleteAsync();
@@ -205,17 +196,15 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            StaticGroup staticGroup = staticGroups.Find(x => x.Name == name);
-
             EmbedBuilder embed = new()
             {
                 Title = "Members of " + name,
                 Color = Color.Blue,
             };
 
-            foreach (string player in staticGroup.Players)
+            foreach (Character character in staticGroup.Characters)
             {
-                embed.Description += player + "\n";
+                embed.Description += character.CharacterName + "\n";
             }
 
             await FollowupAsync(embed: embed.Build());

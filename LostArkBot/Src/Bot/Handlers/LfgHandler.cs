@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.Models;
-using LostArkBot.Src.Bot.Shared;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +11,7 @@ namespace LostArkBot.Src.Bot.Handlers
 {
     public class LfgHandler
     {
-        public static async Task LfgHandlerAsync(SocketMessageComponent component, LfgModel model)
+        public static async Task LfgHandlerAsync(SocketMessageComponent component, LfgModel model, LostArkBotContext dbcontext)
         {
             string customMessage = component.Message.Embeds.First().Footer?.Text;
             ComponentBuilder componentBuilder = new();
@@ -26,12 +26,12 @@ namespace LostArkBot.Src.Bot.Handlers
 
             if (model.IsEnd)
             {
-                SocketGuildUser user = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
+                SocketGuildUser guildUser = await component.Channel.GetUserAsync(component.User.Id) as SocketGuildUser;
 
                 embed.Title = $"{model.Title} {component.Data.Values.First()} (0/{model.Players})";
                 embed.Author = new EmbedAuthorBuilder()
-                             .WithName($"Party Leader: {user.DisplayName}\n{user.Id}")
-                             .WithIconUrl(user.GetAvatarUrl());
+                             .WithName($"Party Leader: {guildUser.DisplayName}\n{guildUser.Id}")
+                             .WithIconUrl(guildUser.GetAvatarUrl());
                 embed.Description = "Waiting for players to join...";
                 embed.ImageUrl = Program.StaticObjects.EventImages[component.Data.Values.First()];
 
@@ -59,15 +59,12 @@ namespace LostArkBot.Src.Bot.Handlers
 
                 if (!string.IsNullOrEmpty(staticGroupName))
                 {
-                    List<StaticGroup> staticGroups = await JsonParsers.GetStaticGroupsFromJsonAsync();
-                    StaticGroup staticGroup = staticGroups.Find(x => x.Name == staticGroupName);
-                    List<Character> characters = await JsonParsers.GetCharactersFromJsonAsync();
+                    StaticGroup staticGroup = dbcontext.StaticGroups.Include(x => x.Characters).ThenInclude(x => x.User).Where(x => x.Name == staticGroupName).FirstOrDefault();
                     List<GuildEmote> emotes = Program.GuildEmotes;
 
-                    foreach (string player in staticGroup.Players)
+                    foreach (Character character in staticGroup.Characters)
                     {
-                        Character character = characters.Find(x => x.CharacterName == player);
-                        IGuildUser playerUser = await textChannel.Guild.GetUserAsync(character.DiscordUserId);
+                        IGuildUser playerUser = await textChannel.Guild.GetUserAsync(character.User.DiscordUserId);
                         GuildEmote emote = emotes.Find(x => x.Name == character.ClassName.ToLower());
 
                         embed.AddField(playerUser.DisplayName + " has joined",
@@ -76,7 +73,7 @@ namespace LostArkBot.Src.Bot.Handlers
                                                 true);
                     }
 
-                    embed.Title = $"{model.Title} {component.Data.Values.First()} ({staticGroup.Players.Count}/{model.Players})";
+                    embed.Title = $"{model.Title} {component.Data.Values.First()} ({staticGroup.Characters.Count}/{model.Players})";
                 }
 
                 componentBuilder.WithButton(Program.StaticObjects.JoinButton)
