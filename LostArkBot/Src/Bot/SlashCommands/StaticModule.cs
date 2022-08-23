@@ -62,7 +62,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
         {
             await DeferAsync(ephemeral: true);
 
-            StaticGroup staticGroup = dbcontext.StaticGroups.Where(x => x.Name == name).Include(x => x.Leader).FirstOrDefault();
+            StaticGroup staticGroup = dbcontext.StaticGroups.Where(x => x.Name == name).Include(x => x.Leader).Include(x => x.Characters).FirstOrDefault();
 
             if (staticGroup is null)
             {
@@ -74,6 +74,11 @@ namespace LostArkBot.Src.Bot.SlashCommands
             {
                 await FollowupAsync(text: "You are not the leader of the group and therefore can't delete it", ephemeral: true);
                 return;
+            }
+
+            foreach(Character character in staticGroup.Characters)
+            {
+                staticGroup.Characters.Remove(character);
             }
 
             dbcontext.StaticGroups.Remove(staticGroup);

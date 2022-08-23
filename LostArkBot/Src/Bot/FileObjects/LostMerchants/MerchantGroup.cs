@@ -1,5 +1,4 @@
-﻿using LostArkBot.databasemodels;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
@@ -16,6 +15,6 @@ namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
         public string MerchantName { get; set; }
 
         [JsonPropertyName("activeMerchants")]
-        public List<ActiveMerchant> ActiveMerchants { get; set; }
+        public List<WebsiteMerchant> ActiveMerchants { get; set; }
     }
 }

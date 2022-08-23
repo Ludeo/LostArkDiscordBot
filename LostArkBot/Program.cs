@@ -28,7 +28,7 @@ namespace LostArkBot
 
         public static List<GuildEmote> GuildEmotes { get; private set; }
 
-        public static StaticObjects StaticObjects { get; } = new StaticObjects();
+        public static StaticObjects StaticObjects { get; private set; }
 
         public static SocketTextChannel MerchantChannel { get; set; }
 
@@ -55,6 +55,8 @@ namespace LostArkBot
             Client.Ready += InitializeEmotes;
             Client.Ready += InitializeScheduledTask;
             Client.Ready += new MerchantModule(services.GetRequiredService<LostArkBotContext>()).StartMerchantChannel;
+
+            StaticObjects = new StaticObjects(services.GetRequiredService<LostArkBotContext>());
 
             string token = Config.Default.Token;
 

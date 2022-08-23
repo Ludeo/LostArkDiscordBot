@@ -1,7 +1,8 @@
 ﻿using Discord;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.Models;
-using LostArkBot.Src.Bot.Shared;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LostArkBot.Src.Bot.FileObjects
 {
@@ -34,12 +35,14 @@ namespace LostArkBot.Src.Bot.FileObjects
 
         public List<ManageUserModel> ManageUserModels { get; private set; } = new();
 
-        public StaticObjects()
+        private readonly LostArkBotContext dbcontext;
+
+        public StaticObjects(LostArkBotContext dbcontext)
         {
+            this.dbcontext = dbcontext;
             HomeLfgInitialization();
             ButtonsInitialization();
             EventImagesInitialization();
-            JsonParsers.InitializeAllFiles();
             MenuModelsInitialization();
         }
 
@@ -748,7 +751,7 @@ namespace LostArkBot.Src.Bot.FileObjects
             #endregion
 
             #region Challenge Guardian
-            ChallengeNames challengeNames = await JsonParsers.GetChallengeNamesFromJson();
+            List<ChallengeGuardian> challengeGuardians = dbcontext.ChallengeGuardians.OrderByDescending(x => x.WeekNumber).ToList();
 
             model = new()
             {
@@ -757,9 +760,9 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuPlaceholder = "Select Challenge Guardian",
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
-                    new MenuBuilderOption(challengeNames.ChallengeGuardian[0], challengeNames.ChallengeGuardian[0]),
-                    new MenuBuilderOption(challengeNames.ChallengeGuardian[1], challengeNames.ChallengeGuardian[1]),
-                    new MenuBuilderOption(challengeNames.ChallengeGuardian[2], challengeNames.ChallengeGuardian[2]),
+                    new MenuBuilderOption(challengeGuardians[0].Name, challengeGuardians[0].Name),
+                    new MenuBuilderOption(challengeGuardians[1].Name, challengeGuardians[1].Name),
+                    new MenuBuilderOption(challengeGuardians[2].Name, challengeGuardians[2].Name),
                     new MenuBuilderOption("All 3 Guardians", "All 3 Guardians"),
                 },
                 Title = "Challenge Guardian",
@@ -782,6 +785,8 @@ namespace LostArkBot.Src.Bot.FileObjects
             #endregion
 
             #region Challenge Abyss
+            List<ChallengeAbyss> challengeAbysses = dbcontext.ChallengeAbysses.ToList();
+
             model = new()
             {
                 MenuId = new[] { "home-lfg" },
@@ -789,8 +794,8 @@ namespace LostArkBot.Src.Bot.FileObjects
                 MenuPlaceholder = "Select Challenge Abyss",
                 MenuBuilderOptions = new List<MenuBuilderOption>()
                 {
-                    new MenuBuilderOption(challengeNames.ChallengeAbyss[0], challengeNames.ChallengeAbyss[0]),
-                    new MenuBuilderOption(challengeNames.ChallengeAbyss[1], challengeNames.ChallengeAbyss[1]),
+                    new MenuBuilderOption(challengeAbysses[0].Name, challengeAbysses[0].Name),
+                    new MenuBuilderOption(challengeAbysses[1].Name, challengeAbysses[1].Name),
                     new MenuBuilderOption("Both Abysses", "Both Abysses"),
                 },
                 Title = "Challenge Abyss",

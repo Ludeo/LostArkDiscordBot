@@ -152,7 +152,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 embed.AddField(field.Name, field.Value, field.Inline);
             }
 
-            embed.AddField(guildUser.DisplayName + " has joined",
+            embed.AddField(guildUser.DisplayName,
                                     $"{guildUser.Mention}\n{character.CharacterName}\n{character.ItemLevel}\n"
                                     + $"<:{emote.Name}:{emote.Id}> {character.ClassName}",
                                     true);

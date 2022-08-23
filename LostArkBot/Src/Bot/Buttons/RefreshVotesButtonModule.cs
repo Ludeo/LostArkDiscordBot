@@ -35,7 +35,7 @@ namespace LostArkBot.Src.Bot.Buttons
             List<ActiveMerchant> activeMerchants = dbcontext.ActiveMerchants.ToList();
             var merchantToRefresh = activeMerchants.Find(merchant =>
             {
-                return merchant.MerchantId == merchantId;
+                return merchant.Id == merchantId;
             });
 
             if (merchantToRefresh == null)

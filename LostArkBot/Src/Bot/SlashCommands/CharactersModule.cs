@@ -299,6 +299,12 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
+            if(dbcontext.StaticGroups.Where(x => x.Characters.Contains(character)).FirstOrDefault() is not null)
+            {
+                await FollowupAsync(text: "You are still part of a static group, can't delete character unless you leave it", ephemeral: true);
+                return;
+            }
+
             dbcontext.Characters.Remove(character);
             await dbcontext.SaveChangesAsync();
 

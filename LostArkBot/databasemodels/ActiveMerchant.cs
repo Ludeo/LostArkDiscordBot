@@ -5,7 +5,7 @@ namespace LostArkBot.databasemodels
 {
     public partial class ActiveMerchant
     {
-        public string MerchantId { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public string Zone { get; set; }
         public int CardId { get; set; }

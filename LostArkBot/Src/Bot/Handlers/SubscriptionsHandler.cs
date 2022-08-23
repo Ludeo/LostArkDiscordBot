@@ -51,6 +51,15 @@ namespace LostArkBot.Src.Bot.Handlers
                 });
             }
 
+            foreach(int item in allUserSubs)
+            {
+                if(!parsedNewSubscribedItems.Contains(item))
+                {
+                    Subscription sub = dbcontext.Subscriptions.Where(x => x.UserId == user.Id && x.ItemId == item).First();
+                    dbcontext.Subscriptions.Remove(sub);
+                }
+            }
+
             await dbcontext.SaveChangesAsync();
             await component.Message.DeleteAsync();
 

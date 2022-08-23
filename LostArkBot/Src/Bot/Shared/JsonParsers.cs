@@ -1,4 +1,6 @@
 ﻿using LostArkBot.Src.Bot.FileObjects;
+using LostArkBot.Src.Bot.FileObjects.LostMerchants;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,22 +27,14 @@ namespace LostArkBot.Src.Bot.Shared
             await File.WriteAllTextAsync(FileConfigurations.ConfigJson, JsonSerializer.Serialize(values));
         }
 
-        public static async Task InitializeAllFiles()
+        public static async Task<List<WebsiteMerchant>> GetActiveMerchantsJsonAsync()
         {
-            if (!File.Exists(FileConfigurations.ChallengeNamesJson))
-            {
-                await File.WriteAllTextAsync(FileConfigurations.ChallengeNamesJson, JsonSerializer.Serialize(new ChallengeNames()));
-            }
+            return JsonSerializer.Deserialize<List<WebsiteMerchant>>(await File.ReadAllTextAsync(FileConfigurations.ActiveMerchantsJson));
         }
 
-        public static async Task<ChallengeNames> GetChallengeNamesFromJson()
+        public static async Task WriteActiveMerchantsAsync(List<WebsiteMerchant> values)
         {
-            return JsonSerializer.Deserialize<ChallengeNames>(await File.ReadAllTextAsync(FileConfigurations.ChallengeNamesJson));
-        }
-
-        public static async Task WriteChallengeNamesAsync(ChallengeNames values)
-        {
-            await File.WriteAllTextAsync(FileConfigurations.ChallengeNamesJson, JsonSerializer.Serialize(values));
+            await File.WriteAllTextAsync(FileConfigurations.ActiveMerchantsJson, JsonSerializer.Serialize(values));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.databasemodels;
 using LostArkBot.Src.Bot.FileObjects;
 using LostArkBot.Src.Bot.Models;
 using LostArkBot.Src.Bot.Shared;
@@ -13,6 +14,13 @@ namespace LostArkBot.Src.Bot.SlashCommands
     [Group("admin", "Commands that only admins can use")]
     public class AdminModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
+        private readonly LostArkBotContext dbcontext;
+
+        public AdminModule(LostArkBotContext dbcontext)
+        {
+            this.dbcontext = dbcontext;
+        }
+
         [SlashCommand("edit-challenge-guardian", "Edits the list of current challenge guardians")]
         public async Task EditChallengeGuardian([Summary("name", "Name of the guardian")] string guardianName)
         {
@@ -24,22 +32,36 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            ChallengeNames challengeNames = await JsonParsers.GetChallengeNamesFromJson();
-            string old = challengeNames.ChallengeGuardian.First();
-            challengeNames.ChallengeGuardian.Remove(old);
-            challengeNames.ChallengeGuardian.Add(guardianName);
+            foreach(ChallengeGuardian guardian in dbcontext.ChallengeGuardians.ToList())
+            {
+                if(guardian.WeekNumber == 3)
+                {
+                    dbcontext.ChallengeGuardians.Remove(guardian);
+                    continue;
+                }
 
-            await JsonParsers.WriteChallengeNamesAsync(challengeNames);
+                guardian.WeekNumber++;
+                dbcontext.ChallengeGuardians.Update(guardian);
+            }
+
+            dbcontext.ChallengeGuardians.Add(new ChallengeGuardian { 
+                Name = guardianName,
+                WeekNumber = 1,
+            });
+
+            await dbcontext.SaveChangesAsync();
 
             List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
             LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeguardian");
             LfgModel newModel = oldModel;
 
+            List<ChallengeGuardian> challengeGuardians = dbcontext.ChallengeGuardians.OrderByDescending(x => x.WeekNumber).ToList();
+
             newModel.MenuBuilderOptions = new()
             {
-                new MenuBuilderOption(challengeNames.ChallengeGuardian[0], challengeNames.ChallengeGuardian[0]),
-                new MenuBuilderOption(challengeNames.ChallengeGuardian[1], challengeNames.ChallengeGuardian[1]),
-                new MenuBuilderOption(challengeNames.ChallengeGuardian[2], challengeNames.ChallengeGuardian[2]),
+                new MenuBuilderOption(challengeGuardians[0].Name, challengeGuardians[0].Name),
+                new MenuBuilderOption(challengeGuardians[1].Name, challengeGuardians[1].Name),
+                new MenuBuilderOption(challengeGuardians[2].Name, challengeGuardians[2].Name),
                 new MenuBuilderOption("All 3 Guardians", "All 3 Guardians"),
             };
 
@@ -63,25 +85,27 @@ namespace LostArkBot.Src.Bot.SlashCommands
                 return;
             }
 
-            ChallengeNames challengeNames = await JsonParsers.GetChallengeNamesFromJson();
-
-            List<string> newAbyss = new()
+            dbcontext.ChallengeAbysses.RemoveRange(dbcontext.ChallengeAbysses);
+            dbcontext.ChallengeAbysses.Add(new ChallengeAbyss {
+                Name = firstAbyssName,
+            });
+            dbcontext.ChallengeAbysses.Add(new ChallengeAbyss
             {
-                firstAbyssName,
-                secondAbyssName,
-            };
-            challengeNames.ChallengeAbyss = newAbyss;
+                Name = secondAbyssName,
+            });
 
-            await JsonParsers.WriteChallengeNamesAsync(challengeNames);
+            await dbcontext.SaveChangesAsync();
 
             List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
             LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeabyss");
             LfgModel newModel = oldModel;
 
+            List<ChallengeAbyss> challengeAbysses = dbcontext.ChallengeAbysses.ToList();
+
             newModel.MenuBuilderOptions = new()
             {
-                new MenuBuilderOption(challengeNames.ChallengeAbyss[0], challengeNames.ChallengeAbyss[0]),
-                new MenuBuilderOption(challengeNames.ChallengeAbyss[1], challengeNames.ChallengeAbyss[1]),
+                new MenuBuilderOption(challengeAbysses[0].Name, challengeAbysses[0].Name),
+                new MenuBuilderOption(challengeAbysses[1].Name, challengeAbysses[1].Name),
                 new MenuBuilderOption("Both Abysses", "Both Abysses"),
             };
 

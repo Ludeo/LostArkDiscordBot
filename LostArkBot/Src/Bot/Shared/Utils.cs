@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using LostArkBot.databasemodels;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -20,17 +21,17 @@ namespace LostArkBot.Src.Bot.Shared
         public static string ParseEngravings(string engravings)
         {
             List<string> splitEngravings = new();
-            if (engravings.Contains(","))
+            if (engravings.Contains(','))
             {
                 splitEngravings = engravings.Split(",").ToList();
             }
-            else if (engravings.Contains("\\"))
+            else if (engravings.Contains('\\'))
             {
-                splitEngravings = engravings.Split("\\").ToList();
+                splitEngravings = engravings.Split('\\').ToList();
             }
-            else if (engravings.Contains("/"))
+            else if (engravings.Contains('/'))
             {
-                splitEngravings = engravings.Split("/").ToList();
+                splitEngravings = engravings.Split('/').ToList();
             }
             else
             {
@@ -120,7 +121,7 @@ namespace LostArkBot.Src.Bot.Shared
         public static EmbedBuilder CreateProfileEmbed(string characterName, LostArkBotContext dbcontext, Func<Character, SocketGuildUser> getUser)
         {
             characterName = characterName.ToTitleCase();
-            Character character = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).FirstOrDefault();
+            Character character = dbcontext.Characters.Where(x => x.CharacterName.ToLower() == characterName.ToLower()).Include(x => x.User).FirstOrDefault();
 
             if (character is null)
             {

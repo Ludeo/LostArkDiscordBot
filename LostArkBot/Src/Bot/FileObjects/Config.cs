@@ -31,6 +31,18 @@ namespace LostArkBot.Src.Bot.FileObjects
         [JsonPropertyName("merchantchannel")]
         public ulong MerchantChannel { get; set; }
 
+        [JsonPropertyName("dbserver")]
+        public string DbServer { get; set; }
+
+        [JsonPropertyName("dbname")]
+        public string DbName { get; set; }
+
+        [JsonPropertyName("dbuser")]
+        public string DbUser { get; set; }
+
+        [JsonPropertyName("dbpassword")]
+        public string DbPassword { get; set; }
+
         private static Config GetConfig()
         {
             return JsonParsers.GetConfigFromJson();

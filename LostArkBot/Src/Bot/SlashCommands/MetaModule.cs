@@ -305,7 +305,7 @@ namespace LostArkBot.Src.Bot.SlashCommands
 
             character.ItemLevel = (int)metaGameCharacter.ItemLevel;
 
-            dbcontext.Characters.Add(character);
+            dbcontext.Characters.Update(character);
             await dbcontext.SaveChangesAsync();
 
             EmbedBuilder embedBuilder = new()
@@ -524,7 +524,17 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     string engravingName = engravingString[1..engravingString.IndexOf("]")];
                     int engravingValue = int.Parse(engravingString.Split("+")[1]);
 
-                    MetaEngraving engraving = (MetaEngraving) engravings.First(x => x.Name == engravingName);
+                    MetaEngraving engraving = engravingWithValues.FirstOrDefault(x => x.Name == engravingName);
+
+                    if(engraving is null)
+                    {
+                        engraving = JsonSerializer.Deserialize<MetaEngraving>(JsonSerializer.Serialize(engravings.First(x => x.Name == engravingName)));
+                        engraving.Value = 0;
+                    } else
+                    {
+                        engravingWithValues.Remove(engraving);
+                    }
+
                     engraving.Value += engravingValue;
                     engravingWithValues.Add(engraving);
                 }
@@ -535,7 +545,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     string engravingName = engravingString[1..engravingString.IndexOf("]")];
                     int engravingValue = int.Parse(engravingString.Split("+")[1]);
 
-                    MetaEngraving engraving = (MetaEngraving)engravings.First(x => x.Name == engravingName);
+                    MetaEngraving engraving = engravingWithValues.FirstOrDefault(x => x.Name == engravingName);
+
+                    if (engraving is null)
+                    {
+                        engraving = JsonSerializer.Deserialize<MetaEngraving>(JsonSerializer.Serialize(engravings.First(x => x.Name == engravingName)));
+                        engraving.Value = 0;
+                    }
+                    else
+                    {
+                        engravingWithValues.Remove(engraving);
+                    }
+
                     engraving.Value += engravingValue;
                     engravingWithValues.Add(engraving);
                 }
@@ -546,7 +567,18 @@ namespace LostArkBot.Src.Bot.SlashCommands
                     string engravingName = engravingString[1..engravingString.IndexOf("]")];
                     int engravingValue = int.Parse(engravingString.Split("+")[1]);
 
-                    MetaEngraving engraving = (MetaEngraving)engravings.First(x => x.Name == engravingName);
+                    MetaEngraving engraving = engravingWithValues.FirstOrDefault(x => x.Name == engravingName);
+
+                    if (engraving is null)
+                    {
+                        engraving = JsonSerializer.Deserialize<MetaEngraving>(JsonSerializer.Serialize(engravings.First(x => x.Name == engravingName)));
+                        engraving.Value = 0;
+                    }
+                    else
+                    {
+                        engravingWithValues.Remove(engraving);
+                    }
+
                     engraving.Value += engravingValue;
                     engravingWithValues.Add(engraving);
                 }

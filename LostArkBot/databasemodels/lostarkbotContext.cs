@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using LostArkBot.Src.Bot.FileObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace LostArkBot.databasemodels
@@ -15,6 +16,8 @@ namespace LostArkBot.databasemodels
         }
 
         public virtual DbSet<ActiveMerchant> ActiveMerchants { get; set; }
+        public virtual DbSet<ChallengeAbyss> ChallengeAbysses { get; set; }
+        public virtual DbSet<ChallengeGuardian> ChallengeGuardians { get; set; }
         public virtual DbSet<Character> Characters { get; set; }
         public virtual DbSet<Engraving> Engravings { get; set; }
         public virtual DbSet<MerchantItem> MerchantItems { get; set; }
@@ -26,7 +29,8 @@ namespace LostArkBot.databasemodels
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql("server=192.168.178.48;database=lostarkbot;user=LudeoPC;password=root", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.3.29-mariadb"));
+                Config config = Config.Default;
+                optionsBuilder.UseMySql($"server={config.DbServer};database={config.DbName};user={config.DbUser};password={config.DbPassword}", ServerVersion.Parse("10.3.29-mariadb"));
             }
         }
 
@@ -37,18 +41,15 @@ namespace LostArkBot.databasemodels
 
             modelBuilder.Entity<ActiveMerchant>(entity =>
             {
-                entity.HasKey(e => e.MerchantId)
-                    .HasName("PRIMARY");
-
                 entity.ToTable("ActiveMerchant");
 
                 entity.HasIndex(e => e.CardId, "activemerchantfk1_idx");
 
                 entity.HasIndex(e => e.RapportId, "activemerchantfk2_idx");
 
-                entity.Property(e => e.MerchantId)
+                entity.Property(e => e.Id)
                     .HasMaxLength(100)
-                    .HasColumnName("merchantId");
+                    .HasColumnName("id");
 
                 entity.Property(e => e.CardId)
                     .HasColumnType("int(11)")
@@ -83,6 +84,37 @@ namespace LostArkBot.databasemodels
                     .HasForeignKey(d => d.RapportId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("activemerchantfk2");
+            });
+
+            modelBuilder.Entity<ChallengeAbyss>(entity =>
+            {
+                entity.ToTable("ChallengeAbyss");
+
+                entity.Property(e => e.Id)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(45)
+                    .HasColumnName("name");
+            });
+
+            modelBuilder.Entity<ChallengeGuardian>(entity =>
+            {
+                entity.ToTable("ChallengeGuardian");
+
+                entity.Property(e => e.Id)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(45)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.WeekNumber)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("weekNumber");
             });
 
             modelBuilder.Entity<Character>(entity =>
