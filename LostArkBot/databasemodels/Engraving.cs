@@ -1,17 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace LostArkBot.databasemodels;
 
-namespace LostArkBot.databasemodels
+public class Engraving
 {
-    public partial class Engraving
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Desc0 { get; set; }
-        public string Desc1 { get; set; }
-        public string Desc2 { get; set; }
-        public string Icon { get; set; }
-        public string Class { get; set; }
-        public bool Penalty { get; set; }
-    }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public int Id { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Name { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Desc0 { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Desc1 { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Desc2 { get; set; }
+
+    public string Icon { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Class { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public bool Penalty { get; set; }
 }

@@ -1,18 +1,17 @@
-﻿namespace LostArkBot.Src.Bot.Models
+﻿namespace LostArkBot.Bot.Models;
+
+public class MenuBuilderOption
 {
-    public class MenuBuilderOption
+    public MenuBuilderOption(string label, string value, string description = null)
     {
-        public string Value { get; set; }
-
-        public string Label { get; set; }
-
-        public string Description { get; set; }
-
-        public MenuBuilderOption(string label, string value, string description = null)
-        {
-            Label = label;
-            Value = value;
-            Description = description;
-        }
+        this.Label = label;
+        this.Value = value;
+        this.Description = description;
     }
+
+    public string Value { get; }
+
+    public string Label { get; }
+
+    public string Description { get; }
 }

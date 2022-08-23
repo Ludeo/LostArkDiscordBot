@@ -1,21 +1,25 @@
 ﻿using System.Collections.Generic;
 
-namespace LostArkBot.databasemodels
+namespace LostArkBot.databasemodels;
+
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
+public class User
 {
-    public partial class User
+    public User()
     {
-        public User()
-        {
-            Characters = new HashSet<Character>();
-            StaticGroups = new HashSet<StaticGroup>();
-            Subscriptions = new HashSet<Subscription>();
-        }
-
-        public int Id { get; set; }
-        public ulong DiscordUserId { get; set; }
-
-        public virtual ICollection<Character> Characters { get; set; }
-        public virtual ICollection<StaticGroup> StaticGroups { get; set; }
-        public virtual ICollection<Subscription> Subscriptions { get; set; }
+        this.Characters = new HashSet<Character>();
+        this.StaticGroups = new HashSet<StaticGroup>();
+        this.Subscriptions = new HashSet<Subscription>();
     }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public int Id { get; set; }
+
+    public ulong DiscordUserId { get; init; }
+
+    public virtual ICollection<Character> Characters { get; }
+
+    public virtual ICollection<StaticGroup> StaticGroups { get; }
+
+    public virtual ICollection<Subscription> Subscriptions { get; }
 }

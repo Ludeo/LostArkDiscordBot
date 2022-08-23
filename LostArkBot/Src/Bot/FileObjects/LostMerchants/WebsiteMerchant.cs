@@ -1,62 +1,30 @@
-﻿using LostArkBot.databasemodels;
-using LostArkBot.Src.Bot.Models.Enums;
-using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
+namespace LostArkBot.Bot.FileObjects.LostMerchants;
+
+// ReSharper disable once ClassNeverInstantiated.Global
+public class WebsiteMerchant
 {
-    public class WebsiteMerchant
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
+    [JsonPropertyName("id")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Id { get; set; }
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+    [JsonPropertyName("name")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Name { get; set; }
 
-        [JsonPropertyName("zone")]
-        public string Zone { get; set; }
+    [JsonPropertyName("zone")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Zone { get; set; }
 
-        [JsonPropertyName("card")]
-        public MerchantItem Card { get; set; }
+    [JsonPropertyName("card")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public MerchantItem Card { get; set; }
 
-        [JsonPropertyName("rapport")]
-        public MerchantItem Rapport { get; set; }
+    [JsonPropertyName("rapport")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public MerchantItem Rapport { get; set; }
 
-        [JsonPropertyName("votes")]
-        public int Votes { get; set; }
-
-        public ActiveMerchant CastToActiveMerchant()
-        {
-            ActiveMerchant activeMerchant = new();
-            activeMerchant.Id = Id;
-            activeMerchant.Name = Name;
-            activeMerchant.Zone = Zone;
-            activeMerchant.Votes = Votes;
-            //activeMerchant.CardId = ParseItem(Card);
-            //activeMerchant.RapportId = ParseItem(Card);
-            activeMerchant.Card = new databasemodels.MerchantItem
-            {
-                Name = Card.Name,
-                Rarity = Card.Rarity.ToString(),
-            };
-            activeMerchant.Rapport = new databasemodels.MerchantItem
-            {
-                Name = Rapport.Name,
-                Rarity = Rapport.Rarity.ToString(),
-            };
-
-
-            return activeMerchant;
-        }
-
-        private int ParseItem(MerchantItem item)
-        {
-            if(Enum.TryParse(item.Name, out WanderingMerchantItemsEnum result))
-            {
-                return (int)result;
-            }
-
-            return -1;
-        }
-    }
+    [JsonPropertyName("votes")]
+    public int Votes { get; set; }
 }

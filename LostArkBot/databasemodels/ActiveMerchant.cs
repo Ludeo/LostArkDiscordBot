@@ -1,18 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace LostArkBot.databasemodels;
 
-namespace LostArkBot.databasemodels
+// ReSharper disable once ClassNeverInstantiated.Global
+public class ActiveMerchant
 {
-    public partial class ActiveMerchant
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Zone { get; set; }
-        public int CardId { get; set; }
-        public int RapportId { get; set; }
-        public int Votes { get; set; }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Id { get; set; }
 
-        public virtual MerchantItem Card { get; set; }
-        public virtual MerchantItem Rapport { get; set; }
-    }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Name { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Zone { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public int CardId { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public int RapportId { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public int Votes { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public virtual MerchantItem Card { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public virtual MerchantItem Rapport { get; set; }
 }

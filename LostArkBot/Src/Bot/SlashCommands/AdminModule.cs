@@ -1,173 +1,185 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
-using LostArkBot.databasemodels;
-using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Models;
-using LostArkBot.Src.Bot.Shared;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
+using LostArkBot.Bot.FileObjects;
+using LostArkBot.Bot.Models;
+using LostArkBot.Bot.Shared;
+using LostArkBot.databasemodels;
 
-namespace LostArkBot.Src.Bot.SlashCommands
+namespace LostArkBot.Bot.SlashCommands;
+
+[Group("admin", "Commands that only admins can use")]
+public class AdminModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
 {
-    [Group("admin", "Commands that only admins can use")]
-    public class AdminModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
+    private readonly LostArkBotContext dbcontext;
+
+    public AdminModule(LostArkBotContext dbcontext) => this.dbcontext = dbcontext;
+
+    [SlashCommand("edit-challenge-abyss", "Edits the list of current challenge abyss dungeons")]
+    public async Task EditChallengeAbyss(
+        [Summary("first", "Name of the first abyss dungeon")] string firstAbyssName,
+        [Summary("second", "Name of the second abyss dungeon")]
+        string secondAbyssName)
     {
-        private readonly LostArkBotContext dbcontext;
+        await this.DeferAsync(true);
 
-        public AdminModule(LostArkBotContext dbcontext)
+        if (!this.Context.Guild.GetUser(this.Context.User.Id).GuildPermissions.ManageMessages
+         || this.Context.Guild.Id != Config.Default.Server)
         {
-            this.dbcontext = dbcontext;
+            await this.FollowupAsync("You don't have permission to execute this command", ephemeral: true);
+
+            return;
         }
 
-        [SlashCommand("edit-challenge-guardian", "Edits the list of current challenge guardians")]
-        public async Task EditChallengeGuardian([Summary("name", "Name of the guardian")] string guardianName)
+        this.dbcontext.ChallengeAbysses.RemoveRange(this.dbcontext.ChallengeAbysses);
+
+        this.dbcontext.ChallengeAbysses.Add(
+                                            new ChallengeAbyss
+                                            {
+                                                Name = firstAbyssName,
+                                            });
+
+        this.dbcontext.ChallengeAbysses.Add(
+                                            new ChallengeAbyss
+                                            {
+                                                Name = secondAbyssName,
+                                            });
+
+        await this.dbcontext.SaveChangesAsync();
+
+        List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
+        LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeabyss");
+
+        List<ChallengeAbyss> challengeAbysses = this.dbcontext.ChallengeAbysses.ToList();
+
+        oldModel.MenuBuilderOptions = new List<MenuBuilderOption>
         {
-            await DeferAsync(ephemeral: true);
+            new(challengeAbysses[0].Name, challengeAbysses[0].Name),
+            new(challengeAbysses[1].Name, challengeAbysses[1].Name),
+            new("Both Abysses", "Both Abysses"),
+        };
 
-            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages || Context.Guild.Id != Config.Default.Server)
-            {
-                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
-                return;
-            }
+        lfgModels.Remove(oldModel);
+        lfgModels.Add(oldModel);
+        Program.StaticObjects.LfgModels = lfgModels;
 
-            foreach(ChallengeGuardian guardian in dbcontext.ChallengeGuardians.ToList())
-            {
-                if(guardian.WeekNumber == 3)
-                {
-                    dbcontext.ChallengeGuardians.Remove(guardian);
-                    continue;
-                }
+        await this.FollowupAsync("Challenge Abyss updated!", ephemeral: true);
+    }
 
-                guardian.WeekNumber++;
-                dbcontext.ChallengeGuardians.Update(guardian);
-            }
+    [SlashCommand("edit-challenge-guardian", "Edits the list of current challenge guardians")]
+    public async Task EditChallengeGuardian([Summary("name", "Name of the guardian")] string guardianName)
+    {
+        await this.DeferAsync(true);
 
-            dbcontext.ChallengeGuardians.Add(new ChallengeGuardian { 
-                Name = guardianName,
-                WeekNumber = 1,
-            });
+        if (!this.Context.Guild.GetUser(this.Context.User.Id).GuildPermissions.ManageMessages
+         || this.Context.Guild.Id != Config.Default.Server)
+        {
+            await this.FollowupAsync("You don't have permission to execute this command", ephemeral: true);
 
-            await dbcontext.SaveChangesAsync();
-
-            List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
-            LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeguardian");
-            LfgModel newModel = oldModel;
-
-            List<ChallengeGuardian> challengeGuardians = dbcontext.ChallengeGuardians.OrderByDescending(x => x.WeekNumber).ToList();
-
-            newModel.MenuBuilderOptions = new()
-            {
-                new MenuBuilderOption(challengeGuardians[0].Name, challengeGuardians[0].Name),
-                new MenuBuilderOption(challengeGuardians[1].Name, challengeGuardians[1].Name),
-                new MenuBuilderOption(challengeGuardians[2].Name, challengeGuardians[2].Name),
-                new MenuBuilderOption("All 3 Guardians", "All 3 Guardians"),
-            };
-
-            lfgModels.Remove(oldModel);
-            lfgModels.Add(newModel);
-            Program.StaticObjects.LfgModels = lfgModels;
-
-            await FollowupAsync(text: "Challenge Guardians updated!", ephemeral: true);
+            return;
         }
 
-        [SlashCommand("edit-challenge-abyss", "Edits the list of current challenge abyss dungeons")]
-        public async Task EditChallengeAbyss(
-            [Summary("first", "Name of the first abyss dungeon")] string firstAbyssName,
-            [Summary("second", "Name of the second abyss dungeon")] string secondAbyssName)
+        foreach (ChallengeGuardian guardian in this.dbcontext.ChallengeGuardians.ToList())
         {
-            await DeferAsync(ephemeral: true);
-
-            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages || Context.Guild.Id != Config.Default.Server)
+            if (guardian.WeekNumber == 3)
             {
-                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
-                return;
+                this.dbcontext.ChallengeGuardians.Remove(guardian);
+
+                continue;
             }
 
-            dbcontext.ChallengeAbysses.RemoveRange(dbcontext.ChallengeAbysses);
-            dbcontext.ChallengeAbysses.Add(new ChallengeAbyss {
-                Name = firstAbyssName,
-            });
-            dbcontext.ChallengeAbysses.Add(new ChallengeAbyss
-            {
-                Name = secondAbyssName,
-            });
-
-            await dbcontext.SaveChangesAsync();
-
-            List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
-            LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeabyss");
-            LfgModel newModel = oldModel;
-
-            List<ChallengeAbyss> challengeAbysses = dbcontext.ChallengeAbysses.ToList();
-
-            newModel.MenuBuilderOptions = new()
-            {
-                new MenuBuilderOption(challengeAbysses[0].Name, challengeAbysses[0].Name),
-                new MenuBuilderOption(challengeAbysses[1].Name, challengeAbysses[1].Name),
-                new MenuBuilderOption("Both Abysses", "Both Abysses"),
-            };
-
-            lfgModels.Remove(oldModel);
-            lfgModels.Add(newModel);
-            Program.StaticObjects.LfgModels = lfgModels;
-
-            await FollowupAsync(text: "Challenge Abyss updated!", ephemeral: true);
+            guardian.WeekNumber++;
+            this.dbcontext.ChallengeGuardians.Update(guardian);
         }
 
-        [SlashCommand("pick-random-member", "Randomly picks one of the guildmates")]
-        public async Task PickRandomMember()
+        this.dbcontext.ChallengeGuardians.Add(
+                                              new ChallengeGuardian
+                                              {
+                                                  Name = guardianName,
+                                                  WeekNumber = 1,
+                                              });
+
+        await this.dbcontext.SaveChangesAsync();
+
+        List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
+        LfgModel oldModel = lfgModels.Find(x => x.MenuId.Contains("home-lfg") && x.MenuItemId == "challengeguardian");
+
+        List<ChallengeGuardian> challengeGuardians = this.dbcontext.ChallengeGuardians.OrderByDescending(x => x.WeekNumber).ToList();
+
+        oldModel.MenuBuilderOptions = new List<MenuBuilderOption>
         {
-            await FollowupAsync();
+            new(challengeGuardians[0].Name, challengeGuardians[0].Name),
+            new(challengeGuardians[1].Name, challengeGuardians[1].Name),
+            new(challengeGuardians[2].Name, challengeGuardians[2].Name),
+            new("All 3 Guardians", "All 3 Guardians"),
+        };
 
-            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages || Context.Guild.Id != Config.Default.Server)
-            {
-                IMessage message = await FollowupAsync("auto-delete");
-                await message.DeleteAsync();
-                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
-                return;
-            }
+        lfgModels.Remove(oldModel);
+        lfgModels.Add(oldModel);
+        Program.StaticObjects.LfgModels = lfgModels;
 
-            List<IGuildUser> guildMembers = new();
-            IEnumerable<IUser> users = await Context.Guild.GetUsersAsync().FlattenAsync();
+        await this.FollowupAsync("Challenge Guardians updated!", ephemeral: true);
+    }
 
-            SocketRole role = Context.Guild.Roles.First(x => x.Name == "Guildmate");
-            ulong roleId = role.Id;
+    [SlashCommand("pick-random-member", "Randomly picks one of the guildmates")]
+    public async Task PickRandomMember()
+    {
+        await this.FollowupAsync();
 
-            foreach (IGuildUser user in users)
-            {
-                if (user.RoleIds.FirstOrDefault(x => x == roleId) != 0)
-                {
-                    guildMembers.Add(user);
-                }
-            }
+        if (!this.Context.Guild.GetUser(this.Context.User.Id).GuildPermissions.ManageMessages
+         || this.Context.Guild.Id != Config.Default.Server)
+        {
+            IMessage message = await this.FollowupAsync("auto-delete");
+            await message.DeleteAsync();
+            await this.FollowupAsync("You don't have permission to execute this command", ephemeral: true);
 
-            IGuildUser winner = guildMembers[Program.Random.Next(guildMembers.Count)];
-
-            await FollowupAsync(text: $"Winner out of {guildMembers.Count} guild members: {winner.Mention}\n**Congratulations!!!!!!!!!!!!!**");
-            await Context.Channel.SendMessageAsync(text: $"<@&{roleId}>");
+            return;
         }
 
-        [SlashCommand("set-as-merchant-channel", "Select THIS channel to post merchant items")]
-        public async Task SetMerchantChannel()
+        List<IGuildUser> guildMembers = new();
+        IEnumerable<IUser> users = await this.Context.Guild.GetUsersAsync().FlattenAsync();
+
+        SocketRole role = this.Context.Guild.Roles.First(x => x.Name == "Guildmate");
+        ulong roleId = role.Id;
+
+        foreach (IUser user1 in users)
         {
-            await DeferAsync(ephemeral: true);
+            IGuildUser user = (IGuildUser)user1;
 
-            if (Context.User.Id != Config.Default.Admin)
+            if (user.RoleIds.FirstOrDefault(x => x == roleId) != 0)
             {
-                await FollowupAsync(text: "You don't have permission to execute this command", ephemeral: true);
-                return;
+                guildMembers.Add(user);
             }
-
-            Config config = Config.Default;
-            config.MerchantChannel = Context.Channel.Id;
-            await JsonParsers.WriteConfigAsync(config);
-
-            Program.MerchantChannel = Context.Channel as SocketTextChannel;
-            Program.ReinitializeScheduledTasks();
-
-            await FollowupAsync(text: $"Channel {Program.MerchantChannel.Name} is now a merchant channel", ephemeral: true);
         }
+
+        IGuildUser winner = guildMembers[Program.Random.Next(guildMembers.Count)];
+
+        await this.FollowupAsync($"Winner out of {guildMembers.Count} guild members: {winner.Mention}\n**Congratulations!!!!!!!!!!!!!**");
+        await this.Context.Channel.SendMessageAsync($"<@&{roleId}>");
+    }
+
+    [SlashCommand("set-as-merchant-channel", "Select THIS channel to post merchant items")]
+    public async Task SetMerchantChannel()
+    {
+        await this.DeferAsync(true);
+
+        if (this.Context.User.Id != Config.Default.Admin)
+        {
+            await this.FollowupAsync("You don't have permission to execute this command", ephemeral: true);
+
+            return;
+        }
+
+        Config config = Config.Default;
+        config.MerchantChannel = this.Context.Channel.Id;
+        await JsonParsers.WriteConfigAsync(config);
+
+        Program.MerchantChannel = this.Context.Channel as SocketTextChannel;
+        Program.ReinitializeScheduledTasks();
+
+        await this.FollowupAsync($"Channel {Program.MerchantChannel.Name} is now a merchant channel", ephemeral: true);
     }
 }

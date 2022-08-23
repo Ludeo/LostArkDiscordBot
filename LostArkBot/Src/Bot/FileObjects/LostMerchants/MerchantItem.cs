@@ -1,13 +1,15 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
-{
-    public class MerchantItem
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+namespace LostArkBot.Bot.FileObjects.LostMerchants;
 
-        [JsonPropertyName("rarity")]
-        public Rarity Rarity { get; set; }
-    }
+// ReSharper disable once ClassNeverInstantiated.Global
+public class MerchantItem
+{
+    [JsonPropertyName("name")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Name { get; set; }
+
+    [JsonPropertyName("rarity")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public Rarity Rarity { get; set; }
 }

@@ -1,9 +1,8 @@
-﻿namespace LostArkBot.Src.Bot.FileObjects
+﻿namespace LostArkBot.Bot.FileObjects;
+
+public static class FileConfigurations
 {
-    public static class FileConfigurations
-    {
-        public const string ConfigJson = "config.json";
-        public const string DateExportFile = "DateExport.ics";
-        public const string ActiveMerchantsJson = "activemerchants.json";
-    }
+    public const string ConfigJson = "config.json";
+    public const string DateExportFile = "DateExport.ics";
+    public const string ActiveMerchantsJson = "activemerchants.json";
 }

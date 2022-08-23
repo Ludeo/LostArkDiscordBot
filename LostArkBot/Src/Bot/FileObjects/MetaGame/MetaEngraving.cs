@@ -1,9 +1,8 @@
 ﻿using LostArkBot.databasemodels;
 
-namespace LostArkBot.Src.Bot.FileObjects.MetaGame
+namespace LostArkBot.Bot.FileObjects.MetaGame;
+
+public class MetaEngraving : Engraving
 {
-    public class MetaEngraving : Engraving
-    {
-        public int Value { get; set; } = 0;
-    }
+    public int Value { get; set; }
 }

@@ -1,111 +1,109 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 
-namespace LostArkBot.Src.Bot.Buttons
+namespace LostArkBot.Bot.Buttons;
+
+public class StartButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
 {
-    public class StartButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
+    [ComponentInteraction("startbutton")]
+    public async Task Start()
     {
-        [ComponentInteraction("startbutton")]
-        public async Task Start()
+        await this.DeferAsync(true);
+
+        IMessage message;
+        SocketGuild guild;
+
+        if (this.Context.Channel.GetChannelType() == ChannelType.PublicThread)
         {
-            await DeferAsync(ephemeral: true);
+            SocketThreadChannel threadChannel = this.Context.Channel as SocketThreadChannel;
+            ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
+            message = await textChannel.GetMessageAsync(threadChannel.Id);
+            guild = threadChannel.Guild;
+        }
+        else
+        {
+            message = this.Context.Interaction.Message;
+            guild = this.Context.Guild;
+        }
 
-            IMessage message;
-            SocketGuild guild;
+        ulong authorId = ulong.Parse(message.Embeds.First().Author!.Value.Name.Split("\n")[1]);
 
-            if (Context.Channel.GetChannelType() == ChannelType.PublicThread)
+        if (this.Context.User.Id != authorId
+         && !guild.GetUser(this.Context.User.Id).GuildPermissions.ManageMessages)
+        {
+            await this.FollowupAsync(ephemeral: true, text: "You don't have permissions to kick users from the event!");
+
+            return;
+        }
+
+        Embed originalEmbed;
+
+        if (this.Context.Channel.GetChannelType() == ChannelType.PublicThread)
+        {
+            originalEmbed = message.Embeds.First() as Embed;
+        }
+        else
+        {
+            originalEmbed = this.Context.Interaction.Message.Embeds.First();
+        }
+
+        if (originalEmbed.Fields.Length is not 0)
+        {
+            bool skip = false;
+
+            switch (originalEmbed.Fields.Length)
             {
-                SocketThreadChannel threadChannel = Context.Channel as SocketThreadChannel;
-                ITextChannel textChannel = threadChannel.ParentChannel as ITextChannel;
-                message = await textChannel.GetMessageAsync(threadChannel.Id);
-                guild = threadChannel.Guild;
+                case 1:
+                {
+                    if (originalEmbed.Fields.First().Name is "Custom Message" or "Time")
+                    {
+                        skip = true;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    if (originalEmbed.Fields.Any(x => x.Name == "Custom Message")
+                     && originalEmbed.Fields.Any(x => x.Name == "Time"))
+                    {
+                        skip = true;
+                    }
+
+                    break;
+                }
             }
-            else
-            {
-                message = Context.Interaction.Message;
-                guild = Context.Guild;
-            }
 
-            ulong authorId = ulong.Parse(message.Embeds.First().Author.Value.Name.Split("\n")[1]);
-
-            if (Context.User.Id != authorId && !guild.GetUser(Context.User.Id).GuildPermissions.ManageMessages)
+            if (!skip)
             {
-                await FollowupAsync(ephemeral: true, text: "You don't have permissions to kick users from the event!");
+                List<string> userMentions = (from embedField in originalEmbed.Fields
+                                             where embedField.Name is not ("Custom Message" or "Time")
+                                             select embedField.Value.Split("\n")[0]).ToList();
+
+                string pingMessage = userMentions.Aggregate("Event has started!\n", (current, playerMention) => current + playerMention + "\n");
+
+                if (this.Context.Channel.GetChannelType() == ChannelType.PublicThread)
+                {
+                    await this.Context.Channel.SendMessageAsync(pingMessage);
+                }
+                else
+                {
+                    IThreadChannel threadChannel = this.Context.Guild.GetChannel(this.Context.Interaction.Message.Id) as IThreadChannel;
+                    await threadChannel.SendMessageAsync(pingMessage);
+                }
+
                 return;
             }
 
-            Embed originalEmbed;
+            await this.FollowupAsync("This event doesn't have participants", ephemeral: true);
 
-            if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
-            {
-                originalEmbed = message.Embeds.First() as Embed;
-            } else
-            {
-                originalEmbed = Context.Interaction.Message.Embeds.First();
-            }
-
-            if (originalEmbed.Fields.Length is not 0)
-            {
-                bool skip = false;
-                if (originalEmbed.Fields.Length is 1)
-                {
-                    if (originalEmbed.Fields.First().Name == "Custom Message" || originalEmbed.Fields.First().Name == "Time")
-                    {
-                        skip = true;
-                    }
-                } else if(originalEmbed.Fields.Length is 2)
-                {
-                    if(originalEmbed.Fields.Any(x => x.Name == "Custom Message") && originalEmbed.Fields.Any(x => x.Name == "Time"))
-                    {
-                        skip = true;
-                    }
-                }
-
-                if (!skip)
-                {
-                    List<string> userMentions = new();
-
-                    foreach (EmbedField embedField in originalEmbed.Fields)
-                    {
-                        if (embedField.Name == "Custom Message" || embedField.Name == "Time")
-                        {
-                            continue;
-                        }
-
-                        string playerMention = embedField.Value.Split("\n")[0];
-                        userMentions.Add(playerMention);
-                    }
-
-                    string pingMessage = "Event has started!\n";
-
-                    foreach (string playerMention in userMentions)
-                    {
-                        pingMessage += playerMention + "\n";
-                    }
-
-                    if(Context.Channel.GetChannelType() == ChannelType.PublicThread)
-                    {
-                        await Context.Channel.SendMessageAsync(pingMessage);
-                    } else
-                    {
-                        IThreadChannel threadChannel = Context.Guild.GetChannel(Context.Interaction.Message.Id) as IThreadChannel;
-                        await threadChannel.SendMessageAsync(pingMessage);
-                    }
-
-                    return;
-                } else
-                {
-                    await FollowupAsync(text: "This event doesn't have participants", ephemeral: true);
-
-                    return;
-                }
-            }
-
-            await FollowupAsync(text: "This event doesn't have participants", ephemeral: true);
+            return;
         }
+
+        await this.FollowupAsync("This event doesn't have participants", ephemeral: true);
     }
 }

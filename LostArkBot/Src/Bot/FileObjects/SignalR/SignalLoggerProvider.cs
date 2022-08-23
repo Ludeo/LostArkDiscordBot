@@ -1,27 +1,20 @@
-﻿using Discord;
-using LostArkBot.Src.Bot.Shared;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Discord;
+using LostArkBot.Bot.Shared;
+using Microsoft.Extensions.Logging;
 
-namespace LostArkBot.Src.Bot.FileObjects.SignalR
+namespace LostArkBot.Bot.FileObjects.SignalR;
+
+public class SignalLoggerProvider : ILoggerProvider
 {
-    public class SignalLoggerProvider : ILoggerProvider
+    public ILogger CreateLogger(string categoryName) => new SignalLogger();
+
+    public void Dispose()
     {
-        public ILogger CreateLogger(string categoryName)
-        {
-            return new SignalLogger();
-        }
-
-        public void Dispose()
-        {
-            DisposeAsync().GetAwaiter().GetResult();
-        }
-
-        public async Task DisposeAsync()
-        {
-            await LogService.Log(LogSeverity.Info, this.GetType().Name, "Disposing SignalLoggerProvider");
-            GC.SuppressFinalize(this);
-        }
+        this.DisposeAsync().GetAwaiter().GetResult();
+        GC.SuppressFinalize(this);
     }
+
+    private async Task DisposeAsync() => await LogService.Log(LogSeverity.Info, this.GetType().Name, "Disposing SignalLoggerProvider");
 }

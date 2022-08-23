@@ -1,10 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
+namespace LostArkBot.Bot.FileObjects.LostMerchants;
+
+public class MerchantInfo
 {
-    public class MerchantInfo
-    {
-        [JsonPropertyName("Region")]
-        public string Region { get; set; }
-    }
+    [JsonPropertyName("Region")]
+    public string Region { get; init; }
 }

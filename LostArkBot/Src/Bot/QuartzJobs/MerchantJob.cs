@@ -1,41 +1,38 @@
-﻿using Discord;
-using Discord.WebSocket;
-using LostArkBot.databasemodels;
-using LostArkBot.Src.Bot.FileObjects.LostMerchants;
-using LostArkBot.Src.Bot.Shared;
-using Quartz;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using LostArkBot.Bot.FileObjects.LostMerchants;
+using LostArkBot.Bot.Shared;
+using LostArkBot.databasemodels;
+using Quartz;
 
-namespace LostArkBot.Src.Bot.QuartzJobs
+namespace LostArkBot.Bot.QuartzJobs;
+
+// ReSharper disable once ClassNeverInstantiated.Global
+public class MerchantJob : IJob
 {
-    public class MerchantJob : IJob
+    private readonly LostArkBotContext dbcontext;
+
+    public MerchantJob(LostArkBotContext dbcontext) => this.dbcontext = dbcontext;
+
+    public async Task Execute(IJobExecutionContext context)
     {
-        private readonly LostArkBotContext dbcontext;
+        await LogService.Log(LogSeverity.Info, this.GetType().Name, "Executing Quartz job");
+        SocketTextChannel textChannel = Program.MerchantChannel;
+        List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
 
-        public MerchantJob(LostArkBotContext dbcontext)
-        {
-            this.dbcontext = dbcontext;
-        }
+        await textChannel.DeleteMessagesAsync(messages);
+        DateTimeOffset now = DateTimeOffset.Now;
+        DateTimeOffset nextMerchantsTime = now.AddHours(1).AddMinutes(-26).AddSeconds(-now.Second);
 
-        public async Task Execute(IJobExecutionContext context)
-        {
-            await LogService.Log(LogSeverity.Info, GetType().Name, "Executing Quartz job");
-            SocketTextChannel textChannel = Program.MerchantChannel;
-            List<IMessage> messages = await textChannel.GetMessagesAsync().Flatten().ToListAsync();
+        await textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
 
-            await textChannel.DeleteMessagesAsync(messages);
-            DateTimeOffset now = DateTimeOffset.Now;
-            DateTimeOffset nextMerchantsTime = now.AddHours(1).AddMinutes(-26).AddSeconds(-now.Second);
+        this.dbcontext.ActiveMerchants.RemoveRange(this.dbcontext.ActiveMerchants);
+        await this.dbcontext.SaveChangesAsync();
 
-            await textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
-
-            dbcontext.ActiveMerchants.RemoveRange(dbcontext.ActiveMerchants);
-            await dbcontext.SaveChangesAsync();
-
-            Program.MerchantMessages = new List<MerchantMessage>();
-        }
+        Program.MerchantMessages = new List<MerchantMessage>();
     }
 }

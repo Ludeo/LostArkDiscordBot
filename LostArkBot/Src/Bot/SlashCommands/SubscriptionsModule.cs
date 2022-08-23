@@ -1,158 +1,157 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
-using LostArkBot.databasemodels;
-using LostArkBot.Src.Bot.Models.Enums;
-using LostArkBot.Src.Bot.Shared;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
+using LostArkBot.Bot.Models.Enums;
+using LostArkBot.Bot.Shared;
+using LostArkBot.databasemodels;
 
-namespace LostArkBot.Src.Bot.SlashCommands
+namespace LostArkBot.Bot.SlashCommands;
+
+[Group("subscriptions", "Mange your merchant subscriptions")]
+// ReSharper disable once ClassNeverInstantiated.Global
+public class SubscriptionsModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
 {
-    [Group("subscriptions", "Mange your merchant subscriptions")]
-    public class SubscriptionsModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
+    private static LostArkBotContext dbcontext;
+
+    public SubscriptionsModule(LostArkBotContext dbcontext) => SubscriptionsModule.dbcontext = dbcontext;
+
+    private static SelectMenuBuilder AddToMenu(SelectMenuBuilder menu, WanderingMerchantItemsEnum value, bool inList)
     {
-        private static LostArkBotContext dbcontext;
+        SelectMenuOptionBuilder option = new();
+        string valueString = value.ToString();
+        string labelString = value.ToString();
 
-        public SubscriptionsModule(LostArkBotContext _dbcontext)
+        if (inList)
         {
-            dbcontext = _dbcontext;
+            option.WithDefault(true);
         }
 
-        [SlashCommand("list", "List of active merchant subscriptions")]
-        public async Task Subscriptions()
+        if (valueString == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.LegendaryRapport))
         {
-            await DeferAsync(ephemeral: true);
-            string activeSubs = await GetActiveSubscriptionsStringAsync(Context.User.Id);
-            await FollowupAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
+            labelString = "Legendary Rapport";
         }
 
-        [SlashCommand("update", "Update subscription to selected merchant items")]
-        public async Task Update()
+        option.WithLabel(labelString).WithValue(valueString);
+
+        return menu.AddOption(option);
+    }
+
+    private static async Task BuildCommonComponentsAsync(string text, SocketUser user, bool withDelete = true, SelectMenuBuilder menu = null)
+    {
+        ComponentBuilder menuBuilder = new();
+
+        if (menu != null)
         {
-            await DeferAsync();
-            await UpdateMenuBuilder(Context.User);
-            IMessage message = await FollowupAsync("auto-delete");
-            await message.DeleteAsync();
+            menuBuilder = menuBuilder.WithSelectMenu(menu);
         }
 
-        public static async Task UpdateMenuBuilder(SocketUser user)
+        if (withDelete)
         {
-            SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("update").WithPlaceholder("Update subscription");
-            List<int> userSub = await GetSubscriptionForUserAsync(user.Id);
+            ButtonBuilder delete = Utils.DeepCopy(Program.StaticObjects.DeleteButton);
+            delete.WithLabel("Exit");
+            menuBuilder = menuBuilder.WithButton(delete);
+        }
 
-            foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
+        MessageComponent menuComponent = menuBuilder.Build();
+        await user.SendMessageAsync(text, components: menuComponent);
+    }
+
+    public static async Task<string> GetActiveSubscriptionsStringAsync(ulong userId)
+    {
+        List<int> userSub = await GetSubscriptionForUserAsync(userId);
+
+        string activeSubs = "";
+
+        foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
+        {
+            if (userSub.Contains((int)value))
             {
-                if (!userSub.Contains((int)value))
+                if (activeSubs != "")
                 {
-                    menu = AddToMenu(menu, value, false);
+                    activeSubs += "\n";
                 }
 
-                if (userSub.Contains((int)value))
+                if (value.ToString() == "LegendaryRapport")
                 {
-                    menu = AddToMenu(menu, value, true);
+                    activeSubs += " - Legendary Rapport";
+                }
+                else
+                {
+                    activeSubs += $" - {value}";
                 }
             }
-
-            menu.WithMaxValues(menu.Options.Count);
-
-            string activeSubs = await GetActiveSubscriptionsStringAsync(user.Id);
-            await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, false, menu);
         }
 
-        private static async Task<List<int>> GetSubscriptionForUserAsync(ulong userId)
+        if (activeSubs == "")
         {
-            User user = dbcontext.Users.Where(x => x.DiscordUserId == userId).FirstOrDefault();
-
-            if (user is null)
-            {
-                EntityEntry<User> userEntry = dbcontext.Users.Add(new User
-                {
-                    DiscordUserId = userId,
-                });
-
-                await dbcontext.SaveChangesAsync();
-            }
-
-            List<int> userSub = dbcontext.Subscriptions.Where(x => x.User.DiscordUserId == userId).Select(x => x.ItemId).ToList();
-
-            return userSub;
+            activeSubs = " *No subscriptions*";
         }
 
-        private static SelectMenuBuilder AddToMenu(SelectMenuBuilder menu, WanderingMerchantItemsEnum value, bool inList)
+        return activeSubs;
+    }
+
+    private static async Task<List<int>> GetSubscriptionForUserAsync(ulong userId)
+    {
+        User user = dbcontext.Users.FirstOrDefault(x => x.DiscordUserId == userId);
+
+        if (user is null)
         {
-            SelectMenuOptionBuilder option = new();
-            string valueString = value.ToString();
-            string labelString = value.ToString();
+            dbcontext.Users.Add(
+                                new User
+                                {
+                                    DiscordUserId = userId,
+                                });
 
-            if (inList)
-            {
-                option.WithDefault(true);
-            }
-            if (valueString == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.LegendaryRapport))
-            {
-                labelString = "Legendary Rapport";
-            }
-
-            option.WithLabel(labelString).WithValue(valueString);
-            return menu.AddOption(option);
+            await dbcontext.SaveChangesAsync();
         }
 
-        private static async Task BuildCommonComponentsAsync(string text, SocketUser user, bool withDelete = true, SelectMenuBuilder menu = null)
+        List<int> userSub = dbcontext.Subscriptions.Where(x => x.User.DiscordUserId == userId).Select(x => x.ItemId).ToList();
+
+        return userSub;
+    }
+
+    [SlashCommand("list", "List of active merchant subscriptions")]
+    public async Task Subscriptions()
+    {
+        await this.DeferAsync(true);
+        string activeSubs = await GetActiveSubscriptionsStringAsync(this.Context.User.Id);
+        await this.FollowupAsync($"Your current subscriptions:\n{activeSubs}", ephemeral: true);
+    }
+
+    [SlashCommand("update", "Update subscription to selected merchant items")]
+    public async Task Update()
+    {
+        await this.DeferAsync();
+        await UpdateMenuBuilder(this.Context.User);
+        IMessage message = await this.FollowupAsync("auto-delete");
+        await message.DeleteAsync();
+    }
+
+    private static async Task UpdateMenuBuilder(SocketUser user)
+    {
+        SelectMenuBuilder menu = new SelectMenuBuilder().WithCustomId("update").WithPlaceholder("Update subscription");
+        List<int> userSub = await GetSubscriptionForUserAsync(user.Id);
+
+        foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
         {
-            ComponentBuilder menuBuilder = new();
-
-            if (menu != null)
+            if (!userSub.Contains((int)value))
             {
-                menuBuilder = menuBuilder.WithSelectMenu(menu);
+                menu = AddToMenu(menu, value, false);
             }
 
-            if (withDelete)
+            if (userSub.Contains((int)value))
             {
-                ButtonBuilder delete = Utils.DeepCopy(Program.StaticObjects.DeleteButton);
-                delete.WithLabel("Exit");
-                menuBuilder = menuBuilder.WithButton(delete);
+                menu = AddToMenu(menu, value, true);
             }
-
-            MessageComponent menuComponent = menuBuilder.Build();
-            await user.SendMessageAsync(text: text, components: menuComponent);
         }
 
-        public static async Task<string> GetActiveSubscriptionsStringAsync(ulong userId)
-        {
-            List<int> userSub = await GetSubscriptionForUserAsync(userId);
+        menu.WithMaxValues(menu.Options.Count);
 
-            string activeSubs = "";
-
-            foreach (WanderingMerchantItemsEnum value in Enum.GetValues(typeof(WanderingMerchantItemsEnum)))
-            {
-                if (userSub.Contains((int)value))
-                {
-                    if (activeSubs != "")
-                    {
-                        activeSubs += "\n";
-                    }
-
-                    if (value.ToString() == "LegendaryRapport")
-                    {
-                        activeSubs += $" - Legendary Rapport";
-                    }
-                    else
-                    {
-                        activeSubs += $" - {value}";
-                    }
-                }
-            }
-
-            if (activeSubs == "")
-            {
-                activeSubs = " *No subscriptions*";
-            }
-
-            return activeSubs;
-        }
+        string activeSubs = await GetActiveSubscriptionsStringAsync(user.Id);
+        await BuildCommonComponentsAsync($"Your current subscriptions:\n{activeSubs}", user, false, menu);
     }
 }

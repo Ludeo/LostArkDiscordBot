@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace LostArkBot.databasemodels;
 
-namespace LostArkBot.databasemodels
+public class ChallengeGuardian
 {
-    public partial class ChallengeGuardian
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int WeekNumber { get; set; }
-    }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public int Id { get; set; }
+
+    public string Name { get; init; }
+
+    public int WeekNumber { get; set; }
 }

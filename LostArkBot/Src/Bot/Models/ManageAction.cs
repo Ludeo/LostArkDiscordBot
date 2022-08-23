@@ -1,8 +1,7 @@
-﻿namespace LostArkBot.Src.Bot.Models
+﻿namespace LostArkBot.Bot.Models;
+
+public enum ManageAction
 {
-    public enum ManageAction
-    {
-        Kick,
-        Join,
-    }
+    Kick,
+    Join,
 }

@@ -1,56 +1,62 @@
-﻿using PuppeteerSharp;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PuppeteerSharp;
 
-namespace LostArkBot.Src.Bot.FileObjects.MetaGame
+namespace LostArkBot.Bot.FileObjects.MetaGame;
+
+public static class ProfileScreenShot
 {
-    public class ProfileScreenShot
+    public static async Task MakeProfileScreenshot(
+        List<MetaEngraving> sortedEngravings,
+        List<ArmorPiece> armorPieces,
+        List<Accessory> accessories,
+        MetaGameCharacter metaGameCharacter,
+        MetaGameCharacterJson metaGameCharacterJson,
+        string characterName)
     {
-        public static async Task<bool> MakeProfileScreenshot(List<MetaEngraving> sortedEngravings, List<ArmorPiece> armorPieces, List<Accessory> accessories, MetaGameCharacter metaGameCharacter, MetaGameCharacterJson metaGameCharacterJson, string characterName)
-        {
-            string smokeImage = "https://lostark.meta-game.gg/smoke-bg.jpg";
-            string classPreview = $"https://cdn.lostark.games.aws.dev/EFUI_IconAtlas/PC/{metaGameCharacter.ClassName.ToLower()}.png";
-            string classIcon = $"https://lostark.meta-game.gg/ClassIcons/{metaGameCharacter.ClassName}.svg";
+        const string smokeImage = "https://lostark.meta-game.gg/smoke-bg.jpg";
+        string classPreview = $"https://cdn.lostark.games.aws.dev/EFUI_IconAtlas/PC/{metaGameCharacter.ClassName.ToLower()}.png";
+        string classIcon = $"https://lostark.meta-game.gg/ClassIcons/{metaGameCharacter.ClassName}.svg";
 
-            string className = metaGameCharacter.ClassName;
-            string characterLevel = metaGameCharacterJson.Level.ToString();
-            string itemLevel = string.Format("{0:0.00}", metaGameCharacter.ItemLevel);
-            string pvpRank = metaGameCharacterJson.PvpRank.ToString();
-            string rosterLevel = metaGameCharacterJson.RosterLevel.ToString();
-            string guildName = metaGameCharacterJson.GuildName;
+        string className = metaGameCharacter.ClassName;
+        string characterLevel = metaGameCharacterJson.Level.ToString();
+        string itemLevel = $"{metaGameCharacter.ItemLevel:0.00}";
+        string pvpRank = metaGameCharacterJson.PvpRank.ToString();
+        string rosterLevel = metaGameCharacterJson.RosterLevel.ToString();
+        string guildName = metaGameCharacterJson.GuildName;
 
-            string crit = metaGameCharacterJson.Stats.First(x => x.Description == "Crit").Value;
-            string spec = metaGameCharacterJson.Stats.First(x => x.Description == "Specialization").Value;
-            string dom = metaGameCharacterJson.Stats.First(x => x.Description == "Domination").Value;
-            string swift = metaGameCharacterJson.Stats.First(x => x.Description == "Swiftness").Value;
-            string end = metaGameCharacterJson.Stats.First(x => x.Description == "Endurance").Value;
-            string exp = metaGameCharacterJson.Stats.First(x => x.Description == "Expertise").Value;
+        string crit = metaGameCharacterJson.Stats.First(x => x.Description == "Crit").Value;
+        string spec = metaGameCharacterJson.Stats.First(x => x.Description == "Specialization").Value;
+        string dom = metaGameCharacterJson.Stats.First(x => x.Description == "Domination").Value;
+        string swift = metaGameCharacterJson.Stats.First(x => x.Description == "Swiftness").Value;
+        string end = metaGameCharacterJson.Stats.First(x => x.Description == "Endurance").Value;
+        string exp = metaGameCharacterJson.Stats.First(x => x.Description == "Expertise").Value;
 
-            string engravingString = string.Empty;
-
-            foreach (MetaEngraving engraving in sortedEngravings)
-            {
-                engravingString += $@"<div class=""engraving"" style=""display: flex; padding: 3px 3px;"" style=""display: flex;"">
+        string engravingString = sortedEngravings.Aggregate(
+                                                            string.Empty,
+                                                            (current, engraving) => current +
+                                                                                    $@"<div class=""engraving"" style=""display: flex; padding: 3px 3px;"" style=""display: flex;"">
                         <div class=""eng-img"" style=""height: 30px; width: 30px; margin-right: 10px;"">
                             <img src=""{engraving.Icon}"" style=""height: 30px; width: 30px;"">
                         </div>
                         <div class=""eng-text""
                             style=""display: flex; justify-content: space-between; width: 215px; align-items: center; color: #B4AEA9;"">
                             <div>{engraving.Name}</div>
-                            <div style=""color: {(engraving.Penalty ? "red" : "#65aaec")};"">{(int)engraving.Value/5}</div>
+                            <div style=""color: {(engraving.Penalty ? "red" : "#65aaec")};"">{engraving.Value / 5}</div>
                         </div>
-                    </div>";
-            }
+                    </div>");
 
-            int height = 765;
-            if (sortedEngravings.Count > 5)
-            {
-                height += (sortedEngravings.Count - 5) * 38;
-            }
+        int height = 765;
 
-            #region htmlString
-            string htmlString = $@"<html>
+        if (sortedEngravings.Count > 5)
+        {
+            height += (sortedEngravings.Count - 5) * 38;
+        }
+
+        #region htmlString
+
+        string htmlString = $@"<html>
 
 <body style=""margin: 0px"">
     <div class=""wrapper""
@@ -273,30 +279,33 @@ namespace LostArkBot.Src.Bot.FileObjects.MetaGame
 
 </html>
 ";
-            #endregion
 
-            using var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-            await using var browser = await Puppeteer.LaunchAsync(
-                new LaunchOptions
-                {
-                    Headless = true,
-                    Args = new string[] { "--no-sandbox" },
-#if DEBUG
-#else
+        #endregion
+
+        using BrowserFetcher browserFetcher = new();
+        await browserFetcher.DownloadAsync();
+
+        await using Browser browser = await Puppeteer.LaunchAsync(
+                                                                  new LaunchOptions
+                                                                  {
+                                                                      Headless = true,
+                                                                      Args = new[] { "--no-sandbox" },
+                                                                      #if DEBUG
+                                                                      #else
                     ExecutablePath = "/usr/bin/chromium-browser"
-#endif
-                });
-            await using var page = await browser.NewPageAsync();
-            await page.SetContentAsync(htmlString);
-            await page.SetViewportAsync(new ViewPortOptions
-            {
-                Width = 1000,
-                Height = height,
-            });
-            await page.ScreenshotAsync("image.png");
+                                                                      #endif
+                                                                  });
 
-            return true;
-        }
+        await using Page page = await browser.NewPageAsync();
+        await page.SetContentAsync(htmlString);
+
+        await page.SetViewportAsync(
+                                    new ViewPortOptions
+                                    {
+                                        Width = 1000,
+                                        Height = height,
+                                    });
+
+        await page.ScreenshotAsync("image.png");
     }
 }
