@@ -1,21 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace LostArkBot.databasemodels;
-
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-public class StaticGroup
+namespace LostArkBot.databasemodels
 {
-    public StaticGroup() => this.Characters = new HashSet<Character>();
+    public partial class StaticGroup
+    {
+        public StaticGroup()
+        {
+            Characters = new HashSet<Character>();
+        }
 
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public int Id { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int LeaderId { get; set; }
 
-    public string Name { get; init; }
+        public virtual User Leader { get; set; }
 
-    public int LeaderId { get; init; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public virtual User Leader { get; set; }
-
-    public virtual ICollection<Character> Characters { get; }
+        public virtual ICollection<Character> Characters { get; set; }
+    }
 }

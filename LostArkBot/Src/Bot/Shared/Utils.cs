@@ -18,7 +18,7 @@ public static class Utils
         characterName = characterName.ToTitleCase();
 
         Character character = dbcontext
-                              .Characters.Where(x => string.Equals(x.CharacterName, characterName, StringComparison.CurrentCultureIgnoreCase))
+                              .Characters.Where(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName)
                               .Include(x => x.User)
                               .FirstOrDefault();
 
@@ -76,6 +76,10 @@ public static class Utils
         else if (engravings.Contains('/'))
         {
             splitEngravings = engravings.Split('/').ToList();
+        }
+        else if (string.IsNullOrEmpty(engravings))
+        {
+            return string.Empty;
         }
         else
         {

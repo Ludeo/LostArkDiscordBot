@@ -1,27 +1,17 @@
-﻿namespace LostArkBot.databasemodels;
+﻿using System;
+using System.Collections.Generic;
 
-public class Engraving
+namespace LostArkBot.databasemodels
 {
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public int Id { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Name { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Desc0 { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Desc1 { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Desc2 { get; set; }
-
-    public string Icon { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Class { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public bool Penalty { get; set; }
+    public partial class Engraving
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Desc0 { get; set; }
+        public string Desc1 { get; set; }
+        public string Desc2 { get; set; }
+        public string Icon { get; set; }
+        public string Class { get; set; }
+        public bool Penalty { get; set; }
+    }
 }

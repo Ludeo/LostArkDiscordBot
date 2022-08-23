@@ -1,9 +1,11 @@
-﻿namespace LostArkBot.databasemodels;
+﻿using System;
+using System.Collections.Generic;
 
-public class ChallengeAbyss
+namespace LostArkBot.databasemodels
 {
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public int Id { get; set; }
-
-    public string Name { get; init; }
+    public partial class ChallengeAbyss
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
 }

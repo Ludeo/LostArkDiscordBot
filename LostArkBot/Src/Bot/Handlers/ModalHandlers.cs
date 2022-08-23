@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using LostArkBot.Bot.Shared;
 using LostArkBot.databasemodels;
+using Microsoft.EntityFrameworkCore;
 
 namespace LostArkBot.Bot.Handlers;
 
@@ -28,11 +28,7 @@ public class ModalHandlers
             string characterName = modal.Data.CustomId[4..];
 
             Character character =
-                this.dbcontext.Characters.FirstOrDefault(
-                                                         x => string.Equals(
-                                                                            x.CharacterName,
-                                                                            characterName.Trim(),
-                                                                            StringComparison.CurrentCultureIgnoreCase));
+                this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName.Trim());
 
             if (character == null)
             {

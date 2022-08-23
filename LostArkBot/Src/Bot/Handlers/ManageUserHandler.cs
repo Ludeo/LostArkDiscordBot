@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using LostArkBot.Bot.Models;
 using LostArkBot.Bot.Shared;
 using LostArkBot.databasemodels;
+using Microsoft.EntityFrameworkCore;
 
 namespace LostArkBot.Bot.Handlers;
 
@@ -142,10 +143,8 @@ public static class ManageUserHandler
                         {
                             Character character =
                                 dbcontext.Characters.FirstOrDefault(
-                                                                    x => string.Equals(
-                                                                                       x.CharacterName,
-                                                                                       characterName,
-                                                                                       StringComparison.CurrentCultureIgnoreCase));
+                                                                    x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci")
+                                                                      == characterName);
 
                             newEmbed.AddField(await GetCharacterFieldAsync(character, component));
                             characterAdded = true;
@@ -186,7 +185,9 @@ public static class ManageUserHandler
                     }
                     else
                     {
-                        Character character = dbcontext.Characters.FirstOrDefault(x => x.CharacterName.ToLower() == characterName.ToLower());
+                        Character character =
+                            dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName);
+
                         newEmbed.AddField(await GetCharacterFieldAsync(character, component));
                     }
 

@@ -290,6 +290,7 @@ public static class ProfileScreenShot
                                                                   {
                                                                       Headless = true,
                                                                       Args = new[] { "--no-sandbox" },
+                                                                      Timeout = 60000,
                                                                       #if DEBUG
                                                                       #else
                     ExecutablePath = "/usr/bin/chromium-browser"

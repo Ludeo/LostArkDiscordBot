@@ -1,12 +1,13 @@
-﻿namespace LostArkBot.databasemodels;
+﻿using System;
+using System.Collections.Generic;
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-public class Subscription
+namespace LostArkBot.databasemodels
 {
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public int UserId { get; set; }
+    public partial class Subscription
+    {
+        public int UserId { get; set; }
+        public int ItemId { get; set; }
 
-    public int ItemId { get; init; }
-
-    public virtual User User { get; init; }
+        public virtual User User { get; set; }
+    }
 }

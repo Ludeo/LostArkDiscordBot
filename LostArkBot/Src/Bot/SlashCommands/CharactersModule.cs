@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -51,7 +50,7 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
         characterName = characterName.ToTitleCase();
 
         Character oldCharacter =
-            this.dbcontext.Characters.FirstOrDefault(x => string.Equals(x.CharacterName, characterName, StringComparison.CurrentCultureIgnoreCase));
+            this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName);
 
         if (oldCharacter is not null)
         {
@@ -136,7 +135,7 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
         characterName = characterName.ToTitleCase();
 
         Character selectedChar =
-            this.dbcontext.Characters.FirstOrDefault(x => string.Equals(x.CharacterName, characterName, StringComparison.CurrentCultureIgnoreCase));
+            this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName);
 
         if (selectedChar == null)
         {
@@ -172,17 +171,12 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
             input5,
         };
 
-        //TODO is input needed here?
         for (int i = 0; i < splitEngravings.Count; i++)
         {
             string eng = splitEngravings[i];
             TextInputBuilder input = inputBuilders.Find(x => x.CustomId[3..] == (i + 1).ToString());
-            input = input.WithValue(eng);
+            input.WithValue(eng);
         }
-
-        //TODO why does inputs exist here?
-        List<IMessageComponent> inputs = new();
-        inputBuilders.ForEach(inp => inputs.Add(inp.Build()));
 
         Modal modal = new ModalBuilder()
                       .WithCustomId($"eng:{characterName}")
@@ -322,7 +316,7 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
         characterName = characterName.ToTitleCase();
 
         Character character = this.dbcontext.Characters
-                                  .Where(x => string.Equals(x.CharacterName, characterName, StringComparison.CurrentCultureIgnoreCase))
+                                  .Where(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName)
                                   .Include(x => x.User)
                                   .FirstOrDefault();
 

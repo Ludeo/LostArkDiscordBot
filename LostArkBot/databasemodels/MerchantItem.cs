@@ -1,26 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace LostArkBot.databasemodels;
-
-// ReSharper disable once ClassNeverInstantiated.Global
-public class MerchantItem
+namespace LostArkBot.databasemodels
 {
-    public MerchantItem()
+    public partial class MerchantItem
     {
-        this.ActiveMerchantCards = new HashSet<ActiveMerchant>();
-        this.ActiveMerchantRapports = new HashSet<ActiveMerchant>();
+        public MerchantItem()
+        {
+            ActiveMerchantCards = new HashSet<ActiveMerchant>();
+            ActiveMerchantRapports = new HashSet<ActiveMerchant>();
+        }
+
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Rarity { get; set; }
+
+        public virtual ICollection<ActiveMerchant> ActiveMerchantCards { get; set; }
+        public virtual ICollection<ActiveMerchant> ActiveMerchantRapports { get; set; }
     }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public int Id { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Name { get; init; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Rarity { get; init; }
-
-    public virtual ICollection<ActiveMerchant> ActiveMerchantCards { get; }
-
-    public virtual ICollection<ActiveMerchant> ActiveMerchantRapports { get; }
 }
