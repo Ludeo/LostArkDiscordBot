@@ -1,30 +1,27 @@
-﻿using Discord;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Discord;
 
-namespace LostArkBot.Src.Bot.Models
+namespace LostArkBot.Bot.Models;
+
+public class LfgModel
 {
-    public class LfgModel
-    {
-        public string[] MenuId { get; set; }
+    public string[] MenuId { get; init; }
 
-        public string MenuItemId { get; set; }
+    public string MenuItemId { get; init; }
 
-        public string MenuPlaceholder { get; set; }
+    public string MenuPlaceholder { get; init; }
 
-        public List<MenuBuilderOption> MenuBuilderOptions { get; set; } = new();
+    public List<MenuBuilderOption> MenuBuilderOptions { get; set; } = new();
 
-        public string Title { get; set; }
+    public string Title { get; init; }
 
-        public string Description { get; set; }
+    public string Description { get; init; }
 
-        public Color Color { get; set; }
+    public Color Color { get; init; }
 
-        public string ThumbnailUrl { get; set; }
+    public string ThumbnailUrl { get; init; }
 
-        public string ImageUrl { get; set; }
+    public bool IsEnd { get; init; }
 
-        public bool IsEnd { get; set; } = false;
-
-        public int Players { get; set; }
-    }
+    public int Players { get; init; }
 }

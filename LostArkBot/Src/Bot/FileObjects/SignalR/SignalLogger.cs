@@ -1,71 +1,53 @@
-﻿using Discord;
-using LostArkBot.Src.Bot.Shared;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Discord;
+using LostArkBot.Bot.Shared;
+using Microsoft.Extensions.Logging;
 
-namespace LostArkBot.Src.Bot.FileObjects.SignalR
+namespace LostArkBot.Bot.FileObjects.SignalR;
+
+public class SignalLogger : ILogger
 {
-    public class SignalLogger : ILogger
+    public IDisposable BeginScope<TState>(TState state) => this.BeginScopeAsync(state).GetAwaiter().GetResult();
+
+    public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;
+
+    public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
-        public IDisposable BeginScope<TState>(TState state)
+        LogSeverity discordLogLevel = LogSeverity.Info;
+
+        switch (logLevel)
         {
-            return BeginScopeAsync(state).GetAwaiter().GetResult();
+            case LogLevel.Critical: discordLogLevel = LogSeverity.Critical;
+
+                break;
+            case LogLevel.Debug:    discordLogLevel = LogSeverity.Debug;
+
+                break;
+            case LogLevel.Error:    discordLogLevel = LogSeverity.Error;
+
+                break;
+            case LogLevel.None:     return;
+            case LogLevel.Trace:    discordLogLevel = LogSeverity.Verbose;
+
+                break;
+            case LogLevel.Warning:  discordLogLevel = LogSeverity.Warning;
+
+                break;
+            case LogLevel.Information: break;
+            default:                   throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
         }
 
-        public async Task<IDisposable> BeginScopeAsync<TState>(TState state)
+        if (exception != null)
         {
-            await LogService.Log(LogSeverity.Info, GetType().Name, "Begging Scope with state: " + state);
-            return default!;
+            await LogService.Log(discordLogLevel, this.GetType().Name, exception.Message, exception);
         }
+    }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            if (logLevel == LogLevel.None)
-            {
-                return false;
-            }
+    private async Task<IDisposable> BeginScopeAsync<TState>(TState state)
+    {
+        await LogService.Log(LogSeverity.Info, this.GetType().Name, "Begging Scope with state: " + state);
 
-            return true;
-        }
-
-        public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            LogSeverity discordLogLevel = LogSeverity.Info;
-
-            if (logLevel == LogLevel.Critical)
-            {
-                discordLogLevel = LogSeverity.Critical;
-            }
-            else if (logLevel == LogLevel.Debug)
-            {
-                discordLogLevel = LogSeverity.Debug;
-            }
-            else if (logLevel == LogLevel.Error)
-            {
-                discordLogLevel = LogSeverity.Error;
-            }
-            else if (logLevel == LogLevel.None)
-            {
-                return;
-            }
-            else if (logLevel == LogLevel.Trace)
-            {
-                discordLogLevel = LogSeverity.Verbose;
-            }
-            else if (logLevel == LogLevel.Warning)
-            {
-                discordLogLevel = LogSeverity.Warning;
-            }
-
-            if (exception != null)
-            {
-                await LogService.Log(discordLogLevel, GetType().Name, exception.Message, exception);
-            }
-            else
-            {
-                //await LogService.Log(discordLogLevel, GetType().Name, $"EventId: {eventId}, TState: {state}");
-            }
-        }
+        return default!;
     }
 }

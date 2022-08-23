@@ -1,13 +1,12 @@
-﻿namespace LostArkBot.Src.Bot.FileObjects.MetaGame
+﻿namespace LostArkBot.Bot.FileObjects.MetaGame;
+
+public class ArmorPiece
 {
-    public class ArmorPiece
-    {
-        public string Name { get; set; }
+    public string Name { get; init; }
 
-        public string ItemLevel { get; set; }
+    public string ItemLevel { get; init; }
 
-        public string Icon { get; set; }
+    public string Icon { get; init; }
 
-        public string Color { get; set; }
-    }
+    public string Color { get; init; }
 }

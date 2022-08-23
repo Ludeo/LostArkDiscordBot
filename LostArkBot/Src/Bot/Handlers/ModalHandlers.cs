@@ -1,45 +1,65 @@
-﻿using Discord;
-using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
-using LostArkBot.Src.Bot.Shared;
-using LostArkBot.Src.Bot.SlashCommands;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using LostArkBot.Bot.Shared;
+using LostArkBot.databasemodels;
+using Microsoft.EntityFrameworkCore;
 
-namespace LostArkBot.Src.Bot.Handlers
+namespace LostArkBot.Bot.Handlers;
+
+public class ModalHandlers
 {
-    public class ModalHandlers
+    private readonly LostArkBotContext dbcontext;
+
+    public ModalHandlers(LostArkBotContext context) => this.dbcontext = context;
+
+    public async Task ModalHandler(SocketModal modal)
     {
-        public static async Task ModalHandler(SocketModal modal)
+        await modal.DeferAsync();
+
+        if (modal.Data.CustomId[..3] == "eng")
         {
-            await modal.DeferAsync();
+            IEnumerable<string> nonEmptyEngravings =
+                modal.Data.Components.ToList().FindAll(x => x.Value.Trim() != "").Select(x => x.Value.ToTitleCase());
 
-            if (modal.Data.CustomId[..3] == "eng")
+            string engravingsString = string.Join(",", nonEmptyEngravings);
+            string characterName = modal.Data.CustomId[4..];
+
+            Character character =
+                this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName.Trim());
+
+            if (character == null)
             {
-                IEnumerable<string> nonEmptyEngravings = modal.Data.Components.ToList().FindAll(x => x.Value.Trim() != "").Select(x => x.Value.ToTitleCase());
-                string engravingsString = string.Join(",", nonEmptyEngravings);
-                List<Character> chars = await JsonParsers.GetCharactersFromJsonAsync();
-                Character character = chars.Find(x => x.CharacterName.ToLower() == modal.Data.CustomId[4..].Trim().ToLower());
+                IMessage message = await modal.FollowupAsync("auto-delete");
+                await message.DeleteAsync();
+                await modal.FollowupAsync($"No character named {character.CharacterName} was found", ephemeral: true);
 
-                if (character == null)
-                {
-                    IMessage message = await modal.FollowupAsync("auto-delete");
-                    await message.DeleteAsync();
-                    await modal.FollowupAsync($"No character named {character.CharacterName} was found", ephemeral: true);
-                    return;
-                }
-
-                character.Engravings = engravingsString;
-                await JsonParsers.WriteCharactersAsync(chars);
-                SocketGuildUser user = await modal.Channel.GetUserAsync(modal.User.Id) as SocketGuildUser;
-                EmbedBuilder embedBuilder = await new CharactersModule().CreateEmbedAsync(character.CharacterName, (character) =>
-                {
-                    return user;
-                });
-
-                await modal.FollowupAsync(embed: embedBuilder.Build());
+                return;
             }
+
+            character.Engravings = engravingsString;
+            this.dbcontext.Characters.Update(character);
+            await this.dbcontext.SaveChangesAsync();
+
+            SocketGuildUser user = await modal.Channel.GetUserAsync(modal.User.Id) as SocketGuildUser;
+
+            EmbedBuilder embedBuilder = Utils.CreateProfileEmbed(
+                                                                 character.CharacterName,
+                                                                 this.dbcontext,
+                                                                 _ => user);
+
+            if (embedBuilder is null)
+            {
+                IMessage deleteMessage = await modal.FollowupAsync("auto-delete");
+                await deleteMessage.DeleteAsync();
+                await modal.FollowupAsync($"{character.CharacterName} doesn't exist. You can add it with **/characters add**", ephemeral: true);
+
+                return;
+            }
+
+            await modal.FollowupAsync(embed: embedBuilder.Build());
         }
     }
 }

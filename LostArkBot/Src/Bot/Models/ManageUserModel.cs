@@ -1,9 +1,8 @@
-﻿namespace LostArkBot.Src.Bot.Models
-{
-    public class ManageUserModel
-    {
-        public string MenuId { get; set; }
+﻿namespace LostArkBot.Bot.Models;
 
-        public ManageAction Action { get; set; }
-    }
+public class ManageUserModel
+{
+    public string MenuId { get; init; }
+
+    public ManageAction Action { get; init; }
 }

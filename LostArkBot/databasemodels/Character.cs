@@ -5,9 +5,13 @@ namespace LostArkBot.databasemodels
 {
     public partial class Character
     {
+        public Character()
+        {
+            StaticGroups = new HashSet<StaticGroup>();
+        }
+
         public int Id { get; set; }
         public string CharacterName { get; set; }
-        public long DiscordUserId { get; set; }
         public string ClassName { get; set; }
         public int ItemLevel { get; set; }
         public string Engravings { get; set; }
@@ -19,5 +23,10 @@ namespace LostArkBot.databasemodels
         public int? Exp { get; set; }
         public string ProfilePicture { get; set; }
         public string CustomProfileMessage { get; set; }
+        public int UserId { get; set; }
+
+        public virtual User User { get; set; }
+
+        public virtual ICollection<StaticGroup> StaticGroups { get; set; }
     }
 }

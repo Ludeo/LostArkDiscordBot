@@ -1,13 +1,15 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LostArkBot.Src.Bot.FileObjects.MetaGame
-{
-    public class Stat
-    {
-        [JsonPropertyName("value")]
-        public string Value { get; set; }
+namespace LostArkBot.Bot.FileObjects.MetaGame;
 
-        [JsonPropertyName("description")]
-        public string Description { get; set; }
-    }
+// ReSharper disable once ClassNeverInstantiated.Global
+public class Stat
+{
+    [JsonPropertyName("value")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Value { get; set; }
+
+    [JsonPropertyName("description")]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Description { get; set; }
 }

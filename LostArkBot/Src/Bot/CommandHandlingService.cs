@@ -2,90 +2,86 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
-using Discord.WebSocket;
-using LostArkBot.Src.Bot.FileObjects;
 using Discord.Interactions;
-using LostArkBot.Src.Bot.Handlers;
-using LostArkBot.Src.Bot.Shared;
-using System.Collections.Generic;
+using Discord.WebSocket;
+using LostArkBot.Bot.FileObjects;
+using LostArkBot.Bot.Handlers;
+using LostArkBot.Bot.Shared;
+using LostArkBot.databasemodels;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace LostArkBot.Bot
+namespace LostArkBot.Bot;
+
+public class CommandHandlingService
 {
-    public class CommandHandlingService
+    private readonly DiscordSocketClient client;
+    private readonly InteractionService commands;
+    private readonly IServiceProvider services;
+
+    public CommandHandlingService(InteractionService commands, DiscordSocketClient client, IServiceProvider services)
     {
-        private readonly DiscordSocketClient client;
-        private readonly InteractionService commands;
-        private readonly IServiceProvider services;
+        this.services = services;
+        this.client = client;
+        this.commands = commands;
+    }
 
-        public CommandHandlingService(InteractionService commands, DiscordSocketClient client, IServiceProvider services)
+    private static IInteractionContext CreateGeneric(DiscordSocketClient client, SocketInteraction interaction) =>
+        interaction switch
         {
-            this.services = services;
-            this.client = client;
-            this.commands = commands;
-        }
-
-        public async Task Initialize() 
-        {
-            try
-            {
-                await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
-                client.InteractionCreated += InteractionCreated;
-                client.SelectMenuExecuted += MenuHandlerClass.MenuHandler;
-                client.ModalSubmitted += ModalHandlers.ModalHandler;
-                client.Ready += Ready;
-            } catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-
-        private async Task Ready()
-        {
-            await RegisterCommands();
-
-            foreach(SocketGuild guild in client.Guilds)
-            {
-                await LogService.Log(LogSeverity.Info, "Ready", "Connected to " + guild.Name);
-            }
-
-            client.Ready -= Ready;
-        }
-
-        private async Task RegisterCommands()
-        {
-            //for deleting commands, make sure to put it on release
-            //List<ApplicationCommandProperties> applicationCommandProperties = new();
-            //await client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
-
-            try
-            {
-#if DEBUG
-                await commands.RegisterCommandsToGuildAsync(Config.Default.Server);
-#else
-                await commands.RegisterCommandsGloballyAsync();
-#endif
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        private async Task InteractionCreated(SocketInteraction arg)
-        {
-            var ctx = CreateGeneric(client, arg);
-            await commands.ExecuteCommandAsync(ctx, services);
-        }
-
-        private static IInteractionContext CreateGeneric(DiscordSocketClient client, SocketInteraction interaction) => interaction switch
-        {
-            SocketUserCommand user => new SocketInteractionContext<SocketUserCommand>(client, user),
-            SocketSlashCommand slash => new SocketInteractionContext<SocketSlashCommand>(client, slash),
-            SocketMessageCommand command => new SocketInteractionContext<SocketMessageCommand>(client, command),
+            SocketUserCommand user           => new SocketInteractionContext<SocketUserCommand>(client, user),
+            SocketSlashCommand slash         => new SocketInteractionContext<SocketSlashCommand>(client, slash),
+            SocketMessageCommand command     => new SocketInteractionContext<SocketMessageCommand>(client, command),
             SocketMessageComponent component => new SocketInteractionContext<SocketMessageComponent>(client, component),
-            SocketModal modal => new SocketInteractionContext<SocketModal>(client, modal),
-            _ => throw new InvalidOperationException("This interaction type is not supported!")
+            SocketModal modal                => new SocketInteractionContext<SocketModal>(client, modal),
+            _                                => throw new InvalidOperationException("This interaction type is not supported!"),
         };
+
+    public async Task Initialize()
+    {
+        try
+        {
+            await this.commands.AddModulesAsync(Assembly.GetExecutingAssembly(), this.services);
+            this.client.InteractionCreated += this.InteractionCreated;
+            this.client.SelectMenuExecuted += new MenuHandlerClass(this.services.GetRequiredService<LostArkBotContext>()).MenuHandler;
+            this.client.ModalSubmitted += new ModalHandlers(this.services.GetRequiredService<LostArkBotContext>()).ModalHandler;
+            this.client.Ready += this.Ready;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+
+            throw;
+        }
+    }
+
+    private async Task InteractionCreated(SocketInteraction arg)
+    {
+        IInteractionContext ctx = CreateGeneric(this.client, arg);
+        await this.commands.ExecuteCommandAsync(ctx, this.services);
+    }
+
+    private async Task Ready()
+    {
+        await this.RegisterCommands();
+
+        foreach (SocketGuild guild in this.client.Guilds)
+        {
+            await LogService.Log(LogSeverity.Info, "Ready", "Connected to " + guild.Name);
+        }
+
+        this.client.Ready -= this.Ready;
+    }
+
+    private async Task RegisterCommands()
+    {
+        //for deleting commands, make sure to put it on release
+        //List<ApplicationCommandProperties> applicationCommandProperties = new();
+        //await client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
+
+        #if DEBUG
+        await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);
+        #else
+                await commands.RegisterCommandsGloballyAsync();
+        #endif
     }
 }

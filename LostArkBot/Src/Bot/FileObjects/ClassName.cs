@@ -1,28 +1,27 @@
 ﻿using Discord.Interactions;
 
-namespace LostArkBot.Src.Bot.FileObjects
+namespace LostArkBot.Bot.FileObjects;
+
+public enum ClassName
 {
-    public enum ClassName
-    {
-        [Hide]
-        Default,
-        Arcanist,
-        Artillerist, 
-        Bard,
-        Berserker,
-        Deadeye,
-        Deathblade,
-        Destroyer,
-        Glaivier,
-        Gunlancer,
-        Gunslinger,
-        Paladin,
-        Scrapper,
-        Shadowhunter,
-        Sharpshooter,
-        Sorceress,
-        Soulfist,
-        Striker,
-        Wardancer,
-    }
+    [Hide]
+    Default,
+    Arcanist,
+    Artillerist,
+    Bard,
+    Berserker,
+    Deadeye,
+    Deathblade,
+    Destroyer,
+    Glaivier,
+    Gunlancer,
+    Gunslinger,
+    Paladin,
+    Scrapper,
+    Shadowhunter,
+    Sharpshooter,
+    Sorceress,
+    Soulfist,
+    Striker,
+    Wardancer,
 }

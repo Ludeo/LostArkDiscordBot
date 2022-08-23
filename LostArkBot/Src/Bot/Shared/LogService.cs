@@ -1,83 +1,61 @@
-﻿using Discord;
-using Discord.Commands;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
 
-namespace LostArkBot.Src.Bot.Shared
+namespace LostArkBot.Bot.Shared;
+
+public static class LogService
 {
-    public class LogService
+    public static async Task<Task> Log(LogSeverity severity, string source, string message, Exception exception = null)
     {
+        LogMessage log = new(severity, source, message, exception);
+        string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
+        string logFileName = $"Logs/log_{DateTime.Now:MM_dd_yyyy}.txt";
 
-        public static async Task<Task> LogHandler(LogMessage log)
+        if (log.Exception is CommandException commandException)
         {
-            return await Log(log.Severity, log.Source, log.Message, log.Exception);
+            text =
+                $"[Command/{log.Severity}] {commandException.Command.Name} failed to execute in {commandException.Context.Channel.Name}\n{commandException}";
         }
 
-        public static async Task<Task> Log(LogSeverity severity, string source, string message, Exception exception = null)
+        Console.ForegroundColor = log.Severity switch
         {
-            LogMessage log = new(severity, source, message, exception);
-            string text = $"[General/{log.Severity}] {log.ToString(padSource: 15)}";
-            string logFileName = $"Logs/log_{DateTime.Now:MM_dd_yyyy}.txt";
+            LogSeverity.Critical => ConsoleColor.DarkRed,
+            LogSeverity.Error    => ConsoleColor.Red,
+            LogSeverity.Warning  => ConsoleColor.Yellow,
+            LogSeverity.Debug    => ConsoleColor.Cyan,
+            LogSeverity.Info     => ConsoleColor.Green,
+            LogSeverity.Verbose  => ConsoleColor.Magenta,
+            _                    => ConsoleColor.White,
+        };
 
-            if (log.Exception is CommandException commandException)
-            {
-                text = $"[Command/{log.Severity}] {commandException.Command.Name} failed to execute in {commandException.Context.Channel.Name}\n{commandException}";
-            }
+        Console.WriteLine(text);
 
-            if (log.Severity == LogSeverity.Critical)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-            }
-            else if (log.Severity == LogSeverity.Error)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-            else if (log.Severity == LogSeverity.Warning)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-            }
-            else if (log.Severity == LogSeverity.Debug)
-            {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-            }
-            else if (log.Severity == LogSeverity.Info)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-            }
-            else if (log.Severity == LogSeverity.Verbose)
-            {
-                Console.ForegroundColor = ConsoleColor.Magenta;
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-            }
+        await TryWritingToLog(text, logFileName);
 
-            Console.WriteLine(text);
+        return Task.CompletedTask;
+    }
 
+    public static async Task<Task> LogHandler(LogMessage log) => await Log(log.Severity, log.Source, log.Message, log.Exception);
+
+    private static async Task TryWritingToLog(string text, string logFileName)
+    {
+        try
+        {
+            await File.AppendAllTextAsync(logFileName, text + "\n");
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Directory.CreateDirectory("Logs");
+        }
+        catch
+        {
+            LogMessage log = new(LogSeverity.Debug, "LogService", "Error in writing to log, retrying...\n");
+            await File.AppendAllTextAsync(logFileName, $"[General/{log.Severity}] {log.ToString(padSource: 15)}");
+            await Task.Delay(500);
             await TryWritingToLog(text, logFileName);
-
-            return Task.CompletedTask;
-        }
-
-        private static async Task TryWritingToLog(string text, string logFileName)
-        {
-            try
-            {
-                File.AppendAllText(logFileName, text + "\n");
-            }
-            catch (DirectoryNotFoundException)
-            {
-                Directory.CreateDirectory("Logs");
-            }
-            catch
-            {
-                LogMessage log = new(LogSeverity.Debug, "LogService", $"Error in writing to log, retrying...\n", null);
-                File.AppendAllText(logFileName, $"[General/{log.Severity}] {log.ToString(padSource: 15)}");
-                await Task.Delay(500);
-                await TryWritingToLog(text, logFileName);
-            }
         }
     }
 }

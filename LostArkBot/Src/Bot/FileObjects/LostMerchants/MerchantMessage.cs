@@ -1,19 +1,18 @@
-﻿namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
+﻿namespace LostArkBot.Bot.FileObjects.LostMerchants;
+
+public class MerchantMessage
 {
-    public class MerchantMessage
+    public MerchantMessage(string merchantId, ulong? messageId, bool isDeleted = false)
     {
-        public string MerchantId { get; set; }
-
-        public ulong? MessageId { get; set; }
-
-        public bool IsDeleted { get; set; }
-
-
-        public MerchantMessage(string merchantId, ulong? messageId, bool isDeleted = false)
-        {
-            MerchantId = merchantId;
-            MessageId = messageId;
-            IsDeleted = isDeleted;
-        }
+        this.MerchantId = merchantId;
+        this.MessageId = messageId;
+        this.IsDeleted = isDeleted;
     }
+
+    public string MerchantId { get; }
+
+    public ulong? MessageId { get; set; }
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public bool IsDeleted { get; set; }
 }

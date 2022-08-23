@@ -1,40 +1,41 @@
-﻿using Discord.WebSocket;
-using LostArkBot.Src.Bot.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.WebSocket;
+using LostArkBot.Bot.Models;
+using LostArkBot.databasemodels;
 
-namespace LostArkBot.Src.Bot.Handlers
+namespace LostArkBot.Bot.Handlers;
+
+public class MenuHandlerClass
 {
-    public class MenuHandlerClass
+    private readonly LostArkBotContext dbcontext;
+
+    public MenuHandlerClass(LostArkBotContext dbcontext) => this.dbcontext = dbcontext;
+
+    public async Task MenuHandler(SocketMessageComponent component)
     {
-        public static async Task MenuHandler(SocketMessageComponent component)
+        await component.DeferAsync();
+
+        List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
+        List<ManageUserModel> manageUserModels = Program.StaticObjects.ManageUserModels;
+
+        if (lfgModels.Any(x => x.MenuId.Contains(component.Data.CustomId)))
         {
-            await component.DeferAsync();
+            LfgModel resultModel = lfgModels.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.MenuItemId == component.Data.Values.First())
+                                ?? lfgModels.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.IsEnd);
 
-            List<LfgModel> lfgModels = Program.StaticObjects.LfgModels;
-            List<ManageUserModel> manageUserModels = Program.StaticObjects.ManageUserModels;
+            await LfgHandler.LfgHandlerAsync(component, resultModel, this.dbcontext);
+        }
+        else if (manageUserModels.Any(x => x.MenuId == component.Data.CustomId))
+        {
+            ManageUserModel resultModel = manageUserModels.Find(x => x.MenuId == component.Data.CustomId);
 
-            if (lfgModels.Any(x => x.MenuId.Contains(component.Data.CustomId)))
-            {
-                LfgModel resultModel = lfgModels.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.MenuItemId == component.Data.Values.First());
-
-                if(resultModel == null)
-                {
-                    resultModel = lfgModels.Find(x => x.MenuId.Contains(component.Data.CustomId) && x.IsEnd == true);
-                }
-
-                await LfgHandler.LfgHandlerAsync(component, resultModel);
-            } else if(manageUserModels.Any(x => x.MenuId == component.Data.CustomId))
-            {
-                ManageUserModel resultModel = manageUserModels.Find(x => x.MenuId == component.Data.CustomId);
-
-                await ManageUserHandler.ManageUserHandlerAsync(component, resultModel);
-            } else if (component.Data.CustomId == "update")
-            {
-                await SubscriptionsHandler.Update(component);
-            }
+            await ManageUserHandler.ManageUserHandlerAsync(component, resultModel, this.dbcontext);
+        }
+        else if (component.Data.CustomId == "update")
+        {
+            await SubscriptionsHandler.Update(component, this.dbcontext);
         }
     }
 }

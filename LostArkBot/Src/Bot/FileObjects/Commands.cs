@@ -1,21 +1,20 @@
 ﻿using Discord.Interactions;
 
-namespace LostArkBot.Src.Bot.FileObjects
+namespace LostArkBot.Bot.FileObjects;
+
+public enum Commands
 {
-    public enum Commands
-    {
-        [Hide]
-        Default,
-        Admin,
-        Characters,
-        Clean,
-        Help,
-        Lfg,
-        Localtime,
-        Meta,
-        ServerStatus,
-        Static,
-        Subscriptions,
-        Timestamps
-    }
+    [Hide]
+    Default,
+    Admin,
+    Characters,
+    Clean,
+    Help,
+    Lfg,
+    Localtime,
+    Meta,
+    ServerStatus,
+    Static,
+    Subscriptions,
+    Timestamps,
 }

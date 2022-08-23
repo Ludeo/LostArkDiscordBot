@@ -1,11 +1,10 @@
-﻿namespace LostArkBot.Src.Bot.FileObjects.LostMerchants
+﻿namespace LostArkBot.Bot.FileObjects.LostMerchants;
+
+public enum Rarity
 {
-    public enum Rarity
-    {
-        Default,
-        Uncommon,
-        Rare,
-        Epic,
-        Legendary,
-    }
+    Default,
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary,
 }
