@@ -35,6 +35,8 @@ public class Program
 
     public static List<MerchantMessage> MerchantMessages { get; set; } = new();
 
+    private static ServiceProvider services;
+
     private static DiscordSocketConfig BuildDiscordSocketConfig()
     {
         DiscordSocketConfig config = new()
@@ -53,6 +55,7 @@ public class Program
             .AddSingleton(new DiscordSocketClient(BuildDiscordSocketConfig()))
             .AddSingleton<InteractionService>()
             .AddSingleton<CommandHandlingService>()
+            .AddSingleton<MerchantJob>()
             .BuildServiceProvider();
 
     private static async Task InitializeEmotes()
@@ -72,8 +75,10 @@ public class Program
 
     private static async Task InitializeScheduledTask()
     {
+        CustomJobFactory jobFactory = new(services);
         StdSchedulerFactory stdSchedulerFactory = new();
         IScheduler scheduler = await stdSchedulerFactory.GetScheduler();
+        scheduler.JobFactory = jobFactory;
 
         await scheduler.Start();
 
@@ -95,7 +100,7 @@ public class Program
 
     private static async Task MainAsync()
     {
-        ServiceProvider services = ConfigureServices();
+        services = ConfigureServices();
         Client = services.GetRequiredService<DiscordSocketClient>();
         InteractionService commands = services.GetRequiredService<InteractionService>();
         CommandHandlingService commandHandlingService = services.GetRequiredService<CommandHandlingService>();

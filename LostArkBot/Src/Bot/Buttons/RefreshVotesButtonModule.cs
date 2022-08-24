@@ -5,26 +5,39 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.databasemodels;
+using LostArkBot.Bot.FileObjects.LostMerchants;
+using LostArkBot.Bot.Shared;
 
 namespace LostArkBot.Bot.Buttons;
 
 public class RefreshVotesButtonModule : InteractionModuleBase<SocketInteractionContext<SocketMessageComponent>>
 {
-    private readonly LostArkBotContext dbcontext;
+    private async Task ExpiredAsync(IEmbed embed)
+    {
+        ComponentBuilder componentsBuilder = new();
 
-    public RefreshVotesButtonModule(LostArkBotContext dbcontext) => this.dbcontext = dbcontext;
+        foreach (IMessageComponent component in this.Context.Interaction.Message.Components.First().Components)
+        {
+            ButtonComponent button = component as ButtonComponent;
 
-    private async Task ExpiredAsync(IEmbed embed) =>
-        await this.Context.Interaction.Message.ModifyAsync(
-                                                           x =>
-                                                           {
-                                                               x.Embed = embed.ToEmbedBuilder().WithDescription("**Expired or removed**")
-                                                                              .WithColor(Color.Red).Build();
-                                                               // TODO: fix
-                                                               //ButtonComponent button = component.Components.ToList().Find(x => x.CustomId.Contains("refresh")) as ButtonComponent;
-                                                               //button = button.ToBuilder().WithDisabled(true).Build();
-                                                           });
+            if (button.CustomId is not null && button.CustomId.Contains("refresh"))
+            {
+                componentsBuilder = componentsBuilder.WithButton(button.Label, button.CustomId, button.Style, button.Emote, button.Url, true);
+            }
+            else
+            {
+                componentsBuilder = componentsBuilder.WithButton(button.ToBuilder());
+            }
+        }
+
+        await this.Context.Interaction.Message.ModifyAsync(x =>
+        {
+            x.Embed = embed.ToEmbedBuilder().WithDescription("**Expired or removed**")
+                           .WithColor(Color.Red).Build();
+
+            x.Components = componentsBuilder.Build();
+        });
+    }
 
     [ComponentInteraction("refresh:*,*")]
     public async Task RefreshVotes(string merchantId, long expiryDateUnix)
@@ -41,8 +54,8 @@ public class RefreshVotesButtonModule : InteractionModuleBase<SocketInteractionC
             return;
         }
 
-        List<ActiveMerchant> activeMerchants = this.dbcontext.ActiveMerchants.ToList();
-        ActiveMerchant merchantToRefresh = activeMerchants.Find(merchant => merchant.Id == merchantId);
+        List<WebsiteMerchant> activeMerchants = await JsonParsers.GetActiveMerchantsJsonAsync();
+        WebsiteMerchant merchantToRefresh = activeMerchants.Find(merchant => merchant.Id == merchantId);
 
         if (merchantToRefresh == null)
         {

@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using LostArkBot.Bot.FileObjects;
+using LostArkBot.Bot.FileObjects.DatabaseLogger;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LostArkBot.databasemodels
 {
@@ -16,21 +21,13 @@ namespace LostArkBot.databasemodels
         }
 
         public virtual DbSet<ActiveMerchant> ActiveMerchants { get; set; }
-
         public virtual DbSet<ChallengeAbyss> ChallengeAbysses { get; set; }
-
         public virtual DbSet<ChallengeGuardian> ChallengeGuardians { get; set; }
-
         public virtual DbSet<Character> Characters { get; set; }
-
         public virtual DbSet<Engraving> Engravings { get; set; }
-
         public virtual DbSet<MerchantItem> MerchantItems { get; set; }
-
         public virtual DbSet<StaticGroup> StaticGroups { get; set; }
-
         public virtual DbSet<Subscription> Subscriptions { get; set; }
-
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -39,7 +36,9 @@ namespace LostArkBot.databasemodels
             {
                 Config config = Config.Default;
 
-                optionsBuilder.UseMySql(
+                optionsBuilder
+                    .UseLoggerFactory(LoggerFactory.Create(builder => builder.AddDatabaseLogger()))
+                    .UseMySql(
                                         $"server={config.DbServer};database={config.DbName};user={config.DbUser};password={config.DbPassword}",
                                         ServerVersion.Parse("10.3.29-mariadb"));
             }
@@ -228,7 +227,7 @@ namespace LostArkBot.databasemodels
 
                 entity.Property(e => e.Icon)
                     .IsRequired()
-                    .HasMaxLength(50)
+                    .HasMaxLength(150)
                     .HasColumnName("icon");
 
                 entity.Property(e => e.Name)

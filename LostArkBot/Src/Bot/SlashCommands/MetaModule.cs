@@ -31,22 +31,6 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
         const string amazonBaseLink = "https://cdn.lostark.games.aws.dev/";
         List<Engraving> engravings = this.dbcontext.Engravings.ToList();
 
-        foreach (Engraving engraving in engravings)
-        {
-            string[] icon = engraving.Icon.Split("_");
-
-            if (icon.Length > 0
-             && !string.IsNullOrEmpty(icon[0]))
-            {
-                engraving.Icon = icon[0] switch
-                {
-                    "GL"      => amazonBaseLink + "EFUI_IconAtlas/GL_Skill/" + engraving.Icon + ".png",
-                    "achieve" => amazonBaseLink + "EFUI_IconAtlas/Achieve/" + engraving.Icon + ".png",
-                    _         => amazonBaseLink + "EFUI_IconAtlas/" + icon[0] + "/" + engraving.Icon + ".png",
-                };
-            }
-        }
-
         string queryUrl = "https://lostark-lookup.herokuapp.com/api/query?pcName=" + characterName;
         string responseString = await new HttpClient().GetStringAsync(queryUrl);
 

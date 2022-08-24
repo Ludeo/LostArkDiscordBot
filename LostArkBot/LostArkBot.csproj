@@ -23,6 +23,8 @@
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
         <PackageReference Include="PuppeteerSharp" Version="7.1.0" />
         <PackageReference Include="Quartz" Version="3.4.0" />
+        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.4.0" />
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.4.0" />
     </ItemGroup>
 
     <ItemGroup>
