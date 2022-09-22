@@ -39,8 +39,8 @@ namespace LostArkBot.databasemodels
                 optionsBuilder
                     .UseLoggerFactory(LoggerFactory.Create(builder => builder.AddDatabaseLogger()))
                     .UseMySql(
-                                        $"server={config.DbServer};database={config.DbName};user={config.DbUser};password={config.DbPassword}",
-                                        ServerVersion.Parse("10.3.29-mariadb"));
+                              $"server={config.DbServer};database={config.DbName};user={config.DbUser};password={config.DbPassword}",
+                              ServerVersion.Parse("10.3.29-mariadb"));
             }
         }
 
@@ -131,6 +131,9 @@ namespace LostArkBot.databasemodels
             {
                 entity.ToTable("Character");
 
+                entity.HasCharSet("latin1")
+                    .UseCollation("latin1_general_ci");
+
                 entity.HasIndex(e => e.UserId, "characterfk1_idx");
 
                 entity.Property(e => e.Id)
@@ -145,7 +148,9 @@ namespace LostArkBot.databasemodels
                 entity.Property(e => e.ClassName)
                     .IsRequired()
                     .HasMaxLength(45)
-                    .HasColumnName("className");
+                    .HasColumnName("className")
+                    .UseCollation("utf8mb4_general_ci")
+                    .HasCharSet("utf8mb4");
 
                 entity.Property(e => e.Crit)
                     .HasColumnType("int(11)")
@@ -153,7 +158,9 @@ namespace LostArkBot.databasemodels
 
                 entity.Property(e => e.CustomProfileMessage)
                     .HasColumnType("text")
-                    .HasColumnName("customProfileMessage");
+                    .HasColumnName("customProfileMessage")
+                    .UseCollation("utf8mb4_general_ci")
+                    .HasCharSet("utf8mb4");
 
                 entity.Property(e => e.Dom)
                     .HasColumnType("int(11)")
@@ -165,7 +172,9 @@ namespace LostArkBot.databasemodels
 
                 entity.Property(e => e.Engravings)
                     .HasColumnType("text")
-                    .HasColumnName("engravings");
+                    .HasColumnName("engravings")
+                    .UseCollation("utf8mb4_general_ci")
+                    .HasCharSet("utf8mb4");
 
                 entity.Property(e => e.Exp)
                     .HasColumnType("int(11)")
@@ -177,7 +186,9 @@ namespace LostArkBot.databasemodels
 
                 entity.Property(e => e.ProfilePicture)
                     .HasColumnType("text")
-                    .HasColumnName("profilePicture");
+                    .HasColumnName("profilePicture")
+                    .UseCollation("utf8mb4_general_ci")
+                    .HasCharSet("utf8mb4");
 
                 entity.Property(e => e.Spec)
                     .HasColumnType("int(11)")

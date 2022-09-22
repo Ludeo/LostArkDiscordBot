@@ -28,7 +28,7 @@ public class ModalHandlers
             string characterName = modal.Data.CustomId[4..];
 
             Character character =
-                this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName.Trim());
+                this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci") == characterName.Trim());
 
             if (character == null)
             {

@@ -18,7 +18,7 @@ public static class Utils
         characterName = characterName.ToTitleCase();
 
         Character character = dbcontext
-                              .Characters.Where(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName)
+                              .Characters.Where(x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci") == characterName)
                               .Include(x => x.User)
                               .FirstOrDefault();
 

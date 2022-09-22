@@ -50,7 +50,7 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
         characterName = characterName.ToTitleCase();
 
         Character oldCharacter =
-            this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName);
+            this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci") == characterName);
 
         if (oldCharacter is not null)
         {
@@ -135,7 +135,7 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
         characterName = characterName.ToTitleCase();
 
         Character selectedChar =
-            this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName);
+            this.dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci") == characterName);
 
         if (selectedChar == null)
         {
@@ -316,7 +316,7 @@ public class CharactersModule : InteractionModuleBase<SocketInteractionContext<S
         characterName = characterName.ToTitleCase();
 
         Character character = this.dbcontext.Characters
-                                  .Where(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName)
+                                  .Where(x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci") == characterName)
                                   .Include(x => x.User)
                                   .FirstOrDefault();
 

@@ -143,7 +143,7 @@ public static class ManageUserHandler
                         {
                             Character character =
                                 dbcontext.Characters.FirstOrDefault(
-                                                                    x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci")
+                                                                    x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci")
                                                                       == characterName);
 
                             newEmbed.AddField(await GetCharacterFieldAsync(character, component));
@@ -186,7 +186,7 @@ public static class ManageUserHandler
                     else
                     {
                         Character character =
-                            dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "utf8mb4_general_ci") == characterName);
+                            dbcontext.Characters.FirstOrDefault(x => EF.Functions.Collate(x.CharacterName, "latin1_general_ci") == characterName);
 
                         newEmbed.AddField(await GetCharacterFieldAsync(character, component));
                     }
