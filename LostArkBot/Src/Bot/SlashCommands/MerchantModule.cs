@@ -392,6 +392,11 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
     {
         try
         {
+            if (this.hubConnection.State != HubConnectionState.Disconnected)
+            {
+                await this.hubConnection.StopAsync();
+            }
+
             await this.hubConnection.StartAsync();
             this.hubConnection.Remove("SubscribeToServer");
             this.hubConnection.Remove("UpdateVotes");
