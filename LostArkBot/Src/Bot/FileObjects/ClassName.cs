@@ -17,6 +17,8 @@ public enum ClassName
     Gunlancer,
     Gunslinger,
     Paladin,
+    Reaper,
+    Scouter,
     Scrapper,
     Shadowhunter,
     Sharpshooter,

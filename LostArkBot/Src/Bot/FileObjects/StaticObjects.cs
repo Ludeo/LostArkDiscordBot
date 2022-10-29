@@ -143,6 +143,10 @@ public class StaticObjects
             { "Vykas Full [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
             { "Vykas Full [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
 
+            //Vykas
+            { "Clown Bus [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+            { "Clown Full [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+
             //Cube
             { "Cube", "https://i.imgur.com/1NmM7St.png" },
             { "Elite Cube", "https://i.imgur.com/dOIurSp.png" },
@@ -646,6 +650,7 @@ public class StaticObjects
             {
                 new("Valtan", "valtan", "iLvl: 1415-1445"),
                 new("Vykas", "vykas", "iLvl: 1430-1460"),
+                new("Clown", "clown", "iLvl: 1475"),
             },
             Title = "Legion Raid",
             Description = "Select the Legion Commander you want to do",
@@ -697,7 +702,25 @@ public class StaticObjects
 
         model = new LfgModel
         {
-            MenuId = new[] { "valtan", "vykas" },
+            MenuId = new[] { "legionraid" },
+            MenuItemId = "clown",
+            MenuPlaceholder = "Select Clown Gate and Difficulty",
+            MenuBuilderOptions = new List<MenuBuilderOption>
+            {
+                new("Clown Full [Normal]", "Clown Full [Normal]", "Item Level: 1475"),
+                new("Clown Bus [Normal]", "Clown Bus [Normal]", "Item Level: 1475"),
+            },
+            Title = "Clown",
+            Description = "Select the Clown Gate and Difficulty you want to do",
+            ThumbnailUrl = LegionRaidIconUrl,
+            Color = Color.Teal,
+        };
+
+        this.LfgModels.Add(model);
+
+        model = new LfgModel
+        {
+            MenuId = new[] { "valtan", "vykas", "clown" },
             Title = "[Legion Raid]",
             ThumbnailUrl = LegionRaidIconUrl,
             Color = Color.Teal,
