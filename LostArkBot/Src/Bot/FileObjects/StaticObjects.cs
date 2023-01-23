@@ -143,18 +143,28 @@ public class StaticObjects
             { "Vykas Full [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
             { "Vykas Full [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
 
-            //Vykas
-            { "Clown Bus [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
-            { "Clown Full [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+            //Kakkul Saydon
+            { "Kakkul Saydon Bus [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+            { "Kakkul Saydon Full [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+
+            //Brelshaza
+            { "Brelshaza 1-2 [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
+            { "Brelshaza 1-4 [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
+            { "Brelshaza 1-6 [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
+            { "Brelshaza 1-2 Bus [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
+            { "Brelshaza 1-4 Bus [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
+            { "Brelshaza 1-6 Bus [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
 
             //Cube
             { "Cube", "https://i.imgur.com/1NmM7St.png" },
             { "Elite Cube", "https://i.imgur.com/dOIurSp.png" },
-            { "Dimensional Cube", "https://i.imgur.com/lqkN86W.png" },
+            { "Dimensional Cube [Normal]", "https://i.imgur.com/lqkN86W.png" },
+            { "Dimensional Cube [Hard]", "https://i.imgur.com/lqkN86W.png" },
 
             //Boss Rush
             { "Hall of Silence", "https://i.imgur.com/ciwgg3G.png" },
-            { "Hall of the Sun", "https://i.imgur.com/PDE70Br.png" },
+            { "Hall of the Sun [Normal]", "https://i.imgur.com/PDE70Br.png" },
+            { "Hall of the Sun [Hard]", "https://i.imgur.com/PDE70Br.png" },
 
             //Platinum Fields
             { "Nahun's Domain", "https://i.imgur.com/RIF3Ewf.png" },
@@ -174,6 +184,8 @@ public class StaticObjects
             { "Death's Hold Island", "https://assets.maxroll.gg/wordpress/Islands-island_deaths_hold.jpg" },
             { "Tranquil Isle", "https://assets.maxroll.gg/wordpress/Islands-island_tranquil.jpg" },
             { "Slime Island", "https://assets.maxroll.gg/wordpress/Islands-island_drumbeat.jpg" },
+            { "Golden Wave", "https://assets.maxroll.gg/wordpress/Islands-island_golden_wave.jpg" },
+            { "Lush Reed", "https://assets.maxroll.gg/wordpress/Islands-island_lush_reed.jpg" },
 
             //Challenge
             { "All 3 Guardians", "https://assets.maxroll.gg/wp-content/assets/img/raids/Urnil2.jpg" },
@@ -512,7 +524,8 @@ public class StaticObjects
             {
                 new("Tier 1", "Cube", "iLvl: 302"),
                 new("Tier 2", "Elite Cube", "iLvl: 802"),
-                new("Tier 3", "Dimensional Cube", "iLvl: 1302"),
+                new("Tier 3", "Dimensional Cube [Normal]", "iLvl: 1302"),
+                new("Tier 3", "Dimensional Cube [Hard]", "iLvl: 1490"),
             },
             Title = "Cube",
             Description = "Select the Cube Tier you want to do",
@@ -546,7 +559,8 @@ public class StaticObjects
             MenuBuilderOptions = new List<MenuBuilderOption>
             {
                 new("Tier 2", "Hall of Silence", "iLvl: 802"),
-                new("Tier 3", "Hall of the Sun", "iLvl: 1302"),
+                new("Tier 3", "Hall of the Sun [Normal]", "iLvl: 1302"),
+                new("Tier 3", "Hall of the Sun [Hard]", "iLvl: 1490"),
             },
             Title = "Boss Rush",
             Description = "Select the Boss Rush Tier you want to do",
@@ -650,7 +664,8 @@ public class StaticObjects
             {
                 new("Valtan", "valtan", "iLvl: 1415-1445"),
                 new("Vykas", "vykas", "iLvl: 1430-1460"),
-                new("Clown", "clown", "iLvl: 1475"),
+                new("Kakkul Saydon", "kakkulsaydon", "iLvl: 1475"),
+                new("Brelshaza", "brelshaza", "iLvl: 1490-1520"),
             },
             Title = "Legion Raid",
             Description = "Select the Legion Commander you want to do",
@@ -703,15 +718,15 @@ public class StaticObjects
         model = new LfgModel
         {
             MenuId = new[] { "legionraid" },
-            MenuItemId = "clown",
-            MenuPlaceholder = "Select Clown Gate and Difficulty",
+            MenuItemId = "kakkulsaydon",
+            MenuPlaceholder = "Select Kakkul Saydon Gate and Difficulty",
             MenuBuilderOptions = new List<MenuBuilderOption>
             {
-                new("Clown Full [Normal]", "Clown Full [Normal]", "Item Level: 1475"),
-                new("Clown Bus [Normal]", "Clown Bus [Normal]", "Item Level: 1475"),
+                new("Kakkul Saydon Full [Normal]", "Kakkul Saydon Full [Normal]", "Item Level: 1475"),
+                new("Kakkul Saydon Bus [Normal]", "Kakkul Saydon Bus [Normal]", "Item Level: 1475"),
             },
-            Title = "Clown",
-            Description = "Select the Clown Gate and Difficulty you want to do",
+            Title = "Kakkul Saydon",
+            Description = "Select the Kakkul Saydon Gate and Difficulty you want to do",
             ThumbnailUrl = LegionRaidIconUrl,
             Color = Color.Teal,
         };
@@ -720,12 +735,46 @@ public class StaticObjects
 
         model = new LfgModel
         {
-            MenuId = new[] { "valtan", "vykas", "clown" },
+            MenuId = new[] { "legionraid" },
+            MenuItemId = "brelshaza",
+            MenuPlaceholder = "Select Brelshaza Gate and Difficulty",
+            MenuBuilderOptions = new List<MenuBuilderOption>
+            {
+                new("Brelshaza 1-2 [Normal]", "Brelshaza 1-2 [Normal]", "Item Level: 1490"),
+                new("Brelshaza 1-4 [Normal]", "Brelshaza 1-4 [Normal]", "Item Level: 1500"),
+                new("Brelshaza 1-6 [Normal]", "Brelshaza 1-6 [Normal]", "Item Level: 1520"),
+                new("Brelshaza 1-2 Bus [Normal]", "Brelshaza 1-2 Bus [Normal]", "Item Level: 1490"),
+                new("Brelshaza 1-4 Bus [Normal]", "Brelshaza 1-4 Bus [Normal]", "Item Level: 1500"),
+                new("Brelshaza 1-6 Bus [Normal]", "Brelshaza 1-6 Bus [Normal]", "Item Level: 1520"),
+            },
+            Title = "Brelshaza",
+            Description = "Select the Brelshaza Gate and Difficulty you want to do",
+            ThumbnailUrl = LegionRaidIconUrl,
+            Color = Color.Teal,
+        };
+
+        this.LfgModels.Add(model);
+
+        model = new LfgModel
+        {
+            MenuId = new[] { "valtan", "vykas", "kakkulsaydon", "brelshaza" },
             Title = "[Legion Raid]",
             ThumbnailUrl = LegionRaidIconUrl,
             Color = Color.Teal,
             IsEnd = true,
             Players = 8,
+        };
+
+        this.LfgModels.Add(model);
+
+        model = new LfgModel
+        {
+            MenuId = new[] { "valtan", "vykas", "brelshaza" },
+            Title = "[Legion Raid]",
+            ThumbnailUrl = LegionRaidIconUrl,
+            Color = Color.Teal,
+            IsEnd = true,
+            Players = 4,
         };
 
         this.LfgModels.Add(model);
@@ -763,6 +812,8 @@ public class StaticObjects
                 new("Death's Hold Island", "Death's Hold Island", "12 people"),
                 new("Tranquil Isle", "Tranquil Isle", "16 people"),
                 new("Slime Island", "Slime Island", "16 people"),
+                new("Golden Wave", "Slime Island", "8 people"),
+                new("Lush Reed", "Slime Island", "12 people"),
             },
             Title = "Guild Siege",
             Description = "Select the Guild Siege you want to do",
@@ -833,6 +884,32 @@ public class StaticObjects
             Color = Color.Red,
             IsEnd = true,
             Players = 16,
+        };
+
+        this.LfgModels.Add(model);
+
+        model = new LfgModel
+        {
+            MenuId = new[] { "guildsiege" },
+            MenuItemId = "Golden Wave",
+            Title = "[Guild Siege]",
+            ThumbnailUrl = CoopBattleIconUrl,
+            Color = Color.Red,
+            IsEnd = true,
+            Players = 8,
+        };
+
+        this.LfgModels.Add(model);
+
+        model = new LfgModel
+        {
+            MenuId = new[] { "guildsiege" },
+            MenuItemId = "Lush Reed",
+            Title = "[Guild Siege]",
+            ThumbnailUrl = CoopBattleIconUrl,
+            Color = Color.Red,
+            IsEnd = true,
+            Players = 12,
         };
 
         this.LfgModels.Add(model);

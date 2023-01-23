@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using LostArkBot.Bot.Models.Enums;
 using LostArkBot.Bot.SlashCommands;
 using LostArkBot.databasemodels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace LostArkBot.Bot.Handlers;
@@ -39,21 +40,33 @@ public static class SubscriptionsHandler
 
         List<int> allUserSubs = dbcontext.Subscriptions.Where(x => x.User == user).Select(x => x.ItemId).ToList();
 
-        foreach (int item in parsedNewSubscribedItems.Where(item => !allUserSubs.Contains(item)))
+        if(allUserSubs.Contains(0))
         {
+            dbcontext.Subscriptions.RemoveRange(dbcontext.Subscriptions);
             dbcontext.Subscriptions.Add(
                                         new Subscription
                                         {
-                                            ItemId = item,
+                                            ItemId = (int)WanderingMerchantItemsEnum.None,
                                             User = user,
                                         });
-        }
-
-        foreach (Subscription sub in from item in allUserSubs
-                                     where !parsedNewSubscribedItems.Contains(item)
-                                     select dbcontext.Subscriptions.First(x => x.UserId == user.Id && x.ItemId == item))
+        } else
         {
-            dbcontext.Subscriptions.Remove(sub);
+            foreach (int item in parsedNewSubscribedItems.Where(item => !allUserSubs.Contains(item)))
+            {
+                dbcontext.Subscriptions.Add(
+                                            new Subscription
+                                            {
+                                                ItemId = item,
+                                                User = user,
+                                            });
+            }
+
+            foreach (Subscription sub in from item in allUserSubs
+                                         where !parsedNewSubscribedItems.Contains(item)
+                                         select dbcontext.Subscriptions.First(x => x.UserId == user.Id && x.ItemId == item))
+            {
+                dbcontext.Subscriptions.Remove(sub);
+            }
         }
 
         await dbcontext.SaveChangesAsync();

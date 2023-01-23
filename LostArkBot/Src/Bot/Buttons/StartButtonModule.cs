@@ -30,16 +30,6 @@ public class StartButtonModule : InteractionModuleBase<SocketInteractionContext<
             guild = this.Context.Guild;
         }
 
-        ulong authorId = ulong.Parse(message.Embeds.First().Author!.Value.Name.Split("\n")[1]);
-
-        if (this.Context.User.Id != authorId
-         && !guild.GetUser(this.Context.User.Id).GuildPermissions.ManageMessages)
-        {
-            await this.FollowupAsync(ephemeral: true, text: "You don't have permissions to kick users from the event!");
-
-            return;
-        }
-
         Embed originalEmbed;
 
         if (this.Context.Channel.GetChannelType() == ChannelType.PublicThread)
@@ -49,6 +39,13 @@ public class StartButtonModule : InteractionModuleBase<SocketInteractionContext<
         else
         {
             originalEmbed = this.Context.Interaction.Message.Embeds.First();
+        }
+
+        if (!originalEmbed.Fields.Any(x => x.Value.Contains(guild.GetUser(this.Context.User.Id).Mention)))
+        {
+            await this.FollowupAsync("You are not part of the LFG so you can't start the event", ephemeral: true);
+
+            return;
         }
 
         if (originalEmbed.Fields.Length is not 0)

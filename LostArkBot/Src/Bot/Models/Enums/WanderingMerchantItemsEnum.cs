@@ -2,6 +2,7 @@
 
 public enum WanderingMerchantItemsEnum
 {
+    None = 0,
     Wei = 1,
     Mokamoka = 2,
     Sian = 3,

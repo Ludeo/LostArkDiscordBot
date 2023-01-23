@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LostArkBot.Bot.SlashCommands;
 
+[DontAutoRegister]
 [Group("static", "Manage or view static groups")]
 public class StaticModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
 {

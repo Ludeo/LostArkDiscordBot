@@ -25,5 +25,6 @@ public enum ClassName
     Sorceress,
     Soulfist,
     Striker,
+    Summoner,
     Wardancer,
 }
