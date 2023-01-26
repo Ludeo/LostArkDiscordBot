@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
@@ -74,14 +75,12 @@ public class CommandHandlingService
 
     private async Task RegisterCommands()
     {
-        //for deleting commands, make sure to put it on release
-        //List<ApplicationCommandProperties> applicationCommandProperties = new();
-        //await client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
+        List<ApplicationCommandProperties> applicationCommandProperties = new();
+        await this.client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
+        await this.client.GetGuild(Config.Default.Server)
+            .BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
 
-        #if DEBUG
         await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);
-        #else
-                await commands.RegisterCommandsGloballyAsync();
-        #endif
+        await this.commands.RegisterCommandsGloballyAsync();
     }
 }
