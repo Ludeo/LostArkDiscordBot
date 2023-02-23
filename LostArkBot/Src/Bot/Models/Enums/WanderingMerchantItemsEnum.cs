@@ -10,4 +10,10 @@ public enum WanderingMerchantItemsEnum
     Madnick = 5,
     Kaysarr = 6,
     LegendaryRapport = 7,
+    Danika = 8,
+    Arno = 9,
+    Baskia = 10,
+    Anke = 11,
+    Piela = 12,
+    RowenZenlord = 13,
 }

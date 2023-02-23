@@ -7,7 +7,6 @@ using Discord.WebSocket;
 using LostArkBot.Bot.Models.Enums;
 using LostArkBot.Bot.SlashCommands;
 using LostArkBot.databasemodels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace LostArkBot.Bot.Handlers;
@@ -40,9 +39,10 @@ public static class SubscriptionsHandler
 
         List<int> allUserSubs = dbcontext.Subscriptions.Where(x => x.User == user).Select(x => x.ItemId).ToList();
 
-        if(allUserSubs.Contains(0))
+        if (allUserSubs.Contains(0))
         {
             dbcontext.Subscriptions.RemoveRange(dbcontext.Subscriptions);
+
             dbcontext.Subscriptions.Add(
                                         new Subscription
                                         {

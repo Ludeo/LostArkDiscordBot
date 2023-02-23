@@ -143,9 +143,9 @@ public class StaticObjects
             { "Vykas Full [Normal]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
             { "Vykas Full [Hard]", "https://c.tenor.com/pTau_jrQlcEAAAAC/lost-ark-biakiss.gif" },
 
-            //Kakkul Saydon
-            { "Kakkul Saydon Bus [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
-            { "Kakkul Saydon Full [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+            //Kakul Saydon
+            { "Kakul Saydon Bus [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
+            { "Kakul Saydon Full [Normal]", "https://i.imgur.com/8bkMCGJ.jpg" },
 
             //Brelshaza
             { "Brelshaza 1-2 [Normal]", "https://i.imgur.com/H7jeO1i.jpg" },
@@ -186,6 +186,7 @@ public class StaticObjects
             { "Slime Island", "https://assets.maxroll.gg/wordpress/Islands-island_drumbeat.jpg" },
             { "Golden Wave", "https://assets.maxroll.gg/wordpress/Islands-island_golden_wave.jpg" },
             { "Lush Reed", "https://assets.maxroll.gg/wordpress/Islands-island_lush_reed.jpg" },
+            { "Medeia", "https://assets.maxroll.gg/wordpress/Islands-island_medeia.jpg" },
 
             //Challenge
             { "All 3 Guardians", "https://assets.maxroll.gg/wp-content/assets/img/raids/Urnil2.jpg" },
@@ -664,7 +665,7 @@ public class StaticObjects
             {
                 new("Valtan", "valtan", "iLvl: 1415-1445"),
                 new("Vykas", "vykas", "iLvl: 1430-1460"),
-                new("Kakkul Saydon", "kakkulsaydon", "iLvl: 1475"),
+                new("Kakul Saydon", "kakulsaydon", "iLvl: 1475"),
                 new("Brelshaza", "brelshaza", "iLvl: 1490-1520"),
             },
             Title = "Legion Raid",
@@ -718,15 +719,15 @@ public class StaticObjects
         model = new LfgModel
         {
             MenuId = new[] { "legionraid" },
-            MenuItemId = "kakkulsaydon",
-            MenuPlaceholder = "Select Kakkul Saydon Gate and Difficulty",
+            MenuItemId = "kakulsaydon",
+            MenuPlaceholder = "Select Kakul Saydon Gate and Difficulty",
             MenuBuilderOptions = new List<MenuBuilderOption>
             {
-                new("Kakkul Saydon Full [Normal]", "Kakkul Saydon Full [Normal]", "Item Level: 1475"),
-                new("Kakkul Saydon Bus [Normal]", "Kakkul Saydon Bus [Normal]", "Item Level: 1475"),
+                new("Kakul Saydon Full [Normal]", "Kakul Saydon Full [Normal]", "Item Level: 1475"),
+                new("Kakul Saydon Bus [Normal]", "Kakul Saydon Bus [Normal]", "Item Level: 1475"),
             },
-            Title = "Kakkul Saydon",
-            Description = "Select the Kakkul Saydon Gate and Difficulty you want to do",
+            Title = "Kakul Saydon",
+            Description = "Select the Kakul Saydon Gate and Difficulty you want to do",
             ThumbnailUrl = LegionRaidIconUrl,
             Color = Color.Teal,
         };
@@ -757,7 +758,7 @@ public class StaticObjects
 
         model = new LfgModel
         {
-            MenuId = new[] { "valtan", "vykas", "kakkulsaydon", "brelshaza" },
+            MenuId = new[] { "valtan", "vykas", "brelshaza" },
             Title = "[Legion Raid]",
             ThumbnailUrl = LegionRaidIconUrl,
             Color = Color.Teal,
@@ -769,7 +770,7 @@ public class StaticObjects
 
         model = new LfgModel
         {
-            MenuId = new[] { "valtan", "vykas", "brelshaza" },
+            MenuId = new[] { "kakulsaydon" },
             Title = "[Legion Raid]",
             ThumbnailUrl = LegionRaidIconUrl,
             Color = Color.Teal,
@@ -814,6 +815,7 @@ public class StaticObjects
                 new("Slime Island", "Slime Island", "16 people"),
                 new("Golden Wave", "Golden Wave", "8 people"),
                 new("Lush Reed", "Lush Reed", "12 people"),
+                new("Medeia", "Medeia", "16 people"),
             },
             Title = "Guild Siege",
             Description = "Select the Guild Siege you want to do",
@@ -910,6 +912,19 @@ public class StaticObjects
             Color = Color.Red,
             IsEnd = true,
             Players = 12,
+        };
+
+        this.LfgModels.Add(model);
+
+        model = new LfgModel
+        {
+            MenuId = new[] { "guildsiege" },
+            MenuItemId = "Medeia",
+            Title = "[Guild Siege]",
+            ThumbnailUrl = CoopBattleIconUrl,
+            Color = Color.Red,
+            IsEnd = true,
+            Players = 16,
         };
 
         this.LfgModels.Add(model);

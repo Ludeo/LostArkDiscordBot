@@ -45,6 +45,12 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.Madnick, "https://lostarkcodex.com/icons/card_epic_01_7.webp"),
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.Kaysarr, "https://lostarkcodex.com/icons/card_epic_03_6.webp"),
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.LegendaryRapport, "https://lostarkcodex.com/icons/use_5_167.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Danika, "https://lostarkcodex.com/icons/card_epic_10_2.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Arno, "https://lostarkcodex.com/icons/card_rare_12_5.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Baskia, "https://lostarkcodex.com/icons/card_rare_12_6.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Anke, "https://lostarkcodex.com/icons/card_rare_13_0.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Piela, "https://lostarkcodex.com/icons/card_rare_13_1.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.RowenZenlord, "https://lostarkcodex.com/icons/card_uncommon_07_0.webp"),
     };
 
     private HubConnection hubConnection;
@@ -346,7 +352,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
                                                         await LogService.Log(
                                                                              LogSeverity.Warning,
                                                                              this.GetType().Name,
-                                                                             $"Could not find active merchant with id {vote.Id}, This should no not happen normally");
+                                                                             $"Could not find active merchant with id {vote.Id}, This should not happen normally");
 
                                                         continue;
                                                     }
@@ -539,6 +545,36 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
             {
                 rolePing = "<@&986033435531419679> ";
                 notableCard = (int)WanderingMerchantItemsEnum.Kaysarr;
+            }
+            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Danika))
+            {
+                rolePing = "<@&1078284489060515921> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Danika;
+            }
+            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Arno))
+            {
+                rolePing = "<@&1078284603787333742> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Arno;
+            }
+            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Baskia))
+            {
+                rolePing = "<@&1078284645763919952> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Baskia;
+            }
+            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Anke))
+            {
+                rolePing = "<@&1078284691767046214> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Anke;
+            }
+            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Piela))
+            {
+                rolePing = "<@&1078284729272504340> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Piela;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.RowenZenlord))
+            {
+                rolePing = "<@&1078284769995006073> ";
+                notableCard = (int)WanderingMerchantItemsEnum.RowenZenlord;
             }
 
             if (merchant.Rapport.Rarity == Rarity.Legendary)

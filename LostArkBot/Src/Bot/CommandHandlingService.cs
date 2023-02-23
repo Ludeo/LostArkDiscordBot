@@ -75,10 +75,12 @@ public class CommandHandlingService
 
     private async Task RegisterCommands()
     {
+        // ReSharper disable once CollectionNeverUpdated.Local
         List<ApplicationCommandProperties> applicationCommandProperties = new();
         await this.client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
+
         await this.client.GetGuild(Config.Default.Server)
-            .BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
+                  .BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
 
         await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);
         await this.commands.RegisterCommandsGloballyAsync();
