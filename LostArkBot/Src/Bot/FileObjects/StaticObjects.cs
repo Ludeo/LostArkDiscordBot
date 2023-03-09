@@ -812,10 +812,10 @@ public class StaticObjects
                 new("Snowpang Island", "Snowpang Island", "8 people"),
                 new("Death's Hold Island", "Death's Hold Island", "12 people"),
                 new("Tranquil Isle", "Tranquil Isle", "16 people"),
-                new("Slime Island", "Slime Island", "16 people"),
+                new("Slime Island", "Slime Island", "23 people"),
                 new("Golden Wave", "Golden Wave", "8 people"),
                 new("Lush Reed", "Lush Reed", "12 people"),
-                new("Medeia", "Medeia", "16 people"),
+                new("Medeia", "Medeia", "23 people"),
             },
             Title = "Guild Siege",
             Description = "Select the Guild Siege you want to do",
@@ -885,7 +885,7 @@ public class StaticObjects
             ThumbnailUrl = CoopBattleIconUrl,
             Color = Color.Red,
             IsEnd = true,
-            Players = 16,
+            Players = 23,
         };
 
         this.LfgModels.Add(model);
@@ -924,7 +924,7 @@ public class StaticObjects
             ThumbnailUrl = CoopBattleIconUrl,
             Color = Color.Red,
             IsEnd = true,
-            Players = 16,
+            Players = 23,
         };
 
         this.LfgModels.Add(model);
