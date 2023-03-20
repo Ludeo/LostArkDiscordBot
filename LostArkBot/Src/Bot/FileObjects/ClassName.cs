@@ -8,6 +8,7 @@ public enum ClassName
     Default,
     Arcanist,
     Artillerist,
+    Artist,
     Bard,
     Berserker,
     Deadeye,
