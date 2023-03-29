@@ -239,7 +239,7 @@ public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSl
 
                 dtParsed = dtParsed.AddYears(year - dtParsed.Year);
 
-                embed.Timestamp = new DateTimeOffset(dtParsed, new TimeSpan(1, 0, 0));
+                embed.Timestamp = new DateTimeOffset(dtParsed, StaticObjects.TimeOffset);
             }
         }
 
@@ -360,7 +360,7 @@ public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSl
             }
 
             dtParsed = dtParsed.AddYears(year - dtParsed.Year);
-            DateTimeOffset newDateTime = new(dtParsed, new TimeSpan(1, 0, 0));
+            DateTimeOffset newDateTime = new(dtParsed, StaticObjects.TimeOffset);
 
             EmbedField timeField = originalEmbed.Fields.SingleOrDefault(x => x.Name == "Time");
             newEmbed.AddField("Time", $"<t:{newDateTime.ToUnixTimeSeconds()}:F>\n<t:{newDateTime.ToUnixTimeSeconds()}:R>", timeField.Inline);

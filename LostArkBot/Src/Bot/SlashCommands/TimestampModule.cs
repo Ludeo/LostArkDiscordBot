@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.Bot.FileObjects;
 using LostArkBot.Bot.Shared;
 
 namespace LostArkBot.Bot.SlashCommands;
@@ -23,7 +24,7 @@ public class TimestampModule : InteractionModuleBase<SocketInteractionContext<So
         }
 
         DateTimeOffset date = (DateTimeOffset)parsedDate;
-        date = new DateTimeOffset(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, new TimeSpan(1, 0, 0));
+        date = new DateTimeOffset(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, StaticObjects.TimeOffset);
         long utcTime = date.ToUnixTimeSeconds();
 
         await this.FollowupAsync(

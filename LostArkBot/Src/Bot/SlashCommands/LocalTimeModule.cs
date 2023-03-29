@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Interactions;
 using Discord.WebSocket;
+using LostArkBot.Bot.FileObjects;
 
 namespace LostArkBot.Bot.SlashCommands;
 
@@ -16,7 +17,7 @@ public class LocalTimeModule : InteractionModuleBase<SocketInteractionContext<So
         int minute = int.Parse(serverTime.Substring(3, 2));
 
         DateTimeOffset now = DateTimeOffset.Now;
-        DateTimeOffset dateTimeOffset = new(now.Year, now.Month, now.Day, hour, minute, now.Second, new TimeSpan(1, 0, 0));
+        DateTimeOffset dateTimeOffset = new(now.Year, now.Month, now.Day, hour, minute, now.Second, StaticObjects.TimeOffset);
 
         if (dateTimeOffset.ToUnixTimeMilliseconds() < now.ToUnixTimeMilliseconds())
         {

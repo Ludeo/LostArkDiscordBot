@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using LostArkBot.Bot.Models;
@@ -60,6 +61,8 @@ public class StaticObjects
     public List<LfgModel> LfgModels { get; set; } = new();
 
     public List<ManageUserModel> ManageUserModels { get; } = new();
+
+    public static TimeSpan TimeOffset { get; set; } = new(Config.Default.TimeOffsetHours, 0, 0);
 
     private void ButtonsInitialization()
     {

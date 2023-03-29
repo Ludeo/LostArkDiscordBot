@@ -43,5 +43,8 @@ public class Config
     [JsonPropertyName("dbpassword")]
     public string DbPassword { get; set; }
 
+    [JsonPropertyName("timeOffsetHours")]
+    public int TimeOffsetHours { get; set; }
+
     private static Config GetConfig() => JsonParsers.GetConfigFromJson();
 }
