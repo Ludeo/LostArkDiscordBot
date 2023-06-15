@@ -51,6 +51,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.Anke, "https://lostarkcodex.com/icons/card_rare_13_0.webp"),
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.Piela, "https://lostarkcodex.com/icons/card_rare_13_1.webp"),
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.RowenZenlord, "https://lostarkcodex.com/icons/card_uncommon_07_0.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Vairgrys, "https://lostarkcodex.com/icons/card_legend_03_4.webp"),
     };
 
     private HubConnection hubConnection;
@@ -575,6 +576,11 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
             {
                 rolePing = "<@&1078284769995006073> ";
                 notableCard = (int)WanderingMerchantItemsEnum.RowenZenlord;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Vairgrys))
+            {
+                rolePing = "<@&1118825650703302758> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Vairgrys;
             }
 
             if (merchant.Rapport.Rarity == Rarity.Legendary)

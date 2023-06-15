@@ -16,4 +16,5 @@ public enum WanderingMerchantItemsEnum
     Anke = 11,
     Piela = 12,
     RowenZenlord = 13,
+    Vairgrys = 14,
 }
