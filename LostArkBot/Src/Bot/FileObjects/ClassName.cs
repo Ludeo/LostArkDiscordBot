@@ -23,6 +23,7 @@ public enum ClassName
     Scrapper,
     Shadowhunter,
     Sharpshooter,
+    Slayer,
     Sorceress,
     Soulfist,
     Striker,

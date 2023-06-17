@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
 using LostArkBot.Bot.Handlers;
 using LostArkBot.Bot.Shared;
 using LostArkBot.databasemodels;
@@ -79,10 +78,10 @@ public class CommandHandlingService
         List<ApplicationCommandProperties> applicationCommandProperties = new();
         await this.client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
 
-        await this.client.GetGuild(Config.Default.Server)
-                  .BulkOverwriteApplicationCommandAsync(applicationCommandProperties.ToArray());
+        //await this.client.GetGuild(Config.Default.Server)
+                  //.BulkOverwriteApplicationCommandAsync(new List<ApplicationCommandProperties>().ToArray());
 
-        await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);
+        //await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);
         await this.commands.RegisterCommandsGloballyAsync();
     }
 }
