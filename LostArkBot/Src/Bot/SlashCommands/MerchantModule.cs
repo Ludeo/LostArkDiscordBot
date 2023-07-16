@@ -52,6 +52,11 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.Piela, "https://lostarkcodex.com/icons/card_rare_13_1.webp"),
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.RowenZenlord, "https://lostarkcodex.com/icons/card_uncommon_07_0.webp"),
         new Tuple<int, string>((int)WanderingMerchantItemsEnum.Vairgrys, "https://lostarkcodex.com/icons/card_legend_03_4.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Thar, "https://lostarkcodex.com/icons/card_epic_02_0.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Balthorr, "https://lostarkcodex.com/icons/card_legend_02_1.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.DelainArmen, "https://lostarkcodex.com/icons/card_legend_00_6.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Jederico, "https://lostarkcodex.com/icons/card_epic_04_3.webp"),
+        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Osphere, "https://lostarkcodex.com/icons/card_epic_10_1.webp"),
     };
 
     private HubConnection hubConnection;
@@ -581,6 +586,31 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
             {
                 rolePing = "<@&1118825650703302758> ";
                 notableCard = (int)WanderingMerchantItemsEnum.Vairgrys;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Thar))
+            {
+                rolePing = "<@&1130243242168963142> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Thar;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Balthorr))
+            {
+                rolePing = "<@&1130243853602013276> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Balthorr;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.DelainArmen))
+            {
+                rolePing = "<@&1130244337943461898> ";
+                notableCard = (int)WanderingMerchantItemsEnum.DelainArmen;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Jederico))
+            {
+                rolePing = "<@&1130244828995780699> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Jederico;
+            }
+            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Osphere))
+            {
+                rolePing = "<@&1130245316541685791> ";
+                notableCard = (int)WanderingMerchantItemsEnum.Osphere;
             }
 
             if (merchant.Rapport.Rarity == Rarity.Legendary)

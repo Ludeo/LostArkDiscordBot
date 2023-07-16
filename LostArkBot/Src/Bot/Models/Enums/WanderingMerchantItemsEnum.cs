@@ -17,4 +17,9 @@ public enum WanderingMerchantItemsEnum
     Piela = 12,
     RowenZenlord = 13,
     Vairgrys = 14,
+    Thar = 15,
+    Balthorr = 16,
+    DelainArmen = 17,
+    Jederico = 18,
+    Osphere = 19,
 }
