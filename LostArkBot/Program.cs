@@ -89,7 +89,7 @@ public class Program
         ITrigger merchantTrigger = TriggerBuilder.Create()
                                                  .WithIdentity("merchanttrigger", "merchantgroup")
                                                  .StartNow()
-                                                 .WithCronSchedule("0 56 * * * ?")
+                                                 .WithCronSchedule("0 30 3,9,15,21 * * ?")
                                                  .Build();
 
         await scheduler.ScheduleJob(merchantJob, merchantTrigger);
@@ -118,7 +118,7 @@ public class Program
         Client.Ready += InitializeScheduledTask;
         Client.Ready += new MerchantModule(services.GetRequiredService<LostArkBotContext>()).StartMerchantChannel;
 
-        StaticObjects = new StaticObjects(services.GetRequiredService<LostArkBotContext>());
+        StaticObjects = new StaticObjects();
 
         string token = Config.Default.Token;
 

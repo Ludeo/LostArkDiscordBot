@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace LostArkBot.Bot.FileObjects.LostMerchants;
 
@@ -13,17 +14,13 @@ public class WebsiteMerchant
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public string Name { get; set; }
 
-    [JsonPropertyName("zone")]
+    [JsonPropertyName("cards")]
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public string Zone { get; set; }
+    public List<MerchantItem> Cards { get; set; }
 
-    [JsonPropertyName("card")]
+    [JsonPropertyName("rapports")]
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public MerchantItem Card { get; set; }
-
-    [JsonPropertyName("rapport")]
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public MerchantItem Rapport { get; set; }
+    public List<MerchantItem> Rapports { get; set; }
 
     [JsonPropertyName("votes")]
     public int Votes { get; set; }

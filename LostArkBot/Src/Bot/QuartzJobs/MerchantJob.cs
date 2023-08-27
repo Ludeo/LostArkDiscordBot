@@ -26,7 +26,7 @@ public class MerchantJob : IJob
 
         await textChannel.DeleteMessagesAsync(messages);
         DateTimeOffset now = DateTimeOffset.Now;
-        DateTimeOffset nextMerchantsTime = now.AddHours(1).AddMinutes(-26).AddSeconds(-now.Second);
+        DateTimeOffset nextMerchantsTime = now.AddMinutes(-now.Minute).AddMinutes(30).AddSeconds(-now.Second);
 
         await textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
 

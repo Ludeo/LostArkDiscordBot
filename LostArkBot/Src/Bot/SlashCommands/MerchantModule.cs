@@ -18,6 +18,7 @@ using LostArkBot.Bot.Shared;
 using LostArkBot.databasemodels;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using MerchantItem = LostArkBot.Bot.FileObjects.LostMerchants.MerchantItem;
 
 namespace LostArkBot.Bot.SlashCommands;
 
@@ -35,41 +36,15 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
     };
 
     private readonly LostArkBotContext dbcontext;
-
-    private readonly List<Tuple<int, string>> thumbnails = new()
-    {
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Wei, "https://lostarkcodex.com/icons/card_legend_01_0.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Seria, "https://lostarkcodex.com/icons/card_rare_02_1.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Sian, "https://lostarkcodex.com/icons/card_rare_06_2.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Mokamoka, "https://lostarkcodex.com/icons/card_epic_00_7.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Madnick, "https://lostarkcodex.com/icons/card_epic_01_7.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Kaysarr, "https://lostarkcodex.com/icons/card_epic_03_6.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.LegendaryRapport, "https://lostarkcodex.com/icons/use_5_167.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Danika, "https://lostarkcodex.com/icons/card_epic_10_2.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Arno, "https://lostarkcodex.com/icons/card_rare_12_5.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Baskia, "https://lostarkcodex.com/icons/card_rare_12_6.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Anke, "https://lostarkcodex.com/icons/card_rare_13_0.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Piela, "https://lostarkcodex.com/icons/card_rare_13_1.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.RowenZenlord, "https://lostarkcodex.com/icons/card_uncommon_07_0.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Vairgrys, "https://lostarkcodex.com/icons/card_legend_03_4.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Thar, "https://lostarkcodex.com/icons/card_epic_02_0.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Balthorr, "https://lostarkcodex.com/icons/card_legend_02_1.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.DelainArmen, "https://lostarkcodex.com/icons/card_legend_00_6.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Jederico, "https://lostarkcodex.com/icons/card_epic_04_3.webp"),
-        new Tuple<int, string>((int)WanderingMerchantItemsEnum.Osphere, "https://lostarkcodex.com/icons/card_epic_10_1.webp"),
-    };
-
     private HubConnection hubConnection;
-    private Dictionary<string, MerchantInfo> merchantInfo;
     private SocketTextChannel textChannel;
+    private Dictionary<string, MerchantInfo> merchantInfo;
 
     public MerchantModule(LostArkBotContext dbcontext) => this.dbcontext = dbcontext;
 
     private EmbedBuilder CreateMerchantEmbed(
         WebsiteMerchant merchant,
         DateTimeOffset expiryDate,
-        int notableCard,
-        int notableRapport,
         MerchantEmbedTypeEnum type)
     {
         if (type == MerchantEmbedTypeEnum.Debug)
@@ -86,96 +61,81 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
         }
 
         EmbedBuilder embedBuilder = new();
-
-        string merchantZoneUpdated = merchant.Zone.Replace(" ", "%20");
-
-        embedBuilder.WithTitle(this.merchantInfo[merchant.Name].Region + " - " + merchant.Zone);
+        embedBuilder.WithTitle(merchant.Name + " (" + this.merchantInfo[merchant.Name].Region + ")");
         embedBuilder.WithDescription($"Expires <t:{expiryDate.ToUnixTimeSeconds()}:R>");
 
-        switch (type)
+        Rarity highestRarity = Rarity.Uncommon;
+
+        foreach (MerchantItem item in merchant.Cards)
         {
-            case MerchantEmbedTypeEnum.New:
+            if (item.Rarity > highestRarity)
             {
-                Rarity highestRarity = merchant.Card.Rarity;
-
-                if (merchant.Rapport.Rarity > highestRarity)
-                {
-                    highestRarity = merchant.Rapport.Rarity;
-                }
-
-                Color embedColor = highestRarity switch
-                {
-                    Rarity.Legendary => Color.Gold,
-                    Rarity.Epic      => Color.Purple,
-                    Rarity.Rare      => Color.Blue,
-                    _                => Color.Green,
-                };
-
-                embedBuilder.WithThumbnailUrl("https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg");
-                embedBuilder.WithColor(embedColor);
-
-                break;
+                highestRarity = item.Rarity;
             }
-            case MerchantEmbedTypeEnum.Subscription:
-            case MerchantEmbedTypeEnum.Debug:
-            {
-                embedBuilder.WithThumbnailUrl(
-                                              notableCard != -1
-                                                  ? this.thumbnails.Find(x => x.Item1 == notableCard).Item2
-                                                  : this.thumbnails.Find(x => x.Item1 == notableRapport).Item2);
-
-                embedBuilder.WithColor(Color.Green);
-                embedBuilder.WithImageUrl("https://lostmerchants.com/images/zones/" + merchantZoneUpdated + ".jpg");
-
-                break;
-            }
-            default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
 
-        EmbedFieldBuilder cardField = new()
+        foreach (MerchantItem item in merchant.Rapports)
         {
-            Name = ":black_joker: Card",
-            Value = "```ansi\n" + this.ansiColors[merchant.Card.Rarity.ToString()] + merchant.Card.Name + "```",
-            IsInline = true,
+            if (item.Rarity > highestRarity)
+            {
+                highestRarity = item.Rarity;
+            }
+        }
+
+        Color embedColor = highestRarity switch
+        {
+            Rarity.Legendary => Color.Gold,
+            Rarity.Epic      => Color.Purple,
+            Rarity.Rare      => Color.Blue,
+            _                => Color.Green,
         };
 
-        EmbedFieldBuilder rapportField = new()
-        {
-            Name = ":gift: Rapport",
-            Value = "```ansi\n" + this.ansiColors[merchant.Rapport.Rarity.ToString()] + merchant.Rapport.Name + "```",
-            IsInline = true,
-        };
+        embedBuilder.WithColor(embedColor);
 
-        embedBuilder.AddField(cardField);
-        embedBuilder.AddField(rapportField);
+        foreach (MerchantItem item in merchant.Cards)
+        {
+            EmbedFieldBuilder cardField = new()
+            {
+                Name = ":black_joker: Card",
+                Value = "```ansi\n" + this.ansiColors[item.Rarity.ToString()] + item.Name + "```",
+                IsInline = true,
+            };
+
+            embedBuilder.AddField(cardField);
+        }
+
+        foreach (MerchantItem item in merchant.Rapports)
+        {
+            EmbedFieldBuilder rapportField = new()
+            {
+                Name = ":gift: Rapport",
+                Value = "```ansi\n" + this.ansiColors[item.Rarity.ToString()] + item.Name + "```",
+                IsInline = true,
+            };
+
+            embedBuilder.AddField(rapportField);
+        }
+
         embedBuilder.WithFooter($"Votes: {merchant.Votes}");
 
         return embedBuilder;
     }
 
-    private static string GetNotableLogMsg(int filteredSubscriptionsCount, int notableCard, int notableRapport)
+    private static string GetNotableLogMsg(int filteredSubscriptionsCount, List<int> notableCard, List<int> notableRapport)
     {
-        string logMsg = $"Found {filteredSubscriptionsCount} players subscribed to ";
+        string logMsg = $"Found {filteredSubscriptionsCount} players subscribed to Cards: ";
 
-        if (notableCard != -1)
-        {
-            logMsg += (WanderingMerchantItemsEnum)notableCard;
-        }
+        logMsg = notableCard.Aggregate(logMsg, (current, card) => current + ((WanderingMerchantItemsEnum)card + ", "));
+        logMsg = logMsg[..^2];
 
-        if (notableRapport != -1)
-        {
-            if (notableCard != -1)
-            {
-                logMsg += " and ";
-            }
-
-            logMsg += (WanderingMerchantItemsEnum)notableRapport;
-        }
+        logMsg += " and Rapports: ";
+        logMsg = notableRapport.Aggregate(logMsg, (current, rapport) => current + ((WanderingMerchantItemsEnum)rapport + ", "));
+        logMsg = logMsg[..^2];
 
         return logMsg;
     }
 
-    private async Task GetUserSubscriptions(int notableCard, int notableRapport, WebsiteMerchant merchant, DateTimeOffset expiryDate)
+    private async Task GetUserSubscriptions(List<int> notableCard, List<int> notableRapport, WebsiteMerchant merchant, DateTimeOffset expiryDate)
     {
         const string url = "https://lostmerchants.com/";
         ButtonBuilder linkButton = new ButtonBuilder().WithLabel("Site").WithStyle(ButtonStyle.Link).WithUrl(url);
@@ -186,7 +146,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
         MessageComponent component = new ComponentBuilder().WithButton(Program.StaticObjects.DeleteButton).WithButton(refreshButton)
                                                            .WithButton(linkButton).Build();
 
-        List<Subscription> subscriptions = this.dbcontext.Subscriptions.Where(x => x.ItemId == notableCard || x.ItemId == notableRapport).ToList();
+        List<Subscription> subscriptions = this.dbcontext.Subscriptions.Where(x => notableCard.Any(y => y == x.ItemId) || notableRapport.Any(y => y == x.ItemId)).ToList();
 
         if (subscriptions.Count == 0)
         {
@@ -197,7 +157,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
 
         await LogService.Log(LogSeverity.Debug, this.GetType().Name, GetNotableLogMsg(distinctUserIds.Count, notableCard, notableRapport));
 
-        Embed embed = this.CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.Subscription).Build();
+        Embed embed = this.CreateMerchantEmbed(merchant, expiryDate, MerchantEmbedTypeEnum.Subscription).Build();
 
         async void SendMessageToUser(int subUser)
         {
@@ -460,18 +420,30 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
 
         DateTimeOffset now = DateTimeOffset.Now;
 
-        if (now.Minute is >= 30 and <= 55)
+        //10:00 - 15:30 active
+        //15:30 - 16:00 break
+        //16:00 - 21:30 active
+        //21:30 - 22:00 break
+        //22:00 - 3:30 active
+        //3:30 - 4:00 break
+        //4:00 - 9:30 active
+        //9:30 - 10:00 break
+
+        //break
+        if (now is
+            {
+                Minute: >= 30,
+                Hour: 15 or 21 or 3 or 9,
+            })
         {
-            object merchantGroupObj = await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
-            await this.UpdateMerchantGroupHandler(merchantGroupObj, true);
+            DateTimeOffset nextMerchantsTime = now.AddMinutes(-now.Minute).AddMinutes(30).AddSeconds(-now.Second);
+
+            await this.textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
         }
         else
         {
-            DateTimeOffset nextMerchantsTime = now.Minute < 30
-                ? now.AddMinutes(-now.Minute).AddMinutes(30).AddSeconds(-now.Second)
-                : now.AddHours(1).AddMinutes(-now.Minute).AddMinutes(30).AddSeconds(-now.Second);
-
-            await this.textChannel.SendMessageAsync($"Next merchants: <t:{nextMerchantsTime.ToUnixTimeSeconds()}:R>");
+            object merchantGroupObj = await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
+            await this.UpdateMerchantGroupHandler(merchantGroupObj, true);
         }
 
         RestUserMessage msg = await this.textChannel.SendMessageAsync("**Merchant channel activated**\n*(This message will delete itself)*");
@@ -518,105 +490,105 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
 
             await LogService.Log(LogSeverity.Debug, this.GetType().Name, $"Adding merchant: {merchant.Name}");
 
-            int notableCard = -1;
-            int notableRapport = -1;
+            List<int> notableCard = new();
+            List<int> notableRapport = new();
             string rolePing = "";
 
-            if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Wei))
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Wei)))
             {
-                rolePing = "<@&986032976812982343> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Wei;
+                rolePing += "<@&986032976812982343> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Wei);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka)))
             {
-                rolePing = "<@&986033361770385429> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Mokamoka;
+                rolePing += "<@&986033361770385429> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Mokamoka);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian)))
             {
-                rolePing = "<@&986033048271331428> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Sian;
+                rolePing += "<@&986033048271331428> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Sian);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria)))
             {
-                rolePing = "<@&986033604205371463> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Seria;
+                rolePing += "<@&986033604205371463> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Seria);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick)))
             {
-                rolePing = "<@&986033108954525836> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Madnick;
+                rolePing += "<@&986033108954525836> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Madnick);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr)))
             {
-                rolePing = "<@&986033435531419679> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Kaysarr;
+                rolePing += "<@&986033435531419679> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Kaysarr);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Danika))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Danika)))
             {
-                rolePing = "<@&1078284489060515921> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Danika;
+                rolePing += "<@&1078284489060515921> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Danika);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Arno))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Arno)))
             {
-                rolePing = "<@&1078284603787333742> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Arno;
+                rolePing += "<@&1078284603787333742> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Arno);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Baskia))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Baskia)))
             {
-                rolePing = "<@&1078284645763919952> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Baskia;
+                rolePing += "<@&1078284645763919952> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Baskia);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Anke))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Anke)))
             {
-                rolePing = "<@&1078284691767046214> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Anke;
+                rolePing += "<@&1078284691767046214> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Anke);
             }
-            else if (merchant.Card.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Piela))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Piela)))
             {
-                rolePing = "<@&1078284729272504340> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Piela;
+                rolePing += "<@&1078284729272504340> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Piela);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.RowenZenlord))
+            else if (merchant.Cards.Any(x => x.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.RowenZenlord)))
             {
-                rolePing = "<@&1078284769995006073> ";
-                notableCard = (int)WanderingMerchantItemsEnum.RowenZenlord;
+                rolePing += "<@&1078284769995006073> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.RowenZenlord);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Vairgrys))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Vairgrys)))
             {
-                rolePing = "<@&1118825650703302758> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Vairgrys;
+                rolePing += "<@&1118825650703302758> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Vairgrys);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Thar))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Thar)))
             {
-                rolePing = "<@&1130243242168963142> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Thar;
+                rolePing += "<@&1130243242168963142> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Thar);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Balthorr))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Balthorr)))
             {
-                rolePing = "<@&1130243853602013276> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Balthorr;
+                rolePing += "<@&1130243853602013276> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Balthorr);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.DelainArmen))
+            else if (merchant.Cards.Any(x => x.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.DelainArmen)))
             {
-                rolePing = "<@&1130244337943461898> ";
-                notableCard = (int)WanderingMerchantItemsEnum.DelainArmen;
+                rolePing += "<@&1130244337943461898> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.DelainArmen);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Jederico))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Jederico)))
             {
-                rolePing = "<@&1130244828995780699> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Jederico;
+                rolePing += "<@&1130244828995780699> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Jederico);
             }
-            else if (merchant.Card.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Osphere))
+            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Osphere)))
             {
-                rolePing = "<@&1130245316541685791> ";
-                notableCard = (int)WanderingMerchantItemsEnum.Osphere;
+                rolePing += "<@&1130245316541685791> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Osphere);
             }
 
-            if (merchant.Rapport.Rarity == Rarity.Legendary)
+            if (merchant.Rapports.Any(x => x.Rarity == Rarity.Legendary))
             {
                 rolePing += "<@&986032866053996554>";
-                notableRapport = (int)WanderingMerchantItemsEnum.LegendaryRapport;
+                notableRapport.Add((int)WanderingMerchantItemsEnum.LegendaryRapport);
             }
 
             if (string.IsNullOrEmpty(rolePing))
@@ -625,9 +597,51 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
             }
 
             DateTimeOffset now = DateTimeOffset.Now;
-            DateTimeOffset expiryDate = new(now.Year, now.Month, now.Day, now.Hour, 55, 0, now.Offset);
+            int hour = 0;
 
-            Embed embed = this.CreateMerchantEmbed(merchant, expiryDate, notableCard, notableRapport, MerchantEmbedTypeEnum.New).Build();
+            switch (now.Hour)
+            {
+                case 22:
+                case 23:
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    hour = 3;
+
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    hour = 9;
+
+                    break;
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+                    hour = 15;
+
+                    break;
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                    hour = 21;
+
+                    break;
+            }
+
+            DateTimeOffset expiryDate = new(now.Year, now.Month, now.Day, hour, 30, 0, now.Offset);
+
+            Embed embed = this.CreateMerchantEmbed(merchant, expiryDate, MerchantEmbedTypeEnum.New).Build();
 
             jsonMerchants.Add(merchant);
 
@@ -641,8 +655,8 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
             IUserMessage message = await this.textChannel.SendMessageAsync(rolePing, embed: embed);
             Program.MerchantMessages.Add(new MerchantMessage(merchant.Id, message.Id));
 
-            if (notableCard != -1
-             || notableRapport != -1)
+            if (notableCard.Count != 0
+             || notableRapport.Count != 0)
             {
                 await this.GetUserSubscriptions(notableCard, notableRapport, merchant, expiryDate);
             }

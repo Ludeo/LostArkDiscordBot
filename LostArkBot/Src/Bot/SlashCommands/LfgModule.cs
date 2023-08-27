@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -105,57 +104,6 @@ public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSl
         await this.FollowupAsync(characterName + " got successfully added to the LFG", ephemeral: true);
     }
 
-    [SlashCommand("calendar", "Download the event as .ics file for calendar import")]
-    public async Task Calendar([Summary("duration", "The duration of the event in hours")] int duration = 2)
-    {
-        await this.DeferAsync(true);
-
-        if (this.Context.Channel.GetChannelType() != ChannelType.PublicThread)
-        {
-            await this.FollowupAsync("This command is only available in the thread of the lfg event", ephemeral: true);
-
-            return;
-        }
-
-        SocketThreadChannel threadChannel = this.Context.Channel as SocketThreadChannel;
-        ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
-        IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
-        IUserMessage message = messageRaw as IUserMessage;
-
-        Embed originalEmbed = message.Embeds.First() as Embed;
-        string time = string.Empty;
-
-        foreach (EmbedField field in originalEmbed.Fields.Where(field => field.Name == "Time"))
-        {
-            time = field.Value.Split("\n")[0];
-        }
-
-        if (string.IsNullOrEmpty(time))
-        {
-            await this.FollowupAsync("This lfg doesn't have a time set", ephemeral: true);
-        }
-
-        long unixSeconds = long.Parse(time.Replace("<t:", "").Replace(":F>", ""));
-        DateTimeOffset date = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
-
-        string timeStartFormatted = date.ToString("yyyyMMddTHHmmssZ");
-        date = date.AddHours(duration);
-        string timeEndFormatted = date.ToString("yyyyMMddTHHmmssZ");
-        string summary = threadChannel.Name;
-
-        string icsString = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Ludeo//Lost Ark Bot//EN\nBEGIN:VEVENT\nDTSTART:"
-                         + timeStartFormatted
-                         + "\nDTEND:"
-                         + timeEndFormatted
-                         + "\nSUMMARY:"
-                         + summary
-                         + "\nEND:VEVENT\nEND:VCALENDAR";
-
-        await File.WriteAllTextAsync("DateExport.ics", icsString);
-        await this.FollowupWithFileAsync(File.OpenRead(FileConfigurations.DateExportFile), FileConfigurations.DateExportFile, ephemeral: true);
-        File.Delete(FileConfigurations.DateExportFile);
-    }
-
     [SlashCommand("controls", "Posts the buttons of the lfg")]
     public async Task Controls()
     {
@@ -183,23 +131,9 @@ public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSl
     public async Task Create(
         [Summary("custom-message", "Custom Message that will be displayed in the LFG")] string customMessage = "",
         [Summary("time", "Time of the LFG, must be server time and must have format: DD/MM hh:mm")]
-        string time = "",
-        [Summary("static-group", "Name of the static group")]
-        string staticGroup = "")
+        string time = "")
     {
         await this.DeferAsync(true);
-
-        if (!string.IsNullOrEmpty(staticGroup))
-        {
-            List<StaticGroup> staticGroups = this.dbcontext.StaticGroups.ToList();
-
-            if (staticGroups.All(x => x.Name != staticGroup))
-            {
-                await this.FollowupAsync("The given static group doesn't exist", ephemeral: true);
-
-                return;
-            }
-        }
 
         if (this.Context.Channel.GetChannelType() == ChannelType.PublicThread)
         {
@@ -243,7 +177,7 @@ public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSl
             }
         }
 
-        await this.FollowupAsync(staticGroup, embed: embed.Build(), components: component.Build(), ephemeral: true);
+        await this.FollowupAsync(embed: embed.Build(), components: component.Build(), ephemeral: true);
     }
 
     [SlashCommand("editmessage", "Edits the message of the LFG")]
@@ -410,99 +344,6 @@ public class LfgModule : InteractionModuleBase<SocketInteractionContext<SocketSl
 
         await threadChannel.ModifyAsync(x => x.Name = name);
         await this.FollowupAsync("Successfully renamed the name of the thread", ephemeral: true);
-    }
-
-    [SlashCommand("roll", "Rolls a number for every player of the LFG")]
-    public async Task Roll()
-    {
-        await this.DeferAsync();
-
-        if (this.Context.Channel.GetChannelType() != ChannelType.PublicThread)
-        {
-            IMessage deleteMessage = await this.FollowupAsync("auto-delete");
-            await deleteMessage.DeleteAsync();
-            await this.FollowupAsync("This command is only available in the thread of the lfg event", ephemeral: true);
-
-            return;
-        }
-
-        SocketThreadChannel threadChannel = this.Context.Channel as SocketThreadChannel;
-        ITextChannel channel = threadChannel.ParentChannel as ITextChannel;
-        IMessage messageRaw = await channel.GetMessageAsync(threadChannel.Id);
-        IUserMessage message = messageRaw as IUserMessage;
-
-        Embed originalEmbed = message.Embeds.First() as Embed;
-
-        EmbedBuilder embed = new()
-        {
-            Title = "Loot Roll",
-            Description = "Rolls are starting:\n\n",
-            Color = Color.Gold,
-        };
-
-        int highestNumber = -1;
-        string highestNumberUser = "";
-        int highestNumberUserCount = 0;
-
-        foreach (EmbedField field in originalEmbed.Fields)
-        {
-            if (field.Name is "Custom Message" or "Time")
-            {
-                continue;
-            }
-
-            int randomNumber = Program.Random.Next(101);
-            string userName = field.Value.Split("\n")[0];
-            embed.Description += $"{userName} has rolled {randomNumber}\n";
-
-            if (randomNumber == highestNumber)
-            {
-                highestNumberUserCount++;
-                highestNumberUser += $" {userName}";
-            }
-
-            if (randomNumber > highestNumber)
-            {
-                highestNumberUserCount = 1;
-                highestNumber = randomNumber;
-                highestNumberUser = userName;
-            }
-        }
-
-        embed.Description += $"\nThe Winner of the Rolls is {highestNumberUser} with a roll of {highestNumber}";
-
-        while (highestNumberUserCount > 1)
-        {
-            embed.Description += "\n\nMultiple Users won, rerolling\n\n";
-
-            string[] usersWon = highestNumberUser.Split(" ");
-
-            highestNumber = -1;
-            highestNumberUser = "";
-
-            foreach (string user in usersWon)
-            {
-                int randomNumber = Program.Random.Next(101);
-                embed.Description += $"{user} has rolled {randomNumber}\n";
-
-                if (randomNumber == highestNumber)
-                {
-                    highestNumberUserCount++;
-                    highestNumberUser += $" {user}";
-                }
-
-                if (randomNumber > highestNumber)
-                {
-                    highestNumberUserCount = 1;
-                    highestNumber = randomNumber;
-                    highestNumberUser = user;
-                }
-            }
-
-            embed.Description += $"\nThe Winner of the Rolls is {highestNumberUser} with a roll of {highestNumber}";
-        }
-
-        await this.FollowupAsync(embed: embed.Build());
     }
 
     [SlashCommand("when", "Shows the time of the lfg if set")]
