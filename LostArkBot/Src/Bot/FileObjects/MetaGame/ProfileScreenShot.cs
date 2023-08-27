@@ -285,19 +285,19 @@ public static class ProfileScreenShot
         using BrowserFetcher browserFetcher = new();
         await browserFetcher.DownloadAsync();
 
-        await using Browser browser = await Puppeteer.LaunchAsync(
-                                                                  new LaunchOptions
-                                                                  {
-                                                                      Headless = true,
-                                                                      Args = new[] { "--no-sandbox" },
-                                                                      Timeout = 60000,
-                                                                      #if DEBUG
-                                                                      #else
+        await using Browser browser = (Browser)await Puppeteer.LaunchAsync(
+                                                                           new LaunchOptions
+                                                                           {
+                                                                               Headless = true,
+                                                                               Args = new[] { "--no-sandbox" },
+                                                                               Timeout = 60000,
+                                                                               #if DEBUG
+                                                                               #else
                     ExecutablePath = "/usr/bin/chromium-browser"
-                                                                      #endif
-                                                                  });
+                                                                               #endif
+                                                                           });
 
-        await using Page page = await browser.NewPageAsync();
+        await using Page page = (Page)await browser.NewPageAsync();
         await page.SetContentAsync(htmlString);
 
         await page.SetViewportAsync(

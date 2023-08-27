@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -386,7 +387,13 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
     public async Task StartMerchantChannel()
     {
         this.textChannel = Program.MerchantChannel;
-        string merchantInfoString = await new HttpClient().GetStringAsync("https://lostmerchants.com/data/merchants.json");
+
+        HttpClientHandler handler = new()
+        {
+            AutomaticDecompression = DecompressionMethods.All,
+        };
+
+        string merchantInfoString = await new HttpClient(handler).GetStringAsync("https://lostmerchants.com/data/merchants.json");
         this.merchantInfo = JsonSerializer.Deserialize<Dictionary<string, MerchantInfo>>(merchantInfoString);
 
         //hubConnection = new HubConnectionBuilder()
@@ -499,87 +506,104 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
                 rolePing += "<@&986032976812982343> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Wei);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Mokamoka)))
             {
                 rolePing += "<@&986033361770385429> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Mokamoka);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Sian)))
             {
                 rolePing += "<@&986033048271331428> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Sian);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Seria)))
             {
                 rolePing += "<@&986033604205371463> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Seria);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Madnick)))
             {
                 rolePing += "<@&986033108954525836> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Madnick);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kaysarr)))
             {
                 rolePing += "<@&986033435531419679> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Kaysarr);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Danika)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Danika)))
             {
                 rolePing += "<@&1078284489060515921> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Danika);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Arno)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Arno)))
             {
                 rolePing += "<@&1078284603787333742> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Arno);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Baskia)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Baskia)))
             {
                 rolePing += "<@&1078284645763919952> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Baskia);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Anke)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Anke)))
             {
                 rolePing += "<@&1078284691767046214> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Anke);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Piela)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Piela)))
             {
                 rolePing += "<@&1078284729272504340> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Piela);
             }
-            else if (merchant.Cards.Any(x => x.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.RowenZenlord)))
+
+            if (merchant.Cards.Any(x => x.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.RowenZenlord)))
             {
                 rolePing += "<@&1078284769995006073> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.RowenZenlord);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Vairgrys)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Vairgrys)))
             {
                 rolePing += "<@&1118825650703302758> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Vairgrys);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Thar)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Thar)))
             {
                 rolePing += "<@&1130243242168963142> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Thar);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Balthorr)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Balthorr)))
             {
                 rolePing += "<@&1130243853602013276> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Balthorr);
             }
-            else if (merchant.Cards.Any(x => x.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.DelainArmen)))
+
+            if (merchant.Cards.Any(x => x.Name.Replace(" ", "") == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.DelainArmen)))
             {
                 rolePing += "<@&1130244337943461898> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.DelainArmen);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Jederico)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Jederico)))
             {
                 rolePing += "<@&1130244828995780699> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Jederico);
             }
-            else if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Osphere)))
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Osphere)))
             {
                 rolePing += "<@&1130245316541685791> ";
                 notableCard.Add((int)WanderingMerchantItemsEnum.Osphere);
@@ -587,7 +611,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
 
             if (merchant.Rapports.Any(x => x.Rarity == Rarity.Legendary))
             {
-                rolePing += "<@&986032866053996554>";
+                rolePing += "<@&986032866053996554> ";
                 notableRapport.Add((int)WanderingMerchantItemsEnum.LegendaryRapport);
             }
 

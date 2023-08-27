@@ -77,10 +77,10 @@ public class CommandHandlingService
     {
         await this.client.BulkOverwriteGlobalApplicationCommandsAsync(new List<ApplicationCommandProperties>().ToArray());
 
-        await this.client.GetGuild(Config.Default.Server)
+        /*await this.client.GetGuild(Config.Default.Server)
                   .BulkOverwriteApplicationCommandAsync(new List<ApplicationCommandProperties>().ToArray());
 
-        await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);
+        await this.commands.RegisterCommandsToGuildAsync(Config.Default.Server);*/
         await this.commands.RegisterCommandsGloballyAsync();
     }
 }
