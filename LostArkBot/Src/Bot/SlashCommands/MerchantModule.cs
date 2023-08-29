@@ -29,6 +29,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
 
     private readonly Dictionary<string, string> ansiColors = new()
     {
+        { "Default", "[0m" },
         { "Normal", "[0m" },
         { "Legendary", "[2;33m" },
         { "Epic", "[2;35m" },
