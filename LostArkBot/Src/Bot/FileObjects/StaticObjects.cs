@@ -64,6 +64,7 @@ public class StaticObjects
         {
             //Kayangel
             { "Kayangel [Normal]", "https://i.imgur.com/YqVZxzl.jpg" },
+            { "Kayangel [Hard]", "https://i.imgur.com/YqVZxzl.jpg" },
 
             //Valtan
             { "Valtan Full [Normal]", "https://i.imgur.com/lWGHAxj.png" },
