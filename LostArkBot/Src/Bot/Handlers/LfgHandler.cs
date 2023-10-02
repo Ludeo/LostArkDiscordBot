@@ -99,7 +99,7 @@ public static class LfgHandler
 
             IMessage endMessage = await component.FollowupAsync(embed: embed.Build(), components: componentBuilder.Build());
 
-            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(component.Data.Values.First(), message: endMessage);
+            IThreadChannel threadChannel = await textChannel.CreateThreadAsync(component.Data.Values.First(), message: endMessage, type: ThreadType.PrivateThread);
             await threadChannel.ModifyAsync(x => x.AutoArchiveDuration = ThreadArchiveDuration.OneWeek);
             await threadChannel.SendMessageAsync("\uFEFF \uFEFF ", components: componentBuilder.Build());
         }
