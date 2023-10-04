@@ -55,7 +55,6 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
 
         MetaGameCharacter metaGameCharacter = JsonSerializer.Deserialize<MetaGameCharacter>(responseString);
         string characterJson = metaGameCharacter.JsonData.Replace(@"\" + "\"", "\"");
-
         MetaGameCharacterJson metaGameCharacterJson = JsonSerializer.Deserialize<MetaGameCharacterJson>(characterJson);
 
         List<ArmorPiece> armorPieces = new();
@@ -100,9 +99,9 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
                                         Name = equipment.Name,
                                         Stat1 = equipment.Stats.BonusEffect[0],
                                         Stat2 = equipment.Stats.BonusEffect[1],
-                                        Engraving1 = equipment.Stats.Engravings[0],
-                                        Engraving2 = equipment.Stats.Engravings[1],
-                                        BadEngraving = equipment.Stats.Engravings[2],
+                                        //Engraving1 = equipment.Stats.Engravings[0],
+                                        //Engraving2 = equipment.Stats.Engravings[1],
+                                        //BadEngraving = equipment.Stats.Engravings[2],
                                         Icon = amazonBaseLink + equipment.Icon,
                                         Color = equipment.Color,
                                     });
@@ -115,9 +114,9 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
                                     {
                                         Name = equipment.Name,
                                         Stat1 = equipment.Stats.BonusEffect[0],
-                                        Engraving1 = equipment.Stats.Engravings[0],
-                                        Engraving2 = equipment.Stats.Engravings[1],
-                                        BadEngraving = equipment.Stats.Engravings[2],
+                                        //Engraving1 = equipment.Stats.Engravings[0],
+                                        //Engraving2 = equipment.Stats.Engravings[1],
+                                        //BadEngraving = equipment.Stats.Engravings[2],
                                         Icon = amazonBaseLink + equipment.Icon,
                                         Color = equipment.Color,
                                     });
@@ -130,9 +129,9 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
                                     {
                                         Name = equipment.Name,
                                         Stat1 = equipment.Stats.BonusEffect[0],
-                                        Engraving1 = equipment.Stats.Engravings[0],
-                                        Engraving2 = equipment.Stats.Engravings[1],
-                                        BadEngraving = equipment.Stats.Engravings[2],
+                                        //Engraving1 = equipment.Stats.Engravings[0],
+                                        //Engraving2 = equipment.Stats.Engravings[1],
+                                        //BadEngraving = equipment.Stats.Engravings[2],
                                         Icon = amazonBaseLink + equipment.Icon,
                                         Color = equipment.Color,
                                     });
@@ -143,9 +142,9 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
                                     new Accessory
                                     {
                                         Name = equipment.Name,
-                                        Engraving1 = equipment.Stats.Engravings[0],
-                                        Engraving2 = equipment.Stats.Engravings[1],
-                                        BadEngraving = equipment.Stats.Engravings[2],
+                                        //Engraving1 = equipment.Stats.Engravings[0],
+                                        //Engraving2 = equipment.Stats.Engravings[1],
+                                        //BadEngraving = equipment.Stats.Engravings[2],
                                         Icon = amazonBaseLink + equipment.Icon,
                                         Color = equipment.Color,
                                     });
@@ -229,7 +228,7 @@ public class MetaModule : InteractionModuleBase<SocketInteractionContext<SocketS
         List<MetaEngraving> sortedEngravings = engravingWithValues.OrderByDescending(x => x.Value).ToList();
 
         await ProfileScreenShot.MakeProfileScreenshot(
-                                                      sortedEngravings,
+                                                      //sortedEngravings,
                                                       armorPieces,
                                                       accessories,
                                                       metaGameCharacter,

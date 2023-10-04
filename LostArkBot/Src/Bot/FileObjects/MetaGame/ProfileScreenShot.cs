@@ -8,7 +8,7 @@ namespace LostArkBot.Bot.FileObjects.MetaGame;
 public static class ProfileScreenShot
 {
     public static async Task MakeProfileScreenshot(
-        List<MetaEngraving> sortedEngravings,
+        //List<MetaEngraving> sortedEngravings,
         List<ArmorPiece> armorPieces,
         List<Accessory> accessories,
         MetaGameCharacter metaGameCharacter,
@@ -33,6 +33,8 @@ public static class ProfileScreenShot
         string end = metaGameCharacterJson.Stats.First(x => x.Description == "Endurance").Value;
         string exp = metaGameCharacterJson.Stats.First(x => x.Description == "Expertise").Value;
 
+        string engravingString = "";
+        /*
         string engravingString = sortedEngravings.Aggregate(
                                                             string.Empty,
                                                             (current, engraving) => current +
@@ -45,14 +47,14 @@ public static class ProfileScreenShot
                             <div>{engraving.Name}</div>
                             <div style=""color: {(engraving.Penalty ? "red" : "#65aaec")};"">{engraving.Value / 5}</div>
                         </div>
-                    </div>");
+                    </div>");*/
 
         int height = 765;
-
+/*
         if (sortedEngravings.Count > 5)
         {
             height += (sortedEngravings.Count - 5) * 38;
-        }
+        }*/
 
         #region htmlString
 
@@ -225,8 +227,8 @@ public static class ProfileScreenShot
                     </div>
                     <div class=""item-desc"" style=""display: flex; flex-direction: column; color: #B4AEA9"">
                         <div class=""item-name"" style=""font-weight: bold;"">{(accessories.Count > 5 ? accessories[5].Name : string.Empty)}</div>
-                        <div class=""item-ilvl"" style=""font-size: 13px;"">{(accessories.Count > 5 ? accessories[5].Engraving1.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)}</div>
-                        <div class=""item-ilvl"" style=""font-size: 13px;"">{(accessories.Count > 5 ? accessories[5].Engraving2.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)}</div>
+                        <div class=""item-ilvl"" style=""font-size: 13px;"">{/*(accessories.Count > 5 ? accessories[5].Engraving1.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)*/string.Empty}</div>
+                        <div class=""item-ilvl"" style=""font-size: 13px;"">{/*(accessories.Count > 5 ? accessories[5].Engraving2.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)*/string.Empty}</div>
                     </div>
                 </div>
             </div>

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LostArkBot.Bot.FileObjects;
 using LostArkBot.Bot.Handlers;
 using LostArkBot.Bot.Shared;
 using LostArkBot.databasemodels;
