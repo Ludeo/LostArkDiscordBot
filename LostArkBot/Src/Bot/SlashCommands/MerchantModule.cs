@@ -610,6 +610,12 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
                 notableCard.Add((int)WanderingMerchantItemsEnum.Osphere);
             }
 
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Varkan)))
+            {
+                rolePing += "<@&1191090547692159006> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Varkan);
+            }
+
             if (merchant.Rapports.Any(x => x.Rarity == Rarity.Legendary))
             {
                 rolePing += "<@&986032866053996554> ";

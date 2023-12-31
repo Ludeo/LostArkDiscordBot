@@ -22,4 +22,5 @@ public enum WanderingMerchantItemsEnum
     DelainArmen = 17,
     Jederico = 18,
     Osphere = 19,
+    Varkan = 20,
 }
