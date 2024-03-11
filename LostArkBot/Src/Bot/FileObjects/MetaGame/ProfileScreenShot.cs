@@ -227,8 +227,8 @@ public static class ProfileScreenShot
                     </div>
                     <div class=""item-desc"" style=""display: flex; flex-direction: column; color: #B4AEA9"">
                         <div class=""item-name"" style=""font-weight: bold;"">{(accessories.Count > 5 ? accessories[5].Name : string.Empty)}</div>
-                        <div class=""item-ilvl"" style=""font-size: 13px;"">{/*(accessories.Count > 5 ? accessories[5].Engraving1.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)*/string.Empty}</div>
-                        <div class=""item-ilvl"" style=""font-size: 13px;"">{/*(accessories.Count > 5 ? accessories[5].Engraving2.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)*/string.Empty}</div>
+                        <div class=""item-ilvl"" style=""font-size: 13px;"">{ /*(accessories.Count > 5 ? accessories[5].Engraving1.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)*/string.Empty}</div>
+                        <div class=""item-ilvl"" style=""font-size: 13px;"">{ /*(accessories.Count > 5 ? accessories[5].Engraving2.Replace("[", "").Replace("] ", "").Replace("Node", "") : string.Empty)*/string.Empty}</div>
                     </div>
                 </div>
             </div>

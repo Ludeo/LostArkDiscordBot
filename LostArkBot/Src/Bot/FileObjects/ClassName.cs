@@ -6,6 +6,7 @@ public enum ClassName
 {
     [Hide]
     Default,
+    Aeromancer,
     Arcanist,
     Artillerist,
     Artist,
@@ -25,6 +26,7 @@ public enum ClassName
     Sharpshooter,
     Slayer,
     Sorceress,
+    Souleater,
     Soulfist,
     Striker,
     Summoner,
