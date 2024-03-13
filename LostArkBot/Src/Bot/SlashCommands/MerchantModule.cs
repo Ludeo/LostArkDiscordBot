@@ -260,7 +260,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
                                                                              "Could not find merchant message to modify. Triggering merchant update.");
 
                                                         object merchantGroupObj =
-                                                            await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
+                                                            await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Elpon");
 
                                                         await this.UpdateMerchantGroupHandler(merchantGroupObj, true);
 
@@ -296,7 +296,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
                                                                              "Could not find merchant message to modify. Triggering merchant update.");
 
                                                         object merchantGroupObj =
-                                                            await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
+                                                            await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Elpon");
 
                                                         await this.UpdateMerchantGroupHandler(merchantGroupObj, true);
 
@@ -375,7 +375,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
             this.hubConnection.Remove("SubscribeToServer");
             this.hubConnection.Remove("UpdateVotes");
             this.hubConnection.Remove("UpdateMerchantGroup");
-            await this.hubConnection.InvokeAsync("SubscribeToServer", "Wei");
+            await this.hubConnection.InvokeAsync("SubscribeToServer", "Elpon");
             this.OnUpdateMerchantGroup();
             this.OnUpdateVotes();
         }
@@ -450,7 +450,7 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
         }
         else
         {
-            object merchantGroupObj = await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Wei");
+            object merchantGroupObj = await this.hubConnection.InvokeAsync<object>("GetKnownActiveMerchantGroups", "Elpon");
             await this.UpdateMerchantGroupHandler(merchantGroupObj, true);
         }
 

@@ -9,17 +9,17 @@ namespace LostArkBot.Bot.SlashCommands;
 
 public class ServerStatusModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
 {
-    [SlashCommand("serverstatus", "Shows the current status of the Wei server")]
+    [SlashCommand("serverstatus", "Shows the current status of the Elpon server")]
     public async Task ServerStatus()
     {
         await this.DeferAsync();
 
-        string responseJson = await new HttpClient().GetStringAsync("https://lastarkapi-m2.herokuapp.com/server/Wei");
-        string status = JsonDocument.Parse(responseJson).RootElement.GetProperty("data").GetProperty("Wei").ToString();
+        string responseJson = await new HttpClient().GetStringAsync("https://lastarkapi-m2.herokuapp.com/server/Elpon");
+        string status = JsonDocument.Parse(responseJson).RootElement.GetProperty("data").GetProperty("Elpon").ToString();
 
         EmbedBuilder embed = new()
         {
-            Title = "Wei Server Status",
+            Title = "Elpon Server Status",
             Description = $"``{status}``",
         };
 
