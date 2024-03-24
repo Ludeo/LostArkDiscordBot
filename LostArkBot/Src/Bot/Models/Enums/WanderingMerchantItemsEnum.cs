@@ -23,4 +23,6 @@ public enum WanderingMerchantItemsEnum
     Jederico = 18,
     Osphere = 19,
     Varkan = 20,
+    Kharmine = 21,
+    AzenaandInanna = 22,
 }

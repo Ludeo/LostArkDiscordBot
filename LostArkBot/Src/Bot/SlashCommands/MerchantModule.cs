@@ -616,6 +616,18 @@ public class MerchantModule : InteractionModuleBase<SocketInteractionContext<Soc
                 notableCard.Add((int)WanderingMerchantItemsEnum.Varkan);
             }
 
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.Kharmine)))
+            {
+                rolePing += "<@&1221567084455137281> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.Kharmine);
+            }
+
+            if (merchant.Cards.Any(x => x.Name == Enum.GetName(typeof(WanderingMerchantItemsEnum), WanderingMerchantItemsEnum.AzenaandInanna)))
+            {
+                rolePing += "<@&1221567137240318072> ";
+                notableCard.Add((int)WanderingMerchantItemsEnum.AzenaandInanna);
+            }
+
             if (merchant.Rapports.Any(x => x.Rarity == Rarity.Legendary))
             {
                 rolePing += "<@&986032866053996554> ";
